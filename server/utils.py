@@ -46,5 +46,5 @@ def query(q: LiteralString) -> LiteralString:
 
 
 def generate_token():
-    characters = string.ascii_lowercase + string.digits
+    characters = string.ascii_uppercase + string.ascii_lowercase + string.digits
     return "".join(random.choice(characters) for _ in range(10))
