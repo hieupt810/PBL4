@@ -1,5 +1,6 @@
 import random
 import string
+import uuid
 from textwrap import dedent
 from typing import cast
 
@@ -32,13 +33,12 @@ def get_neo4j():
             uri=Config.NEO4J_URI,
             auth=basic_auth(Config.NEO4J_USERNAME, Config.NEO4J_PASSWORD),
         )
+    else:
+        print("Missing Neo4J informations in local environment")
 
 
 def uniqueid():
-    seed = random.getrandbits(32)
-    while True:
-        yield seed
-        seed += 1
+    return str(uuid.uuid1())
 
 
 def query(q: LiteralString) -> LiteralString:
