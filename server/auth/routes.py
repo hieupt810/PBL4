@@ -75,7 +75,7 @@ def login():
 
 @auth_bp.route("", methods=["PUT"])
 def update_user():
-    requires = ["username", "name"]
+    requires = ["username", "name", "role"]
     req = request.get_json()
     try:
         if not valid_request(req, requires):
@@ -93,17 +93,22 @@ def update_user():
         )
         if not len(records) == 1:
             return jsonify({"message": "E003", "status": 401}), 200
-        if records[0]["username"] != req["username"] and records[0]["role"] == 0:
+        if (
+            records[0]["username"] != req["username"]
+            and records[0]["role"] == 0
+            and req["role"] == 2
+        ):
             return jsonify({"message": "E007", "status": 406}), 200
 
         _, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {username: $username})
-                SET u.name = $name"""
+                SET u.name = $name, u.role = $role"""
             ),
             routing_="w",
             username=req["username"],
             name=req["name"],
+            role=req["role"] if (records[0]["role"] == 2) else records[0]["role"],
         )
         return jsonify({"message": "I003", "status": 200}), 200
     except Exception as error:
