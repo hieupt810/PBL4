@@ -17,8 +17,7 @@ if __name__ == "__main__":
         and Config.ROOT_USERNAME
         and Config.ROOT_PASSWORD
     ):
-        db = get_neo4j()
-        _, _, _ = db.execute_query(
+        _, _, _ = get_neo4j().execute_query(
             query(
                 """MERGE (u:User {name: $name})
                 SET u.username = $username, u.password = $password, u.token = '', u.role = 2"""
