@@ -2,7 +2,7 @@ from __future__ import print_function
 
 from auth.routes import auth_bp
 from config import Config
-from utils import get_app
+from utils import get_app, get_neo4j, query
 
 app = get_app()
 
@@ -14,7 +14,21 @@ if __name__ == "__main__":
         and Config.NEO4J_URI
         and Config.NEO4J_USERNAME
         and Config.NEO4J_PASSWORD
+        and Config.ROOT_USERNAME
+        and Config.ROOT_PASSWORD
     ):
+        db = get_neo4j()
+        _, _, _ = db.execute_query(
+            query(
+                """MERGE (u:User {name: $name})
+                SET u.username = $username, u.password = $password, u.role = 2, u.token = ''"""
+            ),
+            routing_="w",
+            name="Root",
+            username=Config.ROOT_USERNAME,
+            password=Config.ROOT_PASSWORD,
+        )
+
         app.run(debug=True, host=Config.SERVER_HOST, port=8082, threaded=True)
     else:
-        print("Missing variables in local environment")
+        print("Missing variable(s) in local environment")
