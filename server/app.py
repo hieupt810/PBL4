@@ -21,7 +21,7 @@ if __name__ == "__main__":
         _, _, _ = db.execute_query(
             query(
                 """MERGE (u:User {name: $name})
-                SET u.username = $username, u.password = $password, u.role = 2, u.token = ''"""
+                SET u.username = $username, u.password = $password, u.token = '', u.role = 2"""
             ),
             routing_="w",
             name="Root",
