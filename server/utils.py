@@ -28,16 +28,13 @@ def get_app() -> Flask:
 
 
 def get_neo4j():
-    if Config.NEO4J_URI and Config.NEO4J_USERNAME and Config.NEO4J_PASSWORD:
-        return GraphDatabase.driver(
-            uri=Config.NEO4J_URI,
-            auth=basic_auth(Config.NEO4J_USERNAME, Config.NEO4J_PASSWORD),
-        )
-    else:
-        print("Missing Neo4J informations in local environment")
+    return GraphDatabase.driver(
+        uri=Config.NEO4J_URI,
+        auth=basic_auth(Config.NEO4J_USERNAME, Config.NEO4J_PASSWORD),
+    )
 
 
-def uniqueid():
+def uniqueid() -> str:
     return str(uuid.uuid1())
 
 
@@ -45,6 +42,15 @@ def query(q: LiteralString) -> LiteralString:
     return cast(LiteralString, dedent(q).strip())
 
 
-def generate_token():
+def generate_token() -> str:
     characters = string.ascii_uppercase + string.ascii_lowercase + string.digits
     return "".join(random.choice(characters) for _ in range(10))
+
+
+def valid_request(request, requires) -> bool:
+    if len(requires) == 0:
+        return True
+    for require in requires:
+        if not require in request:
+            return False
+    return True

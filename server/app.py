@@ -9,7 +9,12 @@ app = get_app()
 app.register_blueprint(auth_bp, url_prefix="/api/auth")
 
 if __name__ == "__main__":
-    if Config.SERVER_HOST:
+    if (
+        Config.SERVER_HOST
+        and Config.NEO4J_URI
+        and Config.NEO4J_USERNAME
+        and Config.NEO4J_PASSWORD
+    ):
         app.run(debug=True, host=Config.SERVER_HOST, port=8082, threaded=True)
     else:
-        print("Missing server host in local environment")
+        print("Missing variables in local environment")

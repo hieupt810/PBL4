@@ -1,0 +1,14 @@
+{
+    "I001": "Register successfully",
+    "I002": "Log in successfully",
+    "I003": "Update user successfully",
+    "I004": "Delete user successfully",
+
+    "E001": "Internal Server Error",
+    "E002": "Bad Request",
+    "E003": "Unauthorized",
+    "E004": "Username is existed",
+    "E005": "Username is not existed",
+    "E006": "Wrong password",
+    "E007": "Not Acceptable"
+}
