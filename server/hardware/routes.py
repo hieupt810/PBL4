@@ -1,10 +1,10 @@
-import serial
 from flask import Blueprint, jsonify, request
+from serial import Serial
 from utils import get_neo4j, query, valid_request
 from werkzeug.security import check_password_hash, generate_password_hash
 
 hardware_bp = Blueprint("hardware", __name__)
-arduino = serial.Serial(port="COM4", baudrate=115200, timeout=0.1)
+arduino = Serial(port="COM4", baudrate=115200, timeout=0.1)
 db = get_neo4j()
 
 
@@ -21,7 +21,6 @@ def valid_pin(pin: str) -> bool:
 def create_pin():
     requires = ["pin"]
     req = request.get_json()
-
     try:
         if not valid_request(req, requires) or not valid_pin(req["pin"]):
             return jsonify({"message": "E002", "status": 400}), 200
@@ -74,12 +73,10 @@ def unlock():
         )
         if not len(records) == 1:
             return jsonify({"message": "E003", "status": 401}), 200
-
         if not check_password_hash(records[0]["password"], password):
             return jsonify({"message": "E006", "status": 401}), 200
 
         arduino.write(bytes("Unlock", "utf-8"))
-
         return jsonify({"message": "I005", "status": 200}), 200
     except Exception as error:
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
