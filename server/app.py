@@ -2,11 +2,13 @@ from __future__ import print_function
 
 from auth.routes import auth_bp
 from config import Config
+from hardware.routes import hardware_bp
 from utils import get_app, get_neo4j, query
 
 app = get_app()
 
 app.register_blueprint(auth_bp, url_prefix="/api/auth")
+app.register_blueprint(hardware_bp, url_prefix="/api/hardware")
 
 if __name__ == "__main__":
     if (

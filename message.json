@@ -3,6 +3,8 @@
     "I002": "Log in successfully",
     "I003": "Update user successfully",
     "I004": "Delete user successfully",
+    "I005": "Unlock successfully",
+    "I006": "Create pin successfully",
 
     "E001": "Internal Server Error",
     "E002": "Bad Request",
