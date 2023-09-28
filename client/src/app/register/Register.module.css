@@ -1,0 +1,39 @@
+.main {
+  @apply bg-white w-screen min-h-screen p-6 flex flex-col items-start justify-around;
+}
+
+.title_container {
+  @apply flex flex-col items-center justify-around w-full space-y-1;
+}
+
+.title {
+  @apply text-primary text-2xl text-center font-medium;
+}
+
+.form_container {
+  @apply w-full;
+}
+
+.form {
+  @apply flex flex-col space-y-10;
+}
+
+.field_container {
+  @apply flex flex-col space-y-4;
+}
+
+.input_field {
+  @apply flex flex-col space-y-1;
+}
+
+.input_field > input {
+  @apply px-3 py-2 border border-gray-500 outline-1 outline-primary rounded-md overflow-hidden w-full;
+}
+
+.href {
+  @apply w-full text-center space-x-1;
+}
+
+.href > a {
+  @apply text-primary;
+}
