@@ -5,3 +5,10 @@
 body {
   @apply text-base font-normal;
 }
+
+@keyframes smooth-appear {
+  to {
+    bottom: 20px;
+    opacity: 1;
+  }
+}

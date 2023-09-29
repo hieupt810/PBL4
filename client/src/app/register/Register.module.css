@@ -1,5 +1,5 @@
 .main {
-  @apply bg-white w-screen min-h-screen p-6 flex flex-col items-start justify-around;
+  @apply bg-white w-screen min-h-screen p-6 flex flex-col items-start justify-around space-y-6;
 }
 
 .title_container {
@@ -19,7 +19,7 @@
 }
 
 .field_container {
-  @apply flex flex-col space-y-4;
+  @apply flex flex-col space-y-3;
 }
 
 .input_field {
@@ -39,7 +39,7 @@
 }
 
 .field_error {
-  @apply !border-red-500;
+  @apply !border-red-500 !border-2;
 }
 
 .href {
