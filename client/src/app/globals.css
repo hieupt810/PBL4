@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-  @apply text-base font-normal;
+  @apply text-base font-normal text-[#393939] font-sans;
 }
 
 @keyframes smooth-appear {

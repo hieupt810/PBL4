@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import { Nunito } from "next/font/google";
 import "./globals.css";
 
-const roboto = Roboto({
-  weight: ["100", "300", "400", "500", "700", "900"],
+const font = Nunito({
+  weight: ["200", "300", "400", "500", "700", "900"],
   style: ["normal", "italic"],
-  subsets: ["vietnamese"],
+  subsets: ["latin", "vietnamese"],
   display: "swap",
 });
 
@@ -21,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi">
-      <body className={roboto.className}>{children}</body>
+      <body className={font.className}>{children}</body>
     </html>
   );
 }

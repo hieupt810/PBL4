@@ -1,0 +1,55 @@
+.main {
+  @apply p-4 min-h-screen bg-[#f5f5f5] space-y-6 flex flex-col;
+}
+
+.container {
+  @apply flex flex-col space-y-3;
+}
+
+.container h5 {
+  @apply text-xl font-bold;
+}
+
+.items_container {
+  @apply grid grid-cols-2 gap-3;
+}
+
+.item {
+  @apply text-white font-medium p-3 rounded-xl shadow-md flex flex-col space-y-2;
+}
+
+.item > .item_icon {
+  @apply flex flex-row items-center justify-between;
+}
+
+.item > .item_name {
+  @apply mx-1;
+}
+
+.title {
+  @apply flex flex-row justify-between items-center;
+}
+
+.title > div {
+  @apply p-1 rounded-md bg-[#eeedf1];
+}
+
+.members {
+  @apply flex flex-row overflow-hidden rounded-xl bg-white px-5 py-3 space-x-7 border border-[#f2f2f2];
+}
+
+.member {
+  @apply flex flex-col items-center justify-between;
+}
+
+.avatar {
+  @apply w-10 h-10 rounded-full;
+}
+
+.member > h5 {
+  @apply text-sm font-medium;
+}
+
+.member > h4 {
+  @apply text-xs text-[#c1c0c5];
+}
