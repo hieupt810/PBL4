@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-from ard.routes import ard_bp
 from auth.routes import auth_bp
 from config import Config
 from utils import get_app, get_neo4j, query
@@ -8,7 +7,6 @@ from utils import get_app, get_neo4j, query
 app = get_app()
 
 app.register_blueprint(auth_bp, url_prefix="/api/auth")
-app.register_blueprint(ard_bp, url_prefix="/api/ard")
 
 if __name__ == "__main__":
     if Config.valid_env():
