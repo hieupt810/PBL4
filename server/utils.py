@@ -43,8 +43,8 @@ def query(q: LiteralString) -> LiteralString:
 
 
 def generate_token() -> str:
-    characters = string.ascii_uppercase + string.ascii_lowercase + string.digits
-    return "".join(random.choice(characters) for _ in range(10))
+    characters = string.ascii_lowercase + string.ascii_uppercase + string.digits
+    return "".join(random.choice(characters) for _ in range(20))
 
 
 def valid_request(request, requires) -> bool:

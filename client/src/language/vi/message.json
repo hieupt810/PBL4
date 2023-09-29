@@ -1,0 +1,17 @@
+{
+  "I001": "Đăng ký thành công",
+  "I002": "Đăng nhập thành công",
+  "I003": "Cập nhật thông tin thành công",
+  "I004": "Xoá người dùng thành công",
+  "I005": "Tạo thông tin nhà thành công",
+  "I006": "Thêm thành viên thành công",
+
+  "E001": "Lỗi hệ thống",
+  "E002": "Yêu cầu lỗi",
+  "E003": "Không có quyền truy cập",
+  "E004": "Tên đăng nhập đã tồn tại",
+  "E005": "Tên đăng nhập không tồn tại",
+  "E006": "Mật khẩu không chính xác",
+  "E007": "Yêu cầu không được chấp nhận",
+  "E008": "Yêu cầu thất bại"
+}
