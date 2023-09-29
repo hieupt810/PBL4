@@ -1,5 +1,4 @@
 "use client";
-
 import Button from "@/components/Button";
 import Popup from "@/components/Popup";
 import TranslateCode from "@/language/translate";
@@ -53,7 +52,11 @@ export default function Register() {
       return;
     }
 
-    if (password.text !== retype.text) {
+    if (
+      password.text === "" ||
+      retype.text === "" ||
+      password.text !== retype.text
+    ) {
       setPassword({ text: password.text, error: true });
       setRetype({ text: retype.text, error: true });
       setLoading(false);
@@ -63,25 +66,25 @@ export default function Register() {
     const headers: Headers = new Headers();
     headers.append("Accept", "application/json");
     headers.append("Content-Type", "application/json");
-    fetch("http://127.0.0.1:8082" + "/api/auth/register", {
+    fetch(process.env.BACKEND_URL + "/api/auth/register", {
       method: "POST",
       headers: headers,
       body: JSON.stringify({
-        name: fullname.text,
+        fullname: fullname.text,
         username: username.text,
         password: password.text,
       }),
     })
       .then((r) => {
+        setLoading(false);
         if (!r.ok)
-          setPopup({ text: TranslateCode("EN", "E008"), type: "failed" });
+          setPopup({ text: TranslateCode("VI", "E001"), type: "failed" });
         return r.json();
       })
       .then((d) => {
         if (d.status == 200)
-          setPopup({ text: TranslateCode("EN", d.message), type: "success" });
-        else setPopup({ text: TranslateCode("EN", d.message), type: "failed" });
-        setLoading(false);
+          setPopup({ text: TranslateCode("VI", d.message), type: "success" });
+        else setPopup({ text: TranslateCode("VI", d.message), type: "failed" });
       });
   };
 

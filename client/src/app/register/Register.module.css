@@ -39,7 +39,7 @@
 }
 
 .field_error {
-  @apply !border-red-500 !border-2;
+  @apply !border-red-500 !border-2 !bg-red-100;
 }
 
 .href {
