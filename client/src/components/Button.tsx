@@ -5,6 +5,7 @@ interface ButtonProps {
   type?: "button" | "submit" | "reset";
   className?: string;
   loading?: boolean;
+  onClick?: () => void;
 }
 
 export default function Button({
@@ -12,14 +13,16 @@ export default function Button({
   type,
   text,
   loading,
+  onClick,
 }: ButtonProps) {
   return (
     <button
       className={twMerge(
-        "text-white bg-primary rounded-md font-medium outline-none border-none transform transition-transform focus:ring-2 active:scale-95 flex items-center justify-center",
+        "text-white bg-primary rounded-md font-medium outline-none border-none transform transition-transform focus:ring-2 active:scale-95 flex items-center justify-center px-2",
         className
       )}
       type={type}
+      onClick={onClick}
     >
       {loading && (
         <div

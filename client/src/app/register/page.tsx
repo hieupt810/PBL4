@@ -1,23 +1,55 @@
 "use client";
 
 import Button from "@/components/Button";
+import Popup from "@/components/Popup";
 import { FormEvent, useState } from "react";
 import { TbSmartHome } from "react-icons/tb";
-import styles from "./Register.module.css";
+import styles from "./register.module.css";
+
+interface FieldProps {
+  text: string;
+  error: boolean;
+}
 
 export default function Register() {
   const [loading, setLoading] = useState<boolean>(false);
-  const [fullname, setFullname] = useState<string>("");
-  const [username, setUsername] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [retype, setRetype] = useState<string>("");
+  const [fullname, setFullname] = useState<FieldProps>({
+    text: "",
+    error: false,
+  });
+  const [username, setUsername] = useState<FieldProps>({
+    text: "",
+    error: false,
+  });
+  const [password, setPassword] = useState<FieldProps>({
+    text: "",
+    error: false,
+  });
+  const [retype, setRetype] = useState<FieldProps>({
+    text: "",
+    error: false,
+  });
 
   const handleRegister = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
+    if (fullname.text.trim() === "") {
+      setFullname({ text: fullname.text.trim(), error: true });
+      setLoading(false);
+      return;
+    }
+
+    if (username.text.trim() === "") {
+      setUsername({ text: username.text.trim(), error: true });
+      setLoading(false);
+      return;
+    }
+
     if (password !== retype) {
-      console.log("Different");
+      setPassword({ text: password.text, error: true });
+      setRetype({ text: retype.text, error: true });
+      setLoading(false);
       return;
     }
 
@@ -48,62 +80,90 @@ export default function Register() {
   };
 
   return (
-    <main className={styles.main}>
-      <div className={styles.title_container}>
-        <div>
-          <TbSmartHome color={"#1f75fe"} size={100} />
-        </div>
-        <h5 className={styles.title}>Đăng ký tài khoản</h5>
-      </div>
+    <div>
+      <Popup type={"failed"} text={"Đăng nhập thất bại"} close={() => {}} />
 
-      <div className={styles.form_container}>
-        <form onSubmit={handleRegister} className={styles.form}>
-          <div className={styles.field_container}>
-            <div className={styles.input_field}>
-              <label>Họ và tên</label>
-              <input
-                type="text"
-                value={fullname}
-                onChange={(e) => setFullname(e.target.value)}
-              />
-            </div>
-
-            <div className={styles.input_field}>
-              <label>Tên đăng nhập</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </div>
-
-            <div className={styles.input_field}>
-              <label>Mật khẩu</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-
-            <div className={styles.input_field}>
-              <label>Nhập lại mật khẩu</label>
-              <input
-                type="password"
-                value={retype}
-                onChange={(e) => setRetype(e.target.value)}
-              />
-            </div>
+      <main className={styles.main}>
+        <div className={styles.title_container}>
+          <div>
+            <TbSmartHome color={"#1f75fe"} size={100} />
           </div>
+          <h5 className={styles.title}>Đăng ký tài khoản</h5>
+        </div>
 
-          <Button text="Đăng ký" type="submit" loading={loading} />
-        </form>
-      </div>
+        <div className={styles.form_container}>
+          <form onSubmit={handleRegister} className={styles.form}>
+            <div className={styles.field_container}>
+              <div className={styles.input_field}>
+                <label>
+                  <p>Họ và tên</p>
+                  <span>*</span>
+                </label>
+                <input
+                  type="text"
+                  value={fullname.text}
+                  className={fullname.error ? styles.field_error : ""}
+                  onChange={(e) =>
+                    setFullname({ text: e.target.value, error: false })
+                  }
+                />
+              </div>
 
-      <div className={styles.href}>
-        <span>Đã có tài khoản?</span>
-        <a href="/login">Đăng nhập</a>
-      </div>
-    </main>
+              <div className={styles.input_field}>
+                <label>
+                  <p>Tên đăng nhập</p>
+                  <span>*</span>
+                </label>
+                <input
+                  type="text"
+                  value={username.text}
+                  className={username.error ? styles.field_error : ""}
+                  onChange={(e) =>
+                    setUsername({ text: e.target.value, error: false })
+                  }
+                />
+              </div>
+
+              <div className={styles.input_field}>
+                <label>
+                  <p>Mật khẩu</p>
+                  <span>*</span>
+                </label>
+                <input
+                  type="password"
+                  value={password.text}
+                  className={password.error ? styles.field_error : ""}
+                  onChange={(e) =>
+                    setPassword({ text: e.target.value, error: false })
+                  }
+                />
+              </div>
+
+              <div className={styles.input_field}>
+                <label>
+                  <p>Nhập lại mật khẩu</p>
+                  <span>*</span>
+                </label>
+                <input
+                  type="password"
+                  value={retype.text}
+                  className={retype.error ? styles.field_error : ""}
+                  onChange={(e) =>
+                    setRetype({ text: e.target.value, error: false })
+                  }
+                />
+              </div>
+            </div>
+
+            <Button text="Đăng ký" type="submit" loading={loading} />
+          </form>
+        </div>
+
+        <div className={styles.href}>
+          <span>Đã có tài khoản?</span>
+          <a href="/login">Đăng nhập</a>
+        </div>
+      </main>
+    </div>
   );
 }
