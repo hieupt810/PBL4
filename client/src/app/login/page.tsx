@@ -2,10 +2,11 @@
 import Button from "@/components/Button";
 import Popup from "@/components/Popup";
 import TranslateCode from "@/language/translate";
+import { setCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { TbSmartHome } from "react-icons/tb";
-import styles from "./register.module.css";
+import styles from "./login.module.css";
 
 interface FieldProps {
   text: string;
@@ -17,15 +18,11 @@ interface PopupProps {
   text: string;
 }
 
-export default function Register() {
+export default function Login() {
   const router = useRouter();
 
   const [loading, setLoading] = useState<boolean>(false);
   const [popup, setPopup] = useState<PopupProps>({ text: "" });
-  const [fullname, setFullname] = useState<FieldProps>({
-    text: "",
-    error: false,
-  });
   const [username, setUsername] = useState<FieldProps>({
     text: "",
     error: false,
@@ -34,20 +31,10 @@ export default function Register() {
     text: "",
     error: false,
   });
-  const [retype, setRetype] = useState<FieldProps>({
-    text: "",
-    error: false,
-  });
 
   const handleRegister = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-
-    if (fullname.text.trim() === "") {
-      setFullname({ text: fullname.text.trim(), error: true });
-      setLoading(false);
-      return;
-    }
 
     if (username.text.trim() === "") {
       setUsername({ text: username.text.trim(), error: true });
@@ -55,13 +42,8 @@ export default function Register() {
       return;
     }
 
-    if (
-      password.text === "" ||
-      retype.text === "" ||
-      password.text !== retype.text
-    ) {
+    if (password.text === "") {
       setPassword({ text: password.text, error: true });
-      setRetype({ text: retype.text, error: true });
       setLoading(false);
       return;
     }
@@ -69,11 +51,10 @@ export default function Register() {
     const headers: Headers = new Headers();
     headers.append("Accept", "application/json");
     headers.append("Content-Type", "application/json");
-    fetch(process.env.BACKEND_URL + "/api/auth/register", {
+    fetch(process.env.BACKEND_URL + "/api/auth/login", {
       method: "POST",
       headers: headers,
       body: JSON.stringify({
-        fullname: fullname.text,
         username: username.text,
         password: password.text,
       }),
@@ -87,7 +68,8 @@ export default function Register() {
       .then((d) => {
         if (d.status == 200) {
           setPopup({ text: TranslateCode("VI", d.message), type: "success" });
-          router.push("/login");
+          setCookie("token", d.token, { maxAge: 60 * 60 * 24 * 7 });
+          router.push("/");
         } else
           setPopup({ text: TranslateCode("VI", d.message), type: "failed" });
       });
@@ -108,27 +90,12 @@ export default function Register() {
           <div>
             <TbSmartHome color={"#1f75fe"} size={100} />
           </div>
-          <h5 className={styles.title}>Đăng ký tài khoản</h5>
+          <h5 className={styles.title}>Đăng nhập</h5>
         </div>
 
         <div className={styles.form_container}>
           <form onSubmit={handleRegister} className={styles.form}>
             <div className={styles.field_container}>
-              <div className={styles.input_field}>
-                <label>
-                  <p>Họ và tên</p>
-                  <span>*</span>
-                </label>
-                <input
-                  type="text"
-                  value={fullname.text}
-                  className={fullname.error ? styles.field_error : ""}
-                  onChange={(e) =>
-                    setFullname({ text: e.target.value, error: false })
-                  }
-                />
-              </div>
-
               <div className={styles.input_field}>
                 <label>
                   <p>Tên đăng nhập</p>
@@ -158,30 +125,15 @@ export default function Register() {
                   }
                 />
               </div>
-
-              <div className={styles.input_field}>
-                <label>
-                  <p>Nhập lại mật khẩu</p>
-                  <span>*</span>
-                </label>
-                <input
-                  type="password"
-                  value={retype.text}
-                  className={retype.error ? styles.field_error : ""}
-                  onChange={(e) =>
-                    setRetype({ text: e.target.value, error: false })
-                  }
-                />
-              </div>
             </div>
 
-            <Button text="Đăng ký" type="submit" loading={loading} />
+            <Button text="Đăng nhập" type="submit" loading={loading} />
           </form>
         </div>
 
         <div className={styles.href}>
-          <span>Đã có tài khoản?</span>
-          <a href="/login">Đăng nhập</a>
+          <span>Chưa có tài khoản?</span>
+          <a href="/register">Đăng ký</a>
         </div>
       </main>
     </div>

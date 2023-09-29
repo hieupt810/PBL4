@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@react-icons/all-files": "^4.1.0",
+    "cookies-next": "^4.0.0",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
