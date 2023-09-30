@@ -24,12 +24,11 @@ def create_home():
         _, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {token: $token})
-                CREATE (u)-[:CONTROL]->(h: Home {id: $id, admin: $admin})"""
+                CREATE (u)-[:CONTROL {role: 2}]->(h: Home {id: $id})"""
             ),
             routing_="w",
             token=request.headers.get("token"),
             id=uniqueid(),
-            admin=records[0]["username"],
         )
         return jsonify({"message": "I005", "status": 200}), 200
     except Exception as error:
@@ -72,12 +71,54 @@ def add_member():
             query(
                 """MATCH (:User {token: $token})-[:CONTROL]->(h: Home)
                 MATCH (u: User {username: $username})
-                MERGE (u)-[:CONTROL]->(h)"""
+                MERGE (u)-[:CONTROL {role: 1}]->(h)"""
             ),
             routing_="w",
             token=request.headers.get("token"),
             username=req["username"],
         )
         return jsonify({"message": "I006", "status": 200}), 200
+    except Exception as error:
+        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+
+
+@home_bp.route("", methods=["GET"])
+def get_members():
+    page = request.args.get("page", type=int, default=1)
+    size = request.args.get("size", type=int, default=5)
+    try:
+        if page < 1 or size < 1:
+            return jsonify({"message": "E002", "status": 400}), 200
+
+        if not "token" in request.headers:
+            return jsonify({"message": "E003", "status": 400}), 200
+        records, _, _ = db.execute_query(
+            query(
+                """MATCH (u:User {token: $token})
+                RETURN u.username AS username LIMIT 1"""
+            ),
+            routing_="r",
+            token=request.headers.get("token"),
+        )
+        if not len(records) == 1:
+            return jsonify({"message": "E003", "status": 400}), 200
+
+        records, _, _ = db.execute_query(
+            query(
+                """MATCH (:User {token: $token})-[:CONTROL]->(h:Home)
+                MATCH (u:User)-[c:CONTROL]->(h)
+                RETURN u.fullname AS fullname, c.role AS role
+                LIMIT $limit SKIP $SKIP"""
+            ),
+            routing_="r",
+            token=request.headers.get("token"),
+            limit=size,
+            skip=(page - 1) * size,
+        )
+        members = []
+        for record in records:
+            if record is not None:
+                pass
+        return jsonify({"message": "I006", "status": 200, "members": members}), 200
     except Exception as error:
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
