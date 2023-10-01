@@ -1,5 +1,3 @@
-import random
-import string
 import uuid
 from textwrap import dedent
 from typing import cast
@@ -35,16 +33,11 @@ def get_neo4j():
 
 
 def uniqueid() -> str:
-    return str(uuid.uuid1())
+    return str(uuid.uuid4())
 
 
 def query(q: LiteralString) -> LiteralString:
     return cast(LiteralString, dedent(q).strip())
-
-
-def generate_token() -> str:
-    characters = string.ascii_lowercase + string.ascii_uppercase + string.digits
-    return "".join(random.choice(characters) for _ in range(20))
 
 
 def valid_request(request, requires) -> bool:

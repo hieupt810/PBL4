@@ -24,7 +24,7 @@ def create_home():
         _, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {token: $token})
-                CREATE (u)-[:CONTROL {role: 2}]->(h: Home {id: $id})"""
+                CREATE (u)-[:CONTROL {role: 2}]->(h:Home {id: $id})"""
             ),
             routing_="w",
             token=request.headers.get("token"),
@@ -69,7 +69,7 @@ def add_member():
 
         _, _, _ = db.execute_query(
             query(
-                """MATCH (:User {token: $token})-[:CONTROL]->(h: Home)
+                """MATCH (:User {token: $token})-[:CONTROL]->(h:Home)
                 MATCH (u: User {username: $username})
                 MERGE (u)-[:CONTROL {role: 1}]->(h)"""
             ),
@@ -107,7 +107,7 @@ def get_members():
             query(
                 """MATCH (:User {token: $token})-[:CONTROL]->(h:Home)
                 MATCH (u:User)-[c:CONTROL]->(h)
-                RETURN u.fullname AS fullname, c.role AS role
+                RETURN u.first_name AS first_name, u.last_name AS last_name, c.role AS role
                 LIMIT $limit SKIP $SKIP"""
             ),
             routing_="r",
@@ -118,7 +118,13 @@ def get_members():
         members = []
         for record in records:
             if record is not None:
-                pass
+                members.append(
+                    {
+                        "first_name": record["first_name"],
+                        "last_name": record["last_name"],
+                        "role": record["role"],
+                    }
+                )
         return jsonify({"message": "I006", "status": 200, "members": members}), 200
     except Exception as error:
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200

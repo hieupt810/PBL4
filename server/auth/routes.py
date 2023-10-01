@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from utils import generate_token, get_neo4j, query, uniqueid, valid_request
+from utils import get_neo4j, query, uniqueid, valid_request
 from werkzeug.security import check_password_hash, generate_password_hash
 
 auth_bp = Blueprint("auth", __name__)
@@ -8,7 +8,7 @@ db = get_neo4j()
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
-    requires = ["fullname", "username", "password"]
+    requires = ["first_name", "last_name", "username", "password"]
     req = request.get_json()
     try:
         if not valid_request(req, requires):
@@ -24,13 +24,22 @@ def register():
 
         _, _, _ = db.execute_query(
             query(
-                """CREATE (u:User {username: $username, password: $password, token: $token, fullname: $fullname, role: 0})"""
+                """CREATE (u:User)
+                SET u.username = $username,
+                    u.password = $password,
+                    u.first_name = $first_name,
+                    u.last_name = $last_name,
+                    u.id = $id,
+                    u.role = 0,
+                    u.token = $token"""
             ),
             routing_="w",
             username=req["username"],
             password=generate_password_hash(req["password"]),
-            token=generate_token(),
-            fullname=req["fullname"],
+            first_name=req["first_name"],
+            last_name=req["last_name"],
+            id=uniqueid(),
+            token=uniqueid(),
         )
         return jsonify({"message": "I001", "status": 200}), 200
     except Exception as error:
@@ -58,7 +67,7 @@ def login():
         if not check_password_hash(records[0]["password"], str(req["password"])):
             return jsonify({"message": "E006", "status": 400}), 200
 
-        token = generate_token()
+        token = uniqueid()
         _, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {username: $username})

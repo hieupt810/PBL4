@@ -3,7 +3,8 @@ from __future__ import print_function
 from auth.routes import auth_bp
 from config import Config
 from home.routes import home_bp
-from utils import generate_token, get_app, get_neo4j, query, uniqueid
+from utils import get_app, get_neo4j, query, uniqueid
+from werkzeug.security import generate_password_hash
 
 app = get_app()
 
@@ -14,18 +15,17 @@ if __name__ == "__main__":
     if Config.valid_env():
         _, _, _ = get_neo4j().execute_query(
             query(
-                """MERGE (u:User {name: $name})
+                """MERGE (u:User {first_name: "Root", last_name: "Smart Home"})
                 SET u.username = $username,
                     u.password = $password,
-                    u.token = $token,
                     u.id = $id,
-                    u.role = 2"""
+                    u.role = 2,
+                    u.token = $token"""
             ),
             routing_="w",
-            name="Root",
             username=Config.ROOT_USERNAME,
-            password=Config.ROOT_PASSWORD,
-            token=generate_token(),
+            password=generate_password_hash(Config.ROOT_PASSWORD),
+            token=uniqueid(),
             id=uniqueid(),
         )
 
