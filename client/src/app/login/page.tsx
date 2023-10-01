@@ -1,12 +1,12 @@
 "use client";
-import Button from "@/components/Button";
-import Popup from "@/components/Popup";
+import Button from "@/component/Button";
+import Popup from "@/component/Popup";
 import TranslateCode from "@/language/translate";
 import { setCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { TbSmartHome } from "react-icons/tb";
-import styles from "./login.module.css";
+import "./login.css";
 
 interface FieldProps {
   text: string;
@@ -32,7 +32,7 @@ export default function Login() {
     error: false,
   });
 
-  const handleRegister = (e: FormEvent<HTMLFormElement>) => {
+  const handleLogin = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
@@ -69,7 +69,7 @@ export default function Login() {
         if (d.status == 200) {
           setPopup({ text: TranslateCode("VI", d.message), type: "success" });
           setCookie("token", d.token, { maxAge: 60 * 60 * 24 * 7 });
-          router.push("/");
+          router.push("/home");
         } else
           setPopup({ text: TranslateCode("VI", d.message), type: "failed" });
       });
@@ -85,53 +85,53 @@ export default function Login() {
         }}
       />
 
-      <main className={styles.main}>
-        <div className={styles.title_container}>
+      <main>
+        <div className="title">
           <div>
             <TbSmartHome color={"#1f75fe"} size={100} />
           </div>
-          <h5 className={styles.title}>Đăng nhập</h5>
+          <h5>Đăng nhập</h5>
         </div>
 
-        <div className={styles.form_container}>
-          <form onSubmit={handleRegister} className={styles.form}>
-            <div className={styles.field_container}>
-              <div className={styles.input_field}>
-                <label>
-                  <p>Tên đăng nhập</p>
-                  <span>*</span>
-                </label>
-                <input
-                  type="text"
-                  value={username.text}
-                  className={username.error ? styles.field_error : ""}
-                  onChange={(e) =>
-                    setUsername({ text: e.target.value, error: false })
-                  }
-                />
-              </div>
-
-              <div className={styles.input_field}>
-                <label>
-                  <p>Mật khẩu</p>
-                  <span>*</span>
-                </label>
-                <input
-                  type="password"
-                  value={password.text}
-                  className={password.error ? styles.field_error : ""}
-                  onChange={(e) =>
-                    setPassword({ text: e.target.value, error: false })
-                  }
-                />
-              </div>
+        <form onSubmit={handleLogin}>
+          <div className="field__container">
+            <div className="form__field">
+              <label className="field__label">
+                <p>Tên đăng nhập</p>
+                <span>*</span>
+              </label>
+              <input
+                type="text"
+                value={username.text}
+                className={username.error ? "field_error" : ""}
+                onChange={(e) =>
+                  setUsername({ text: e.target.value, error: false })
+                }
+              />
             </div>
 
-            <Button text="Đăng nhập" type="submit" loading={loading} />
-          </form>
-        </div>
+            <div className="form__field">
+              <label className="field__label">
+                <p>Mật khẩu</p>
+                <span>*</span>
+              </label>
+              <input
+                type="password"
+                value={password.text}
+                className={password.error ? "field_error" : ""}
+                onChange={(e) =>
+                  setPassword({ text: e.target.value, error: false })
+                }
+              />
+            </div>
+          </div>
 
-        <div className={styles.href}>
+          <div className="form__button">
+            <Button text="Đăng nhập" type="submit" loading={loading} />
+          </div>
+        </form>
+
+        <div className="href">
           <span>Chưa có tài khoản?</span>
           <a href="/register">Đăng ký</a>
         </div>

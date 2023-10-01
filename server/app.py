@@ -20,6 +20,7 @@ if __name__ == "__main__":
                     u.password = $password,
                     u.id = $id,
                     u.role = 2,
+                    u.gender = 0,
                     u.token = $token"""
             ),
             routing_="w",

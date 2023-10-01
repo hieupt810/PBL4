@@ -84,21 +84,23 @@ def add_member():
 
 @home_bp.route("", methods=["GET"])
 def get_members():
+    token = request.args.get("token", type=str)
     page = request.args.get("page", type=int, default=1)
     size = request.args.get("size", type=int, default=5)
     try:
         if page < 1 or size < 1:
             return jsonify({"message": "E002", "status": 400}), 200
 
-        if not "token" in request.headers:
+        if not token:
             return jsonify({"message": "E003", "status": 400}), 200
+
         records, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {token: $token})
                 RETURN u.username AS username LIMIT 1"""
             ),
             routing_="r",
-            token=request.headers.get("token"),
+            token=token,
         )
         if not len(records) == 1:
             return jsonify({"message": "E003", "status": 400}), 200
@@ -107,11 +109,11 @@ def get_members():
             query(
                 """MATCH (:User {token: $token})-[:CONTROL]->(h:Home)
                 MATCH (u:User)-[c:CONTROL]->(h)
-                RETURN u.first_name AS first_name, u.last_name AS last_name, c.role AS role
-                LIMIT $limit SKIP $SKIP"""
+                RETURN u.first_name AS first_name, u.last_name AS last_name, u.gender AS gender, c.role AS role
+                SKIP $skip LIMIT $limit """
             ),
             routing_="r",
-            token=request.headers.get("token"),
+            token=token,
             limit=size,
             skip=(page - 1) * size,
         )
@@ -122,6 +124,7 @@ def get_members():
                     {
                         "first_name": record["first_name"],
                         "last_name": record["last_name"],
+                        "gender": record["gender"],
                         "role": record["role"],
                     }
                 )

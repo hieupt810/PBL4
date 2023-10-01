@@ -1,11 +1,11 @@
 "use client";
-import Button from "@/components/Button";
-import Popup from "@/components/Popup";
+import Button from "@/component/Button";
+import Popup from "@/component/Popup";
 import TranslateCode from "@/language/translate";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { TbSmartHome } from "react-icons/tb";
-import styles from "./register.module.css";
+import "./register.css";
 
 interface FieldProps {
   text: string;
@@ -22,10 +22,15 @@ export default function Register() {
 
   const [loading, setLoading] = useState<boolean>(false);
   const [popup, setPopup] = useState<PopupProps>({ text: "" });
-  const [fullname, setFullname] = useState<FieldProps>({
+  const [firstname, setFirstname] = useState<FieldProps>({
     text: "",
     error: false,
   });
+  const [lastname, setLastname] = useState<FieldProps>({
+    text: "",
+    error: false,
+  });
+  const [gender, setGender] = useState<number>(0);
   const [username, setUsername] = useState<FieldProps>({
     text: "",
     error: false,
@@ -39,12 +44,25 @@ export default function Register() {
     error: false,
   });
 
+  const handleRadio = (e: any) => {
+    const target = e.target;
+    if (target.checked) {
+      setGender(target.value);
+    }
+  };
+
   const handleRegister = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
-    if (fullname.text.trim() === "") {
-      setFullname({ text: fullname.text.trim(), error: true });
+    if (firstname.text.trim() === "") {
+      setFirstname({ text: firstname.text.trim(), error: true });
+      setLoading(false);
+      return;
+    }
+
+    if (lastname.text.trim() === "") {
+      setLastname({ text: lastname.text.trim(), error: true });
       setLoading(false);
       return;
     }
@@ -73,7 +91,9 @@ export default function Register() {
       method: "POST",
       headers: headers,
       body: JSON.stringify({
-        fullname: fullname.text,
+        first_name: firstname.text,
+        last_name: lastname.text,
+        gender: gender,
         username: username.text,
         password: password.text,
       }),
@@ -103,83 +123,126 @@ export default function Register() {
         }}
       />
 
-      <main className={styles.main}>
-        <div className={styles.title_container}>
+      <main>
+        <div className="title">
           <div>
             <TbSmartHome color={"#1f75fe"} size={100} />
           </div>
-          <h5 className={styles.title}>Đăng ký tài khoản</h5>
+          <h5>Đăng ký tài khoản</h5>
         </div>
 
-        <div className={styles.form_container}>
-          <form onSubmit={handleRegister} className={styles.form}>
-            <div className={styles.field_container}>
-              <div className={styles.input_field}>
-                <label>
-                  <p>Họ và tên</p>
-                  <span>*</span>
-                </label>
+        <form onSubmit={handleRegister}>
+          <div className="field__container">
+            <div className="form__field">
+              <label className="field__label">
+                <p>Tên người dùng</p>
+                <span>*</span>
+              </label>
+
+              <div className="field_two">
                 <input
                   type="text"
-                  value={fullname.text}
-                  className={fullname.error ? styles.field_error : ""}
+                  value={firstname.text}
+                  className={firstname.error ? "field_error" : ""}
                   onChange={(e) =>
-                    setFullname({ text: e.target.value, error: false })
+                    setFirstname({ text: e.target.value, error: false })
                   }
+                  placeholder="Tên"
                 />
-              </div>
 
-              <div className={styles.input_field}>
-                <label>
-                  <p>Tên đăng nhập</p>
-                  <span>*</span>
-                </label>
                 <input
                   type="text"
-                  value={username.text}
-                  className={username.error ? styles.field_error : ""}
+                  value={lastname.text}
+                  className={lastname.error ? "field_error" : ""}
                   onChange={(e) =>
-                    setUsername({ text: e.target.value, error: false })
+                    setLastname({ text: e.target.value, error: false })
                   }
-                />
-              </div>
-
-              <div className={styles.input_field}>
-                <label>
-                  <p>Mật khẩu</p>
-                  <span>*</span>
-                </label>
-                <input
-                  type="password"
-                  value={password.text}
-                  className={password.error ? styles.field_error : ""}
-                  onChange={(e) =>
-                    setPassword({ text: e.target.value, error: false })
-                  }
-                />
-              </div>
-
-              <div className={styles.input_field}>
-                <label>
-                  <p>Nhập lại mật khẩu</p>
-                  <span>*</span>
-                </label>
-                <input
-                  type="password"
-                  value={retype.text}
-                  className={retype.error ? styles.field_error : ""}
-                  onChange={(e) =>
-                    setRetype({ text: e.target.value, error: false })
-                  }
+                  placeholder="Họ"
                 />
               </div>
             </div>
 
-            <Button text="Đăng ký" type="submit" loading={loading} />
-          </form>
-        </div>
+            <div className="field_radio">
+              <label className="field__label">
+                <p>Giới tính</p>
+                <span>*</span>
+              </label>
 
-        <div className={styles.href}>
+              <div className="radio_container">
+                <label>
+                  <input
+                    type="radio"
+                    value={0}
+                    checked={gender == 0}
+                    onChange={handleRadio}
+                  />
+                  <span>Nam</span>
+                </label>
+
+                <label>
+                  <input
+                    type="radio"
+                    value={1}
+                    checked={gender == 1}
+                    onChange={handleRadio}
+                  />
+                  <span>Nữ</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="form__field">
+              <label className="field__label">
+                <p>Tên đăng nhập</p>
+                <span>*</span>
+              </label>
+              <input
+                type="text"
+                value={username.text}
+                className={username.error ? "field_error" : ""}
+                onChange={(e) =>
+                  setUsername({ text: e.target.value, error: false })
+                }
+              />
+            </div>
+
+            <div className="form__field">
+              <label className="field__label">
+                <p>Mật khẩu</p>
+                <span>*</span>
+              </label>
+              <input
+                type="password"
+                value={password.text}
+                className={password.error ? "field_error" : ""}
+                onChange={(e) =>
+                  setPassword({ text: e.target.value, error: false })
+                }
+              />
+            </div>
+
+            <div className="form__field">
+              <label className="field__label">
+                <p>Nhập lại mật khẩu</p>
+                <span>*</span>
+              </label>
+              <input
+                type="password"
+                value={retype.text}
+                className={retype.error ? "field_error" : ""}
+                onChange={(e) =>
+                  setRetype({ text: e.target.value, error: false })
+                }
+              />
+            </div>
+          </div>
+
+          <div className="form__button">
+            <Button text="Đăng ký" type="submit" loading={loading} />
+          </div>
+        </form>
+
+        <div className="href">
           <span>Đã có tài khoản?</span>
           <a href="/login">Đăng nhập</a>
         </div>
