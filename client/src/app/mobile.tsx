@@ -23,7 +23,7 @@ export default function MobileLayout({
         close={() => dispatch(resetPopUp())}
       />
 
-      <div className="w-screen overflow-x-hidden min-h-screen overflow-y-auto bg-[#f5f5f5] space-y-6 px-4 py-6">
+      <div className="w-screen overflow-x-hidden min-h-screen overflow-y-auto bg-gray-50 space-y-10 px-4 py-6">
         {children}
       </div>
     </div>

@@ -26,8 +26,8 @@
   @apply flex flex-row justify-between items-center;
 }
 
-.title > div {
-  @apply p-1 rounded-md bg-[#eeedf1];
+.title > a {
+  @apply p-1 rounded-md bg-gray-200;
 }
 
 .members {

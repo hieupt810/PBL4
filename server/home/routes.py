@@ -139,7 +139,7 @@ def get_members():
             query(
                 """MATCH (:User {token: $token})-[:CONTROL]->(h:Home)
                 MATCH (u:User)-[c:CONTROL]->(h)
-                RETURN u.first_name AS first_name, u.last_name AS last_name, u.gender AS gender, c.role AS role
+                RETURN u.first_name AS first_name, u.last_name AS last_name, u.gender AS gender, c.role AS role, u.username AS username
                 ORDER BY role DESC, first_name ASC, last_name ASC
                 SKIP $skip LIMIT $limit """
             ),
@@ -157,6 +157,7 @@ def get_members():
                         "last_name": record["last_name"],
                         "gender": record["gender"],
                         "role": record["role"],
+                        "username": record["username"]
                     }
                 )
         return jsonify({"message": "I006", "status": 200, "members": members}), 200

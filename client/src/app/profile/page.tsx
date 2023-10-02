@@ -33,7 +33,7 @@ export default function Profile() {
       router.push("/login");
       return;
     }
-    fetch(process.env.BACKEND_URL + `/api/auth?token=${token}`, {
+    fetch(process.env.BACKEND_URL + `api/auth?token=${token}`, {
       method: "GET",
     })
       .then((r) => r.json())
@@ -74,7 +74,7 @@ export default function Profile() {
     headers.append("Accept", "application/json");
     headers.append("Content-Type", "application/json");
     headers.append("token", getCookie("token") as string);
-    fetch(process.env.BACKEND_URL + "/api/auth", {
+    fetch(process.env.BACKEND_URL + "api/auth", {
       method: "PUT",
       headers: headers,
       body: JSON.stringify({

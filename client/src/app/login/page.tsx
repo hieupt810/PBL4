@@ -1,8 +1,8 @@
 "use client";
-import Button from "@/components/Button";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
 import { InputProps } from "@/models/frontend/inputField";
+import { Button } from "@nextui-org/react";
 import { setCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
@@ -40,7 +40,7 @@ export default function Login() {
     const headers: Headers = new Headers();
     headers.append("Accept", "application/json");
     headers.append("Content-Type", "application/json");
-    fetch(process.env.BACKEND_URL + "/api/auth/login", {
+    fetch(process.env.BACKEND_URL + "api/auth/login", {
       method: "POST",
       headers: headers,
       body: JSON.stringify({
@@ -105,7 +105,9 @@ export default function Login() {
         </div>
 
         <div className="form__button">
-          <Button text="Đăng nhập" type="submit" loading={loading} />
+          <Button color="primary" isLoading={loading} type="submit">
+            Đăng nhập
+          </Button>
         </div>
       </form>
 

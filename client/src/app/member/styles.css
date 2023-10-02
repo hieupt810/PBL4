@@ -1,0 +1,17 @@
+.title {
+  @apply flex flex-row items-center justify-between;
+}
+
+.title > h5 {
+  @apply font-bold text-xl;
+}
+
+.title > div {
+  @apply flex flex-row items-end justify-center space-x-2;
+}
+
+.title > div > button {
+  @apply p-1 rounded-md bg-gray-200;
+}
+
+/* Table */

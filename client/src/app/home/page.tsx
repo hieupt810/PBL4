@@ -41,7 +41,7 @@ export default function HomeInformation() {
       return;
     }
     const token = getCookie("token") as string;
-    fetch(process.env.BACKEND_URL + `/api/auth?token=${token}`, {
+    fetch(process.env.BACKEND_URL + `api/auth?token=${token}`, {
       method: "GET",
     })
       .then((r) => r.json())
@@ -52,7 +52,7 @@ export default function HomeInformation() {
         } else dispatch(failPopUp(d.message));
       });
 
-    fetch(process.env.BACKEND_URL + `/api/home?token=${token}`, {
+    fetch(process.env.BACKEND_URL + `api/home?token=${token}`, {
       method: "GET",
     })
       .then((r) => r.json())
@@ -70,7 +70,7 @@ export default function HomeInformation() {
     headers.append("Accept", "application/json");
     headers.append("Content-Type", "application/json");
     headers.append("token", getCookie("token") as string);
-    fetch(process.env.BACKEND_URL + "/api/home", {
+    fetch(process.env.BACKEND_URL + "api/home", {
       method: "POST",
       headers: headers,
       body: JSON.stringify({
@@ -81,7 +81,7 @@ export default function HomeInformation() {
       .then((d) => {
         if (d.status == 200) {
           dispatch(successPopUp(TranslateCode("VI", d.message)));
-          fetch(process.env.BACKEND_URL + `/api/home?token=${token}`, {
+          fetch(process.env.BACKEND_URL + `api/home?token=${token}`, {
             method: "GET",
           })
             .then((r) => r.json())
@@ -207,9 +207,9 @@ export default function HomeInformation() {
           <div className="container">
             <div className="title">
               <h5>Thành viên</h5>
-              <div>
+              <a href="/member">
                 <BsArrowRightShort size={25} />
-              </div>
+              </a>
             </div>
             <div className="members">
               {members.map((member, index) => {
