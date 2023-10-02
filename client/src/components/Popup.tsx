@@ -35,7 +35,7 @@ export default function Popup({ type, text, close }: PopupProps) {
 
           <span
             className={`mt-4 text-center text-xl font-medium ${
-              type === "failed" ? "text-red-500" : ""
+              type === "fail" ? "text-red-500" : ""
             } ${type === "success" ? "text-green-500" : ""}`}
           >
             {text}
