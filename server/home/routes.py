@@ -23,7 +23,7 @@ def create_home():
             routing_="r",
             token=request.headers.get("token"),
         )
-        if not len(records) == 1:
+        if (not len(records) == 1) or (records[0]["role"] != 2):
             return jsonify({"message": "E003", "status": 400}), 200
 
         _, _, _ = db.execute_query(
