@@ -7,12 +7,15 @@
   "I006": "Thêm thành viên thành công",
   "I007": "Lấy danh sách thành viên thành công",
   "I008": "Lấy thông tin người dùng thành công",
+  "I009": "Xoá thành viên thành công",
+  "I010": "Đổi mật khẩu thành công",
 
   "E001": "Lỗi hệ thống",
   "E002": "Yêu cầu lỗi",
   "E003": "Không có quyền truy cập",
   "E004": "Tên đăng nhập đã tồn tại",
   "E005": "Tên đăng nhập không tồn tại",
-  "E006": "Mật khẩu không chính xác",
-  "E007": "Yêu cầu không được chấp nhận"
+  "E006": "Tài khoản hoặc mật khẩu không chính xác",
+  "E007": "Yêu cầu không được chấp nhận",
+  "E008": "Mật khẩu cũ không chính xác"
 }

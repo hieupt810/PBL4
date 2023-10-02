@@ -3,12 +3,14 @@ import Popup from "@/component/Popup";
 import TranslateCode from "@/language/translate";
 import Man from "@/static/man.jpg";
 import Woman from "@/static/woman.png";
-import { getCookie } from "cookies-next";
+import { deleteCookie, getCookie } from "cookies-next";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BsArrowRightShort } from "react-icons/bs";
 import { FaTemperatureFull } from "react-icons/fa6";
 import { FiEdit } from "react-icons/fi";
+import { GrLogout } from "react-icons/gr";
 import { WiHumidity } from "react-icons/wi";
 import "./home.css";
 
@@ -24,6 +26,8 @@ interface PopupProps {
 }
 
 export default function HomeInformation() {
+  const router = useRouter();
+
   const [members, setMembers] = useState<Member[]>([]);
   const [name, setName] = useState<string>("");
   const [username, setUsername] = useState<string>("");
@@ -31,6 +35,11 @@ export default function HomeInformation() {
 
   useEffect(() => {
     const token = getCookie("token") as string;
+
+    if (!token) {
+      router.push("/login");
+      return;
+    }
 
     fetch(process.env.BACKEND_URL + `/api/auth?token=${token}`, {
       method: "GET",
@@ -44,8 +53,7 @@ export default function HomeInformation() {
         if (d.status == 200) {
           setName(d.profile["last_name"] + " " + d.profile["first_name"]);
           setUsername(d.profile["username"]);
-        } else
-          setPopup({ text: TranslateCode("VI", d.message), type: "failed" });
+        } else router.push("/");
       });
 
     fetch(process.env.BACKEND_URL + `/api/home?token=${token}`, {
@@ -59,10 +67,9 @@ export default function HomeInformation() {
       .then((d) => {
         if (d.status == 200) {
           setMembers(d.members);
-        } else
-          setPopup({ text: TranslateCode("VI", d.message), type: "failed" });
+        } else router.push("/");
       });
-  }, []);
+  }, [router]);
 
   return (
     <div>
@@ -82,9 +89,21 @@ export default function HomeInformation() {
               <h4>@{username}</h4>
             </div>
 
-            <a href="/profile">
-              <FiEdit size={20} />
-            </a>
+            <div className="home__button">
+              <a href="/profile">
+                <FiEdit size={20} />
+              </a>
+
+              <button
+                type="button"
+                onClick={() => {
+                  deleteCookie("token");
+                  router.push("/");
+                }}
+              >
+                <GrLogout size={20} />
+              </button>
+            </div>
           </div>
         ) : (
           <div className="user_container">
@@ -96,9 +115,21 @@ export default function HomeInformation() {
               </div>
             </div>
 
-            <a href="/profile">
-              <FiEdit size={20} />
-            </a>
+            <div className="home__button">
+              <a href="/profile">
+                <FiEdit size={20} />
+              </a>
+
+              <button
+                type="button"
+                onClick={() => {
+                  deleteCookie("token");
+                  router.push("/");
+                }}
+              >
+                <GrLogout size={20} />
+              </button>
+            </div>
           </div>
         )}
 
@@ -128,7 +159,7 @@ export default function HomeInformation() {
               </div>
             </div>
 
-            <div className="item bg-[#f0966b]">
+            {/* <div className="item bg-[#f0966b]">
               <div className="item_icon">
                 <FaTemperatureFull size={30} />
                 <BsArrowRightShort size={25} />
@@ -148,19 +179,18 @@ export default function HomeInformation() {
               <div className="item_name">
                 <span>Waiting...</span>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
 
-        <div className="container">
-          <div className="title">
-            <h5>Thành viên</h5>
-            <div>
-              <BsArrowRightShort size={25} />
+        {members.length > 0 ? (
+          <div className="container">
+            <div className="title">
+              <h5>Thành viên</h5>
+              <div>
+                <BsArrowRightShort size={25} />
+              </div>
             </div>
-          </div>
-
-          {members.length > 0 ? (
             <div className="members">
               {members.map((member, index) => {
                 return (
@@ -176,8 +206,8 @@ export default function HomeInformation() {
                 );
               })}
             </div>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
       </main>
     </div>
   );

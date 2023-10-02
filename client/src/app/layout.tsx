@@ -21,7 +21,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi">
-      <body className={font.className}>{children}</body>
+      <body className={font.className}>
+        <div className="block md:hidden">{children}</div>
+        <div className="hidden md:flex w-screen h-screen items-center justify-center bg-[#f5f5f5]">
+          <span className="text-xl">Unsupported media type</span>
+        </div>
+      </body>
     </html>
   );
 }

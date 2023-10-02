@@ -1,5 +1,5 @@
 main {
-  @apply p-5 flex flex-col justify-around min-h-screen space-y-12;
+  @apply p-5 flex flex-col justify-around min-h-[90vh] space-y-12;
 }
 
 .title {

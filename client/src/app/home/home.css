@@ -1,5 +1,5 @@
 .main {
-  @apply p-5 min-h-screen bg-[#f5f5f5] space-y-6 flex flex-col;
+  @apply p-5 min-h-screen bg-[#f5f5f5] space-y-6 flex flex-col items-start justify-start;
 }
 
 .container {
@@ -55,19 +55,23 @@
 }
 
 .user_container {
-  @apply flex flex-row items-center justify-between;
+  @apply flex flex-row items-center justify-between w-full;
 }
 
 .user__name > h5 {
-  @apply text-xl font-semibold;
+  @apply text-xl font-semibold truncate;
 }
 
 .user__name > h4 {
-  @apply text-sm text-gray-500;
+  @apply text-sm text-gray-500 truncate;
 }
 
-.user_container > a {
-  @apply p-1 rounded-md bg-[#eeedf1];
+.home__button {
+  @apply flex flex-row space-x-4;
+}
+
+.home__button > * {
+  @apply p-2 rounded-md bg-[#eeedf1] outline-none transform transition-transform active:scale-90;
 }
 
 .user__name {
