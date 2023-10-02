@@ -92,6 +92,30 @@ export default function Profile() {
     const headers: Headers = new Headers();
     headers.append("Accept", "application/json");
     headers.append("Content-Type", "application/json");
+    headers.append("token", getCookie("token") as string);
+    fetch(process.env.BACKEND_URL + "/api/auth", {
+      method: "PUT",
+      headers: headers,
+      body: JSON.stringify({
+        username: username.text,
+        first_name: firstname.text,
+        last_name: lastname.text,
+        gender: gender,
+      }),
+    })
+      .then((r) => {
+        if (!r.ok)
+          setPopup({ text: TranslateCode("VI", "E001"), type: "failed" });
+        return r.json();
+      })
+      .then((d) => {
+        setLoading(false);
+        if (d.status == 200) {
+          setPopup({ text: TranslateCode("VI", d.message), type: "success" });
+          router.push("/home");
+        } else
+          setPopup({ text: TranslateCode("VI", d.message), type: "failed" });
+      });
   };
 
   return (

@@ -123,7 +123,7 @@ export default function Register() {
         }}
       />
 
-      <main>
+      <main className="!justify-between !items-center">
         <div className="title">
           <div>
             <TbSmartHome color={"#1f75fe"} size={100} />

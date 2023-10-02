@@ -11,6 +11,7 @@ import { BsArrowRightShort } from "react-icons/bs";
 import { FaTemperatureFull } from "react-icons/fa6";
 import { FiEdit } from "react-icons/fi";
 import { GrLogout } from "react-icons/gr";
+import { TbHomePlus } from "react-icons/tb";
 import { WiHumidity } from "react-icons/wi";
 import "./home.css";
 
@@ -81,28 +82,12 @@ export default function HomeInformation() {
         }}
       />
 
-      <main className="main">
+      <main>
         {username && name ? (
           <div className="user_container">
             <div className="user__name">
-              <h5>{name}</h5>
+              <h5>Xin chào, {name}!</h5>
               <h4>@{username}</h4>
-            </div>
-
-            <div className="home__button">
-              <a href="/profile">
-                <FiEdit size={20} />
-              </a>
-
-              <button
-                type="button"
-                onClick={() => {
-                  deleteCookie("token");
-                  router.push("/");
-                }}
-              >
-                <GrLogout size={20} />
-              </button>
             </div>
           </div>
         ) : (
@@ -114,24 +99,28 @@ export default function HomeInformation() {
                 <div className="bg-gray-200 w-full h-6 animate-pulse rounded-md"></div>
               </div>
             </div>
-
-            <div className="home__button">
-              <a href="/profile">
-                <FiEdit size={20} />
-              </a>
-
-              <button
-                type="button"
-                onClick={() => {
-                  deleteCookie("token");
-                  router.push("/");
-                }}
-              >
-                <GrLogout size={20} />
-              </button>
-            </div>
           </div>
         )}
+
+        <div className="home__button">
+          <a href="/create/home">
+            <TbHomePlus size={20} />
+          </a>
+
+          <a href="/profile">
+            <FiEdit size={20} />
+          </a>
+
+          <button
+            type="button"
+            onClick={() => {
+              deleteCookie("token");
+              router.push("/");
+            }}
+          >
+            <GrLogout size={20} />
+          </button>
+        </div>
 
         <div className="container">
           <h5>Thiết bị của tôi</h5>

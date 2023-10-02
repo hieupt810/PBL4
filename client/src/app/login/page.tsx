@@ -85,7 +85,7 @@ export default function Login() {
         }}
       />
 
-      <main>
+      <main className="!justify-between !items-center">
         <div className="title">
           <div>
             <TbSmartHome color={"#1f75fe"} size={100} />
@@ -93,7 +93,7 @@ export default function Login() {
           <h5>Đăng nhập</h5>
         </div>
 
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleLogin} className="w-full">
           <div className="field__container">
             <div className="form__field">
               <label className="field__label">
