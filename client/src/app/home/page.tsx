@@ -1,4 +1,5 @@
 "use client";
+import ConfirmPopup from "@/component/ConfirmPopup";
 import Popup from "@/component/Popup";
 import TranslateCode from "@/language/translate";
 import Man from "@/static/man.jpg";
@@ -26,6 +27,11 @@ interface PopupProps {
   text: string;
 }
 
+interface ConfirmPopupProps {
+  text: string;
+  onConfirm: () => void;
+}
+
 export default function HomeInformation() {
   const router = useRouter();
 
@@ -33,6 +39,10 @@ export default function HomeInformation() {
   const [name, setName] = useState<string>("");
   const [username, setUsername] = useState<string>("");
   const [popup, setPopup] = useState<PopupProps>({ text: "" });
+  const [confirmPopup, setConfirmPopup] = useState<ConfirmPopupProps>({
+    text: "",
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     const token = getCookie("token") as string;
@@ -72,6 +82,53 @@ export default function HomeInformation() {
       });
   }, [router]);
 
+  const createHome = () => {
+    setConfirmPopup({ text: "", onConfirm: () => {} });
+
+    const headers: Headers = new Headers();
+    headers.append("Accept", "application/json");
+    headers.append("Content-Type", "application/json");
+    headers.append("token", getCookie("token") as string);
+    fetch(process.env.BACKEND_URL + "/api/home", {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify({
+        username: username,
+      }),
+    })
+      .then((r) => {
+        if (!r.ok)
+          setPopup({ text: TranslateCode("VI", "E001"), type: "failed" });
+        return r.json();
+      })
+      .then((d) => {
+        if (d.status == 200) {
+          setPopup({ text: TranslateCode("VI", d.message), type: "success" });
+          fetch(
+            process.env.BACKEND_URL +
+              `/api/home?token=${getCookie("token") as string}`,
+            {
+              method: "GET",
+            }
+          )
+            .then((r) => {
+              if (!r.ok)
+                setPopup({
+                  text: TranslateCode("VI", "E001"),
+                  type: "failed",
+                });
+              return r.json();
+            })
+            .then((d) => {
+              if (d.status == 200) {
+                setMembers(d.members);
+              }
+            });
+        } else
+          setPopup({ text: TranslateCode("VI", d.message), type: "failed" });
+      });
+  };
+
   return (
     <div>
       <Popup
@@ -79,6 +136,14 @@ export default function HomeInformation() {
         text={popup.text}
         close={() => {
           setPopup({ text: "", type: undefined });
+        }}
+      />
+
+      <ConfirmPopup
+        text={confirmPopup.text}
+        onConfirm={confirmPopup.onConfirm}
+        onCancel={() => {
+          setConfirmPopup({ text: "", onConfirm: () => {} });
         }}
       />
 
@@ -103,9 +168,20 @@ export default function HomeInformation() {
         )}
 
         <div className="home__button">
-          <a href="/create/home">
+          <button
+            onClick={() => {
+              setConfirmPopup({
+                text: "Xác nhận thêm nhà mới?",
+                onConfirm: createHome,
+              });
+            }}
+            className={
+              members.length > 0 ? "!bg-gray-300 active:!scale-100" : ""
+            }
+            disabled={members.length > 0 ? true : false}
+          >
             <TbHomePlus size={20} />
-          </a>
+          </button>
 
           <a href="/profile">
             <FiEdit size={20} />
