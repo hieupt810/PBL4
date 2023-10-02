@@ -3,6 +3,7 @@ import ConfirmPopup from "@/components/ConfirmPopup";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
 import TranslateCode from "@/language/translate";
+import { Member } from "@/models/member";
 import Man from "@/static/man.jpg";
 import Woman from "@/static/woman.png";
 import { deleteCookie, getCookie, hasCookie } from "cookies-next";
@@ -17,12 +18,6 @@ import { TbHomePlus } from "react-icons/tb";
 import { WiHumidity } from "react-icons/wi";
 import MobileLayout from "../mobile";
 import "./styles.css";
-
-interface Member {
-  first_name: string;
-  gender: number;
-  role: number;
-}
 
 interface ConfirmPopupProps {
   text: string;
