@@ -3,7 +3,7 @@ import { LuAlertCircle } from "react-icons/lu";
 import { RxCross2 } from "react-icons/rx";
 
 interface PopupProps {
-  type?: "success" | "failed";
+  type?: "success" | "fail";
   text: string;
   close: () => void;
 }
@@ -17,7 +17,7 @@ export default function Popup({ type, text, close }: PopupProps) {
 
       <div className="absolute z-40 w-screen h-screen flex flex-col items-center justify-center px-6">
         <div className="bg-white px-10 py-8 rounded-md flex flex-col items-center justify-center shadow-lg relative">
-          {type === "failed" ? (
+          {type === "fail" ? (
             <div className="rounded-full bg-red-500 z-50">
               <LuAlertCircle color={"white"} size={50} />
             </div>

@@ -131,7 +131,8 @@ def get_profile():
                 RETURN  u.username AS username,
                         u.first_name AS first_name,
                         u.last_name AS last_name,
-                        u.gender AS gender LIMIT 1"""
+                        u.gender AS gender,
+                        u.role AS role LIMIT 1"""
             ),
             routing_="r",
             token=token,
@@ -149,6 +150,7 @@ def get_profile():
                         "first_name": records[0]["first_name"],
                         "last_name": records[0]["last_name"],
                         "gender": records[0]["gender"],
+                        "role": records[0]["role"],
                     },
                 }
             ),

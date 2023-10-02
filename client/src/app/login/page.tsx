@@ -1,33 +1,24 @@
 "use client";
-import Button from "@/component/Button";
-import Popup from "@/component/Popup";
-import TranslateCode from "@/language/translate";
+import Button from "@/components/Button";
+import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
+import { useAppDispatch } from "@/hook/hook";
+import { InputProps } from "@/models/frontend/inputField";
 import { setCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { TbSmartHome } from "react-icons/tb";
-import "./login.css";
-
-interface FieldProps {
-  text: string;
-  error: boolean;
-}
-
-interface PopupProps {
-  type?: "success" | "failed";
-  text: string;
-}
+import MobileLayout from "../mobile";
+import "./styles.css";
 
 export default function Login() {
   const router = useRouter();
-
+  const dispatch = useAppDispatch();
   const [loading, setLoading] = useState<boolean>(false);
-  const [popup, setPopup] = useState<PopupProps>({ text: "" });
-  const [username, setUsername] = useState<FieldProps>({
+  const [username, setUsername] = useState<InputProps>({
     text: "",
     error: false,
   });
-  const [password, setPassword] = useState<FieldProps>({
+  const [password, setPassword] = useState<InputProps>({
     text: "",
     error: false,
   });
@@ -35,13 +26,11 @@ export default function Login() {
   const handleLogin = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-
     if (username.text.trim() === "") {
       setUsername({ text: username.text.trim(), error: true });
       setLoading(false);
       return;
     }
-
     if (password.text === "") {
       setPassword({ text: password.text, error: true });
       setLoading(false);
@@ -59,83 +48,71 @@ export default function Login() {
         password: password.text,
       }),
     })
-      .then((r) => {
-        setLoading(false);
-        if (!r.ok)
-          setPopup({ text: TranslateCode("VI", "E001"), type: "failed" });
-        return r.json();
-      })
+      .then((r) => r.json())
       .then((d) => {
+        setLoading(false);
         if (d.status == 200) {
-          setPopup({ text: TranslateCode("VI", d.message), type: "success" });
+          dispatch(successPopUp(d.message));
           setCookie("token", d.token, { maxAge: 60 * 60 * 24 * 7 });
           router.push("/home");
-        } else
-          setPopup({ text: TranslateCode("VI", d.message), type: "failed" });
+        } else dispatch(failPopUp(d.message));
       });
   };
 
   return (
-    <div>
-      <Popup
-        type={popup.type}
-        text={popup.text}
-        close={() => {
-          setPopup({ text: "", type: undefined });
-        }}
-      />
-
-      <main className="!justify-between !items-center">
-        <div className="title">
-          <div>
-            <TbSmartHome color={"#1f75fe"} size={100} />
-          </div>
-          <h5>Đăng nhập</h5>
+    <MobileLayout>
+      <div className="logo">
+        <div>
+          <TbSmartHome color={"#1f75fe"} size={100} />
         </div>
 
-        <form onSubmit={handleLogin} className="w-full">
-          <div className="field__container">
-            <div className="form__field">
-              <label className="field__label">
-                <p>Tên đăng nhập</p>
-                <span>*</span>
-              </label>
-              <input
-                type="text"
-                value={username.text}
-                className={username.error ? "field_error" : ""}
-                onChange={(e) =>
-                  setUsername({ text: e.target.value, error: false })
-                }
-              />
-            </div>
+        <h5>Đăng nhập</h5>
+      </div>
 
-            <div className="form__field">
-              <label className="field__label">
-                <p>Mật khẩu</p>
-                <span>*</span>
-              </label>
-              <input
-                type="password"
-                value={password.text}
-                className={password.error ? "field_error" : ""}
-                onChange={(e) =>
-                  setPassword({ text: e.target.value, error: false })
-                }
-              />
-            </div>
+      <form onSubmit={handleLogin}>
+        <div className="form__field">
+          <div className="form__input">
+            <label>
+              <p>Tên đăng nhập</p>
+              <span>*</span>
+            </label>
+
+            <input
+              type="text"
+              value={username.text}
+              className={username.error ? "input__error" : ""}
+              onChange={(e) =>
+                setUsername({ text: e.target.value, error: false })
+              }
+            />
           </div>
 
-          <div className="form__button">
-            <Button text="Đăng nhập" type="submit" loading={loading} />
-          </div>
-        </form>
+          <div className="form__input">
+            <label>
+              <p>Mật khẩu</p>
+              <span>*</span>
+            </label>
 
-        <div className="href">
-          <span>Chưa có tài khoản?</span>
-          <a href="/register">Đăng ký</a>
+            <input
+              type="password"
+              value={password.text}
+              className={password.error ? "input__error" : ""}
+              onChange={(e) =>
+                setPassword({ text: e.target.value, error: false })
+              }
+            />
+          </div>
         </div>
-      </main>
-    </div>
+
+        <div className="form__button">
+          <Button text="Đăng nhập" type="submit" loading={loading} />
+        </div>
+      </form>
+
+      <div className="href">
+        <span>Chưa có tài khoản?</span>
+        <a href="/register">Đăng ký</a>
+      </div>
+    </MobileLayout>
   );
 }

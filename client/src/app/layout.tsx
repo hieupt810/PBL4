@@ -1,3 +1,4 @@
+import { Providers } from "@/hook/provider";
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import "./globals.css";
@@ -22,7 +23,10 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body className={font.className}>
-        <div className="block md:hidden">{children}</div>
+        <Providers>
+          <div className="block md:hidden">{children}</div>
+        </Providers>
+
         <div className="hidden md:flex w-screen h-screen items-center justify-center bg-[#f5f5f5]">
           <span className="text-xl">Unsupported media type</span>
         </div>

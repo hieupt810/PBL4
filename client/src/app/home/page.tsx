@@ -1,10 +1,11 @@
 "use client";
-import ConfirmPopup from "@/component/ConfirmPopup";
-import Popup from "@/component/Popup";
+import ConfirmPopup from "@/components/ConfirmPopup";
+import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
+import { useAppDispatch } from "@/hook/hook";
 import TranslateCode from "@/language/translate";
 import Man from "@/static/man.jpg";
 import Woman from "@/static/woman.png";
-import { deleteCookie, getCookie } from "cookies-next";
+import { deleteCookie, getCookie, hasCookie } from "cookies-next";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -14,17 +15,13 @@ import { FiEdit } from "react-icons/fi";
 import { GrLogout } from "react-icons/gr";
 import { TbHomePlus } from "react-icons/tb";
 import { WiHumidity } from "react-icons/wi";
-import "./home.css";
+import MobileLayout from "../mobile";
+import "./styles.css";
 
 interface Member {
   first_name: string;
   gender: number;
   role: number;
-}
-
-interface PopupProps {
-  type?: "success" | "failed";
-  text: string;
 }
 
 interface ConfirmPopupProps {
@@ -34,57 +31,46 @@ interface ConfirmPopupProps {
 
 export default function HomeInformation() {
   const router = useRouter();
-
+  const dispatch = useAppDispatch();
   const [members, setMembers] = useState<Member[]>([]);
   const [name, setName] = useState<string>("");
   const [username, setUsername] = useState<string>("");
-  const [popup, setPopup] = useState<PopupProps>({ text: "" });
   const [confirmPopup, setConfirmPopup] = useState<ConfirmPopupProps>({
     text: "",
     onConfirm: () => {},
   });
 
   useEffect(() => {
-    const token = getCookie("token") as string;
-
-    if (!token) {
+    if (!hasCookie("token")) {
       router.push("/login");
       return;
     }
-
+    const token = getCookie("token") as string;
     fetch(process.env.BACKEND_URL + `/api/auth?token=${token}`, {
       method: "GET",
     })
-      .then((r) => {
-        if (!r.ok)
-          setPopup({ text: TranslateCode("VI", "E001"), type: "failed" });
-        return r.json();
-      })
+      .then((r) => r.json())
       .then((d) => {
         if (d.status == 200) {
           setName(d.profile["last_name"] + " " + d.profile["first_name"]);
           setUsername(d.profile["username"]);
-        } else router.push("/");
+        } else dispatch(failPopUp(d.message));
       });
 
     fetch(process.env.BACKEND_URL + `/api/home?token=${token}`, {
       method: "GET",
     })
-      .then((r) => {
-        if (!r.ok)
-          setPopup({ text: TranslateCode("VI", "E001"), type: "failed" });
-        return r.json();
-      })
+      .then((r) => r.json())
       .then((d) => {
         if (d.status == 200) {
           setMembers(d.members);
-        }
+        } else dispatch(failPopUp(d.message));
       });
-  }, [router]);
+  }, [dispatch, router]);
 
   const createHome = () => {
+    const token = getCookie("token") as string;
     setConfirmPopup({ text: "", onConfirm: () => {} });
-
     const headers: Headers = new Headers();
     headers.append("Accept", "application/json");
     headers.append("Content-Type", "application/json");
@@ -96,49 +82,23 @@ export default function HomeInformation() {
         username: username,
       }),
     })
-      .then((r) => {
-        if (!r.ok)
-          setPopup({ text: TranslateCode("VI", "E001"), type: "failed" });
-        return r.json();
-      })
+      .then((r) => r.json())
       .then((d) => {
         if (d.status == 200) {
-          setPopup({ text: TranslateCode("VI", d.message), type: "success" });
-          fetch(
-            process.env.BACKEND_URL +
-              `/api/home?token=${getCookie("token") as string}`,
-            {
-              method: "GET",
-            }
-          )
-            .then((r) => {
-              if (!r.ok)
-                setPopup({
-                  text: TranslateCode("VI", "E001"),
-                  type: "failed",
-                });
-              return r.json();
-            })
+          dispatch(successPopUp(TranslateCode("VI", d.message)));
+          fetch(process.env.BACKEND_URL + `/api/home?token=${token}`, {
+            method: "GET",
+          })
+            .then((r) => r.json())
             .then((d) => {
-              if (d.status == 200) {
-                setMembers(d.members);
-              }
+              if (d.status == 200) setMembers(d.members);
             });
-        } else
-          setPopup({ text: TranslateCode("VI", d.message), type: "failed" });
+        } else dispatch(failPopUp(d.message));
       });
   };
 
   return (
     <div>
-      <Popup
-        type={popup.type}
-        text={popup.text}
-        close={() => {
-          setPopup({ text: "", type: undefined });
-        }}
-      />
-
       <ConfirmPopup
         text={confirmPopup.text}
         onConfirm={confirmPopup.onConfirm}
@@ -147,7 +107,7 @@ export default function HomeInformation() {
         }}
       />
 
-      <main>
+      <MobileLayout>
         {username && name ? (
           <div className="user_container">
             <div className="user__name">
@@ -158,7 +118,7 @@ export default function HomeInformation() {
         ) : (
           <div className="user_container">
             <div className="user__name animate-pulse space-y-1">
-              <div className="bg-gray-300 w-36 h-6 animate-pulse rounded-md"></div>
+              <div className="bg-gray-300 w-56 h-6 animate-pulse rounded-md"></div>
               <div className="flex flex-row space-x-1">
                 <span>@</span>
                 <div className="bg-gray-200 w-full h-6 animate-pulse rounded-md"></div>
@@ -273,7 +233,7 @@ export default function HomeInformation() {
             </div>
           </div>
         ) : null}
-      </main>
+      </MobileLayout>
     </div>
   );
 }
