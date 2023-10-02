@@ -140,7 +140,7 @@ def get_members():
                 """MATCH (:User {token: $token})-[:CONTROL]->(h:Home)
                 MATCH (u:User)-[c:CONTROL]->(h)
                 RETURN u.first_name AS first_name, u.last_name AS last_name, u.gender AS gender, c.role AS role
-                ORDER BY role DES, first_name ASC, last_name ASC
+                ORDER BY role DESC, first_name ASC, last_name ASC
                 SKIP $skip LIMIT $limit """
             ),
             routing_="r",

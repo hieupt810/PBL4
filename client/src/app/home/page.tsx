@@ -67,7 +67,7 @@ export default function HomeInformation() {
       .then((d) => {
         if (d.status == 200) {
           setMembers(d.members);
-        } else router.push("/");
+        }
       });
   }, [router]);
 
