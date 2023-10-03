@@ -1,23 +1,25 @@
 "use client";
 import { failPopUp } from "@/hook/features/PopupSlice";
-import { useAppDispatch } from "@/hook/hook";
+import { useAppDispatch, useAppSelector } from "@/hook/hook";
 import { Member } from "@/models/member";
-import { getCookie, hasCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
 import MobileLayout from "../mobile";
-import "./styles.css";
 
 export default function Member() {
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const token = useAppSelector((state) => state.tokenReducer.token);
   const [page, setPage] = useState<number>(1);
   const [members, setMembers] = useState<Member[]>([]);
 
   useEffect(() => {
-    if (!hasCookie("token")) router.push("/login");
-    const token = getCookie("token") as string;
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
     fetch(process.env.BACKEND_URL + `api/home?token=${token}&page=${page}`, {
       method: "GET",
     })
@@ -27,7 +29,7 @@ export default function Member() {
           setMembers(d.members);
         } else dispatch(failPopUp(d.message));
       });
-  }, [dispatch, page, router]);
+  }, [dispatch, page, router, token]);
 
   return (
     <MobileLayout>

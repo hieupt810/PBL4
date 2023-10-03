@@ -1,20 +1,19 @@
 "use client";
 import ConfirmPopup from "@/components/ConfirmPopup";
-import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
-import { useAppDispatch } from "@/hook/hook";
-import TranslateCode from "@/language/translate";
+import { failPopUp } from "@/hook/features/PopupSlice";
+import { useAppDispatch, useAppSelector } from "@/hook/hook";
 import { Member } from "@/models/member";
 import Man from "@/static/man.jpg";
 import Woman from "@/static/woman.png";
-import { deleteCookie, getCookie, hasCookie } from "cookies-next";
+import { Avatar, Button, Skeleton } from "@nextui-org/react";
+import { deleteCookie } from "cookies-next";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BsArrowRightShort } from "react-icons/bs";
 import { FaTemperatureFull } from "react-icons/fa6";
-import { FiEdit } from "react-icons/fi";
-import { GrLogout } from "react-icons/gr";
-import { TbHomePlus } from "react-icons/tb";
+import { FiEdit, FiLogOut } from "react-icons/fi";
 import { WiHumidity } from "react-icons/wi";
 import MobileLayout from "../mobile";
 import "./styles.css";
@@ -27,29 +26,28 @@ interface ConfirmPopupProps {
 export default function HomeInformation() {
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const token = useAppSelector((state) => state.tokenReducer.token);
+
+  const [user, setUser] = useState<Member>();
   const [members, setMembers] = useState<Member[]>([]);
-  const [name, setName] = useState<string>("");
-  const [username, setUsername] = useState<string>("");
   const [confirmPopup, setConfirmPopup] = useState<ConfirmPopupProps>({
     text: "",
     onConfirm: () => {},
   });
 
   useEffect(() => {
-    if (!hasCookie("token")) {
+    if (!token) {
       router.push("/login");
       return;
     }
-    const token = getCookie("token") as string;
+
     fetch(process.env.BACKEND_URL + `api/auth?token=${token}`, {
       method: "GET",
     })
       .then((r) => r.json())
       .then((d) => {
-        if (d.status == 200) {
-          setName(d.profile["last_name"] + " " + d.profile["first_name"]);
-          setUsername(d.profile["username"]);
-        } else dispatch(failPopUp(d.message));
+        if (d.status == 200) setUser(d.profile);
+        else dispatch(failPopUp(d.message));
       });
 
     fetch(process.env.BACKEND_URL + `api/home?token=${token}`, {
@@ -61,36 +59,7 @@ export default function HomeInformation() {
           setMembers(d.members);
         } else dispatch(failPopUp(d.message));
       });
-  }, [dispatch, router]);
-
-  const createHome = () => {
-    const token = getCookie("token") as string;
-    setConfirmPopup({ text: "", onConfirm: () => {} });
-    const headers: Headers = new Headers();
-    headers.append("Accept", "application/json");
-    headers.append("Content-Type", "application/json");
-    headers.append("token", getCookie("token") as string);
-    fetch(process.env.BACKEND_URL + "api/home", {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify({
-        username: username,
-      }),
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.status == 200) {
-          dispatch(successPopUp(TranslateCode("VI", d.message)));
-          fetch(process.env.BACKEND_URL + `api/home?token=${token}`, {
-            method: "GET",
-          })
-            .then((r) => r.json())
-            .then((d) => {
-              if (d.status == 200) setMembers(d.members);
-            });
-        } else dispatch(failPopUp(d.message));
-      });
-  };
+  }, [dispatch, router, token]);
 
   return (
     <div>
@@ -103,54 +72,58 @@ export default function HomeInformation() {
       />
 
       <MobileLayout>
-        {username && name ? (
-          <div className="user_container">
-            <div className="user__name">
-              <h5>Xin chào, {name}!</h5>
-              <h4>@{username}</h4>
+        {user?.username && user.first_name ? (
+          <div className="flex flex-row gap-3 items-center">
+            <Avatar
+              isBordered
+              showFallback
+              color="primary"
+              size="md"
+              src={
+                user.gender == 0
+                  ? "https://cdn3.iconfinder.com/data/icons/avatars-round-flat/33/man5-512.png"
+                  : "https://cdn1.iconfinder.com/data/icons/avatars-1-5/136/60-512.png"
+              }
+            />
+
+            <div className="flex flex-col">
+              <span className="font-bold text-lg">
+                Xin chào, {user.last_name} {user.first_name}!
+              </span>
+              <span className="text-gray-400 text-sm">@{user.username}</span>
             </div>
           </div>
         ) : (
-          <div className="user_container">
-            <div className="user__name animate-pulse space-y-1">
-              <div className="bg-gray-300 w-56 h-6 animate-pulse rounded-md"></div>
-              <div className="flex flex-row space-x-1">
-                <span>@</span>
-                <div className="bg-gray-200 w-full h-6 animate-pulse rounded-md"></div>
+          <div>
+            <div className="max-w-[300px] w-full flex items-center gap-3">
+              <div>
+                <Skeleton className="flex rounded-full w-12 h-12" />
+              </div>
+              <div className="w-full flex flex-col gap-2">
+                <Skeleton className="h-5 w-4/5 rounded-lg" />
+                <Skeleton className="h-3 w-3/5 rounded-lg" />
               </div>
             </div>
           </div>
         )}
 
-        <div className="home__button">
-          <button
-            onClick={() => {
-              setConfirmPopup({
-                text: "Xác nhận thêm nhà mới?",
-                onConfirm: createHome,
-              });
-            }}
-            className={
-              members.length > 0 ? "!bg-gray-300 active:!scale-100" : ""
-            }
-            disabled={members.length > 0 ? true : false}
-          >
-            <TbHomePlus size={20} />
-          </button>
+        <div className="space-x-4">
+          <Link href={"/profile"}>
+            <Button isIconOnly color="primary">
+              <FiEdit size={20} />
+            </Button>
+          </Link>
 
-          <a href="/profile">
-            <FiEdit size={20} />
-          </a>
-
-          <button
-            type="button"
+          <Button
+            isIconOnly
+            color="primary"
             onClick={() => {
               deleteCookie("token");
               router.push("/");
             }}
           >
-            <GrLogout size={20} />
-          </button>
+            <FiLogOut size={20} color="white" />
+          </Button>
         </div>
 
         <div className="container">

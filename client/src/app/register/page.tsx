@@ -1,16 +1,18 @@
 "use client";
+import { resetLoading, setLoading } from "@/hook/features/LoadingSlice";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
-import { useAppDispatch } from "@/hook/hook";
-import { Button, Input, Radio, RadioGroup } from "@nextui-org/react";
+import { useAppDispatch, useAppSelector } from "@/hook/hook";
+import { Button, Input, Link, Radio, RadioGroup } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { TbSmartHome } from "react-icons/tb";
 import MobileLayout from "../mobile";
 
 export default function Register() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const [loading, setLoading] = useState<boolean>(false);
+  const token = useAppSelector((state) => state.tokenReducer.token);
+  const loading = useAppSelector((state) => state.loadingReducer.onLoading);
   const [error, setError] = useState<boolean>(false);
   // Input
   const [firstname, setFirstname] = useState<string>("");
@@ -20,12 +22,19 @@ export default function Register() {
   const [password, setPassword] = useState<string>("");
   const [retype, setRetype] = useState<string>("");
 
+  useEffect(() => {
+    if (token) {
+      router.push("/home");
+      return;
+    }
+  }, [router, token]);
+
   const handleRegister = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
-
+    dispatch(setLoading());
     if (password !== retype) {
       setError(true);
+      dispatch(resetLoading());
       return;
     }
 
@@ -38,18 +47,20 @@ export default function Register() {
       body: JSON.stringify({
         first_name: firstname,
         last_name: lastname,
-        gender: gender,
+        gender: parseInt(gender),
         username: username,
         password: password,
       }),
     })
       .then((r) => r.json())
       .then((d) => {
-        setLoading(false);
         if (d.status == 200) {
           dispatch(successPopUp(d.message));
           router.push("/login");
-        } else dispatch(failPopUp(d.message));
+        } else {
+          dispatch(failPopUp(d.message));
+          dispatch(resetLoading());
+        }
       });
   };
 
@@ -156,9 +167,7 @@ export default function Register() {
 
       <div className="flex flex-row items-center justify-center space-x-1 border-t border-gray-200 py-4">
         <span>Đã có tài khoản?</span>
-        <a href="/login" className="font-semibold text-primary">
-          Đăng nhập
-        </a>
+        <Link href="/login">Đăng nhập</Link>
       </div>
     </MobileLayout>
   );

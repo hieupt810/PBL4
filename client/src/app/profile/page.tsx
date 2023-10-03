@@ -1,74 +1,47 @@
 "use client";
-import Button from "@/components/Button";
+import { resetLoading, setLoading } from "@/hook/features/LoadingSlice";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
-import { useAppDispatch } from "@/hook/hook";
-import { InputProps } from "@/models/frontend/inputField";
+import { useAppDispatch, useAppSelector } from "@/hook/hook";
+import { Button, Input, Radio, RadioGroup } from "@nextui-org/react";
 import { getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import MobileLayout from "../mobile";
-import "./styles.css";
 
 export default function Profile() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const [loading, setLoading] = useState<boolean>(false);
-  const [firstname, setFirstname] = useState<InputProps>({
-    text: "",
-    error: false,
-  });
-  const [lastname, setLastname] = useState<InputProps>({
-    text: "",
-    error: false,
-  });
-  const [gender, setGender] = useState<number>(0);
-  const [username, setUsername] = useState<InputProps>({
-    text: "",
-    error: false,
-  });
+  const token = useAppSelector((state) => state.tokenReducer.token);
+  const loading = useAppSelector((state) => state.loadingReducer.onLoading);
+
+  const [username, setUsername] = useState("");
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
+  const [gender, setGender] = useState("");
 
   useEffect(() => {
-    const token = getCookie("token") as string;
     if (!token) {
       router.push("/login");
       return;
     }
+
     fetch(process.env.BACKEND_URL + `api/auth?token=${token}`, {
       method: "GET",
     })
       .then((r) => r.json())
       .then((d) => {
         if (d.status == 200) {
-          setUsername({ text: d.profile["username"], error: false });
-          setFirstname({ text: d.profile["first_name"], error: false });
-          setLastname({ text: d.profile["last_name"], error: false });
-          setGender(d.profile["gender"]);
+          setUsername(d.profile["username"]);
+          setFirstname(d.profile["first_name"]);
+          setLastname(d.profile["last_name"]);
+          setGender(d.profile["gender"].toString());
         } else router.push("/");
       });
-  }, [dispatch, router]);
-
-  const handleRadio = (e: any) => {
-    if (e.target.checked) setGender(e.target.value);
-  };
+  }, [dispatch, router, token]);
 
   const handleUpdateUser = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
-    if (firstname.text.trim() === "") {
-      setFirstname({ text: firstname.text.trim(), error: true });
-      setLoading(false);
-      return;
-    }
-    if (lastname.text.trim() === "") {
-      setLastname({ text: lastname.text.trim(), error: true });
-      setLoading(false);
-      return;
-    }
-    if (username.text.trim() === "") {
-      setUsername({ text: username.text.trim(), error: true });
-      setLoading(false);
-      return;
-    }
+    dispatch(setLoading());
 
     const headers: Headers = new Headers();
     headers.append("Accept", "application/json");
@@ -78,100 +51,90 @@ export default function Profile() {
       method: "PUT",
       headers: headers,
       body: JSON.stringify({
-        username: username.text,
-        first_name: firstname.text,
-        last_name: lastname.text,
-        gender: gender,
+        username: username,
+        first_name: firstname,
+        last_name: lastname,
+        gender: parseInt(gender),
       }),
     })
       .then((r) => r.json())
       .then((d) => {
-        setLoading(false);
         if (d.status == 200) {
           dispatch(successPopUp(d.message));
           router.push("/home");
-        } else dispatch(failPopUp(d.message));
+        } else {
+          dispatch(failPopUp(d.message));
+          dispatch(resetLoading());
+        }
       });
   };
 
   return (
     <MobileLayout>
-      <h5>Thông tin tài khoản</h5>
+      <h5 className="text-primary font-semibold text-xl text-center">
+        Thông tin tài khoản
+      </h5>
+
       <form onSubmit={handleUpdateUser}>
-        <div className="field__container">
-          <div className="form__field">
-            <label className="field__label">
-              <p>Tên đăng nhập</p>
-            </label>
-            <input
-              type="text"
-              value={username.text}
-              className={username.error ? "field_error" : ""}
-              onChange={(e) =>
-                setUsername({ text: e.target.value, error: false })
-              }
-              disabled
+        <div className="space-y-4">
+          <Input
+            size="md"
+            isRequired
+            isDisabled
+            color="primary"
+            value={username}
+            label="Tên đăng nhập"
+            classNames={{
+              input: "text-black/90",
+              inputWrapper: "bg-white",
+            }}
+          />
+
+          <div className="flex flex-row items-center justify-start space-x-1">
+            <Input
+              size="md"
+              isRequired
+              color="primary"
+              value={firstname}
+              label="Tên"
+              onChange={(e) => setFirstname(e.target.value)}
+              classNames={{
+                input: "text-black/90",
+                inputWrapper: "bg-white",
+              }}
+            />
+
+            <Input
+              size="md"
+              isRequired
+              color="primary"
+              value={lastname}
+              label="Họ"
+              onChange={(e) => setLastname(e.target.value)}
+              classNames={{
+                input: "text-black/90",
+                inputWrapper: "bg-white",
+              }}
             />
           </div>
 
-          <div className="form__field">
-            <label className="field__label">
-              <p>Tên người dùng</p>
-            </label>
-            <div className="field_two">
-              <input
-                type="text"
-                value={firstname.text}
-                className={firstname.error ? "field_error" : ""}
-                onChange={(e) =>
-                  setFirstname({ text: e.target.value, error: false })
-                }
-                placeholder="Tên"
-              />
-
-              <input
-                type="text"
-                value={lastname.text}
-                className={lastname.error ? "field_error" : ""}
-                onChange={(e) =>
-                  setLastname({ text: e.target.value, error: false })
-                }
-                placeholder="Họ"
-              />
-            </div>
-          </div>
-
-          <div className="field_radio">
-            <label className="field__label">
-              <p>Giới tính</p>
-            </label>
-
-            <div className="radio_container">
-              <label>
-                <input
-                  type="radio"
-                  value={0}
-                  checked={gender == 0}
-                  onChange={handleRadio}
-                />
-                <span>Nam</span>
-              </label>
-
-              <label>
-                <input
-                  type="radio"
-                  value={1}
-                  checked={gender == 1}
-                  onChange={handleRadio}
-                />
-                <span>Nữ</span>
-              </label>
-            </div>
-          </div>
+          <RadioGroup
+            isRequired
+            value={gender}
+            className="px-1"
+            label="Giới tính"
+            orientation="horizontal"
+            onValueChange={setGender}
+          >
+            <Radio value="0">Nam</Radio>
+            <Radio value="1">Nữ</Radio>
+          </RadioGroup>
         </div>
 
-        <div className="form__button">
-          <Button text="Cập nhật" type="submit" loading={loading} />
+        <div className="flex items-center justify-center my-8">
+          <Button type="submit" isLoading={loading} color="primary">
+            Cập nhật
+          </Button>
         </div>
       </form>
     </MobileLayout>

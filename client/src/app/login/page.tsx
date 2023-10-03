@@ -1,41 +1,32 @@
 "use client";
+import { resetLoading, setLoading } from "@/hook/features/LoadingSlice";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
-import { useAppDispatch } from "@/hook/hook";
-import { InputProps } from "@/models/frontend/inputField";
-import { Button } from "@nextui-org/react";
+import { useAppDispatch, useAppSelector } from "@/hook/hook";
+import { Button, Input, Link } from "@nextui-org/react";
 import { setCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { TbSmartHome } from "react-icons/tb";
 import MobileLayout from "../mobile";
-import "./styles.css";
 
 export default function Login() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const [loading, setLoading] = useState<boolean>(false);
-  const [username, setUsername] = useState<InputProps>({
-    text: "",
-    error: false,
-  });
-  const [password, setPassword] = useState<InputProps>({
-    text: "",
-    error: false,
-  });
+  const token = useAppSelector((state) => state.tokenReducer.token);
+  const loading = useAppSelector((state) => state.loadingReducer.onLoading);
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+
+  useEffect(() => {
+    if (token) {
+      router.push("/home");
+      return;
+    }
+  }, [router, token]);
 
   const handleLogin = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
-    if (username.text.trim() === "") {
-      setUsername({ text: username.text.trim(), error: true });
-      setLoading(false);
-      return;
-    }
-    if (password.text === "") {
-      setPassword({ text: password.text, error: true });
-      setLoading(false);
-      return;
-    }
+    dispatch(setLoading());
 
     const headers: Headers = new Headers();
     headers.append("Accept", "application/json");
@@ -44,76 +35,70 @@ export default function Login() {
       method: "POST",
       headers: headers,
       body: JSON.stringify({
-        username: username.text,
-        password: password.text,
+        username: username,
+        password: password,
       }),
     })
       .then((r) => r.json())
       .then((d) => {
-        setLoading(false);
         if (d.status == 200) {
           dispatch(successPopUp(d.message));
           setCookie("token", d.token, { maxAge: 60 * 60 * 24 * 7 });
           router.push("/home");
-        } else dispatch(failPopUp(d.message));
+        } else {
+          dispatch(failPopUp(d.message));
+          dispatch(resetLoading());
+        }
       });
   };
 
   return (
     <MobileLayout>
-      <div className="logo">
-        <div>
-          <TbSmartHome color={"#1f75fe"} size={100} />
-        </div>
-
-        <h5>Đăng nhập</h5>
+      <div className="flex flex-col items-center justify-center space-y-2">
+        <TbSmartHome color={"#1f75fe"} size={100} />
+        <h5 className="text-primary font-semibold text-xl">Đăng nhập</h5>
       </div>
 
       <form onSubmit={handleLogin}>
-        <div className="form__field">
-          <div className="form__input">
-            <label>
-              <p>Tên đăng nhập</p>
-              <span>*</span>
-            </label>
+        <div className="space-y-4">
+          <Input
+            size="md"
+            isRequired
+            color="primary"
+            value={username}
+            label="Tên đăng nhập"
+            onChange={(e) => setUsername(e.target.value)}
+            classNames={{
+              input: "text-black/90",
+              inputWrapper: "bg-white",
+            }}
+          />
 
-            <input
-              type="text"
-              value={username.text}
-              className={username.error ? "input__error" : ""}
-              onChange={(e) =>
-                setUsername({ text: e.target.value, error: false })
-              }
-            />
-          </div>
-
-          <div className="form__input">
-            <label>
-              <p>Mật khẩu</p>
-              <span>*</span>
-            </label>
-
-            <input
-              type="password"
-              value={password.text}
-              className={password.error ? "input__error" : ""}
-              onChange={(e) =>
-                setPassword({ text: e.target.value, error: false })
-              }
-            />
-          </div>
+          <Input
+            size="md"
+            isRequired
+            type="password"
+            label="Mật khẩu"
+            value={password}
+            color={"primary"}
+            onChange={(e) => setPassword(e.target.value)}
+            classNames={{
+              input: "text-black/90",
+              inputWrapper: "bg-white",
+            }}
+          />
         </div>
 
-        <div className="form__button">
-          <Button color="primary" isLoading={loading} type="submit">
+        <div className="flex items-center justify-center my-8">
+          <Button type="submit" isLoading={loading} color="primary">
             Đăng nhập
           </Button>
         </div>
       </form>
 
-      <div className="href">
+      <div className="flex flex-row items-center justify-center space-x-1 border-t border-gray-200 py-4">
         <span>Chưa có tài khoản?</span>
-        <a href="/register">Đăng ký</a>
+        <Link href="/register">Đăng ký</Link>
       </div>
     </MobileLayout>
   );
