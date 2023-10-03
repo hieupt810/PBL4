@@ -47,7 +47,7 @@ def profile():
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
 
 
-@user_bp.route("/list", methods=["GET"])
+@user_bp.route("/list-user", methods=["GET"])
 def user_list():
     token = request.args.get("token", type=str)
     page = request.args.get("page", type=int, default=1)
@@ -174,14 +174,13 @@ def delete_user():
             routing_="r",
             token=request.headers.get("token"),
         )
-        if (not len(records) == 1) or (records[0]["role"] == 0):
+        if (len(records) != 1) or (records[0]["role"] == 0):
             return jsonify({"message": "E003", "status": 400}), 200
 
         _, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {username: $username})
-                MATCH (u)-[:CONTROL {role: 2}]->(h:Home)
-                DETACH DELETE u, h"""
+                DETACH DELETE u"""
             ),
             routing_="w",
             username=req["username"],

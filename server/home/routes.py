@@ -73,23 +73,35 @@ def list_home():
             skip=(page - 1) * size,
             limit=size,
         )
-        for record in records:
-            if record is not None:
-                homes.append(
+        if len(records) != 0:
+            for record in records:
+                if record is not None:
+                    homes.append(
+                        {
+                            "first_name": record["first_name"],
+                            "last_name": record["last_name"],
+                            "username": record["username"],
+                            "id": record["id"],
+                        }
+                    )
+            return (
+                jsonify(
                     {
-                        "first_name": record["first_name"],
-                        "last_name": record["last_name"],
-                        "username": record["username"],
-                        "id": record["id"],
+                        "message": "I006",
+                        "status": 200,
+                        "homes": homes,
+                        "amount": records[0]["amount"],
                     }
-                )
+                ),
+                200,
+            )
         return (
             jsonify(
                 {
                     "message": "I006",
                     "status": 200,
-                    "homes": homes,
-                    "amount": records[0]["amount"],
+                    "homes": [],
+                    "amount": 0,
                 }
             ),
             200,
