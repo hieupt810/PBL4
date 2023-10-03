@@ -40,7 +40,7 @@ export default function HomeInformation() {
       return;
     }
     const token = getCookie("token")?.toString();
-    fetch(process.env.BACKEND_URL + `api/auth?token=${token}`, {
+    fetch(process.env.BACKEND_URL + `api/user?token=${token}`, {
       method: "GET",
     })
       .then((r) => r.json())
@@ -49,7 +49,7 @@ export default function HomeInformation() {
         else dispatch(failPopUp(d.message));
       });
 
-    fetch(process.env.BACKEND_URL + `api/home?token=${token}`, {
+    fetch(process.env.BACKEND_URL + `api/home/list-member?token=${token}`, {
       method: "GET",
     })
       .then((r) => r.json())

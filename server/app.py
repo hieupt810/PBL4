@@ -4,7 +4,7 @@ from auth.routes import auth_bp
 from config import Config
 from home.routes import home_bp
 from user.routes import user_bp
-from utils import get_app, get_neo4j, query, uniqueid
+from utils import get_app, get_neo4j, query, uniqueid, get_datetime
 from werkzeug.security import generate_password_hash
 
 app = get_app()
@@ -22,12 +22,14 @@ if __name__ == "__main__":
                     u.password = $password,
                     u.id = $id,
                     u.role = 2,
-                    u.gender = 0"""
+                    u.gender = 0,
+                    u.updated_at = $updated_at"""
             ),
             routing_="w",
             username=Config.ROOT_USERNAME,
             password=generate_password_hash(Config.ROOT_PASSWORD),
             id=uniqueid(),
+            updated_at=get_datetime(),
         )
 
         app.run(debug=True, host=Config.SERVER_HOST, port=8082, threaded=True)

@@ -42,6 +42,7 @@ export default function Admin() {
   const [usersAmount, setUsersAmount] = useState(1);
 
   useEffect(() => {
+    dispatch(resetLoading());
     if (!hasCookie("token")) return;
     const token = getCookie("token")?.toString();
     fetch(
@@ -58,6 +59,7 @@ export default function Admin() {
   }, [dispatch, homesPage]);
 
   useEffect(() => {
+    dispatch(resetLoading());
     if (!hasCookie("token")) return;
     const token = getCookie("token")?.toString();
     fetch(

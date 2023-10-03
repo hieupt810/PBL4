@@ -17,6 +17,7 @@ export default function Profile() {
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [gender, setGender] = useState("");
+  const [role, setRole] = useState(0);
 
   useEffect(() => {
     if (!hasCookie("token")) {
@@ -24,7 +25,7 @@ export default function Profile() {
       return;
     }
     const token = getCookie("token")?.toString();
-    fetch(process.env.BACKEND_URL + `api/auth?token=${token}`, {
+    fetch(process.env.BACKEND_URL + `api/user?token=${token}`, {
       method: "GET",
     })
       .then((r) => r.json())
@@ -34,6 +35,7 @@ export default function Profile() {
           setFirstname(d.profile["first_name"]);
           setLastname(d.profile["last_name"]);
           setGender(d.profile["gender"].toString());
+          setRole(d.profile["role"]);
         } else router.push("/");
       });
   }, [dispatch, router]);
@@ -46,7 +48,7 @@ export default function Profile() {
     headers.append("Accept", "application/json");
     headers.append("Content-Type", "application/json");
     headers.append("token", getCookie("token") as string);
-    fetch(process.env.BACKEND_URL + "api/auth", {
+    fetch(process.env.BACKEND_URL + "api/user", {
       method: "PUT",
       headers: headers,
       body: JSON.stringify({
@@ -54,6 +56,7 @@ export default function Profile() {
         first_name: firstname,
         last_name: lastname,
         gender: parseInt(gender),
+        role: role,
       }),
     })
       .then((r) => r.json())
