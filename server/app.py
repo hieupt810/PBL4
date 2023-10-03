@@ -3,6 +3,7 @@ from __future__ import print_function
 from auth.routes import auth_bp
 from config import Config
 from home.routes import home_bp
+from user.routes import user_bp
 from utils import get_app, get_neo4j, query, uniqueid
 from werkzeug.security import generate_password_hash
 
@@ -10,6 +11,7 @@ app = get_app()
 
 app.register_blueprint(auth_bp, url_prefix="/api/auth")
 app.register_blueprint(home_bp, url_prefix="/api/home")
+app.register_blueprint(user_bp, url_prefix="/api/user")
 
 if __name__ == "__main__":
     if Config.valid_env():
@@ -20,13 +22,11 @@ if __name__ == "__main__":
                     u.password = $password,
                     u.id = $id,
                     u.role = 2,
-                    u.gender = 0,
-                    u.token = $token"""
+                    u.gender = 0"""
             ),
             routing_="w",
             username=Config.ROOT_USERNAME,
             password=generate_password_hash(Config.ROOT_PASSWORD),
-            token=uniqueid(),
             id=uniqueid(),
         )
 

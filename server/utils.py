@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from textwrap import dedent
 from typing import cast
 
@@ -47,3 +48,7 @@ def valid_request(request, requires) -> bool:
         if not require in request:
             return False
     return True
+
+
+def get_datetime() -> str:
+    return datetime.now().strftime("%Y/%m/%d %H:%M")

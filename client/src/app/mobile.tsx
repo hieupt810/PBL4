@@ -20,15 +20,21 @@ export default function MobileLayout({
   }, [dispatch]);
 
   return (
-    <div className="text-base text-black/90 font-normal font-sans">
-      <Popup
-        text={popup.text}
-        type={popup.type}
-        close={() => dispatch(resetPopUp())}
-      />
+    <div>
+      <div className="text-base text-black/90 font-normal font-sans block md:hidden">
+        <Popup
+          text={popup.text}
+          type={popup.type}
+          close={() => dispatch(resetPopUp())}
+        />
 
-      <div className="w-screen overflow-x-hidden min-h-screen overflow-y-auto bg-gray-50 space-y-6 px-4 py-6">
-        {children}
+        <div className="w-screen overflow-x-hidden min-h-screen overflow-y-auto bg-gray-50 space-y-6 px-4 py-6">
+          {children}
+        </div>
+      </div>
+
+      <div className="hidden md:flex w-screen h-screen items-center justify-center bg-[#f5f5f5]">
+        <span className="text-xl">Unsupported media type</span>
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ home_bp = Blueprint("home", __name__)
 db = get_neo4j()
 
 
-@home_bp.route("", methods=["POST"])
+@home_bp.route("/add-home", methods=["POST"])
 def create_home():
     requires = ["username"]
     req = request.get_json()
@@ -23,7 +23,7 @@ def create_home():
             routing_="r",
             token=request.headers.get("token"),
         )
-        if (not len(records) == 1) or (records[0]["role"] != 2):
+        if len(records) != 1 or records[0]["role"] == 0:
             return jsonify({"message": "E003", "status": 400}), 200
 
         _, _, _ = db.execute_query(
@@ -36,6 +36,98 @@ def create_home():
             id=uniqueid(),
         )
         return jsonify({"message": "I005", "status": 200}), 200
+    except Exception as error:
+        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+
+
+@home_bp.route("/list-home", methods=["GET"])
+def list_home():
+    token = request.args.get("token", type=str)
+    page = request.args.get("page", type=int, default=1)
+    size = request.args.get("size", type=int, default=10)
+    try:
+        records, _, _ = db.execute_query(
+            query(
+                """MATCH (u:User {token: $token})
+                RETURN u.role AS role LIMIT 1"""
+            ),
+            routing_="r",
+            token=token,
+        )
+        if len(records) != 1 or records[0]["role"] == 0:
+            return jsonify({"message": "E003", "status": 400}), 200
+
+        homes = []
+        records, _, _ = db.execute_query(
+            query(
+                """MATCH (u:User)-[:CONTROL {role: 2}]-(h:Home)
+                RETURN  u.first_name AS first_name,
+                        u.last_name AS last_name,
+                        u.username AS username,
+                        h.id AS id,
+                        COUNT(h) AS amount
+                SKIP $skip LIMIT $limit"""
+            ),
+            routing_="r",
+            token=token,
+            skip=(page - 1) * size,
+            limit=size,
+        )
+        for record in records:
+            if record is not None:
+                homes.append(
+                    {
+                        "first_name": record["first_name"],
+                        "last_name": record["last_name"],
+                        "username": record["username"],
+                        "id": record["id"],
+                    }
+                )
+        return (
+            jsonify(
+                {
+                    "message": "I006",
+                    "status": 200,
+                    "homes": homes,
+                    "amount": records[0]["amount"],
+                }
+            ),
+            200,
+        )
+    except Exception as error:
+        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+
+
+@home_bp.route("/delete-home", methods=["DELETE"])
+def delete_home():
+    requires = ["id"]
+    req = request.get_json()
+    try:
+        if not "token" in request.headers:
+            return jsonify({"message": "E003", "status": 400}), 200
+        if not valid_request(req, requires):
+            return jsonify({"message": "E002", "status": 400}), 200
+
+        records, _, _ = db.execute_query(
+            query(
+                """MATCH (u:User {token: $token})
+                RETURN u.role AS role LIMIT 1"""
+            ),
+            routing_="r",
+            token=request.headers.get("token"),
+        )
+        if len(records) != 1 or records[0]["role"] == 0:
+            return jsonify({"message": "E003", "status": 400}), 200
+
+        _, _, _ = db.execute_query(
+            query(
+                """MATCH (h:Home {id: $id})
+                DETACH DELETE h"""
+            ),
+            routing_="w",
+            id=req["id"],
+        )
+        return jsonify({"message": "I013", "status": 200}), 200
     except Exception as error:
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
 
@@ -58,7 +150,7 @@ def add_member():
             routing_="r",
             token=request.headers.get("token"),
         )
-        if not len(records) == 1:
+        if len(records) != 1:
             return jsonify({"message": "E003", "status": 400}), 200
 
         _, _, _ = db.execute_query(
@@ -94,7 +186,7 @@ def delete_member():
             routing_="r",
             token=request.headers.get("token"),
         )
-        if not len(records) == 1:
+        if len(records) != 1:
             return jsonify({"message": "E003", "status": 400}), 200
 
         _, _, _ = db.execute_query(
@@ -112,7 +204,7 @@ def delete_member():
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
 
 
-@home_bp.route("", methods=["GET"])
+@home_bp.route("/list-member", methods=["GET"])
 def get_members():
     token = request.args.get("token", type=str)
     page = request.args.get("page", type=int, default=1)
@@ -132,7 +224,7 @@ def get_members():
             routing_="r",
             token=token,
         )
-        if not len(records) == 1:
+        if len(records) != 1:
             return jsonify({"message": "E003", "status": 400}), 200
 
         records, _, _ = db.execute_query(
@@ -157,7 +249,7 @@ def get_members():
                         "last_name": record["last_name"],
                         "gender": record["gender"],
                         "role": record["role"],
-                        "username": record["username"]
+                        "username": record["username"],
                     }
                 )
         return jsonify({"message": "I006", "status": 200, "members": members}), 200

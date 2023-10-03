@@ -23,13 +23,7 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body className={font.className}>
-        <Providers>
-          <div className="block md:hidden">{children}</div>
-        </Providers>
-
-        <div className="hidden md:flex w-screen h-screen items-center justify-center bg-[#f5f5f5]">
-          <span className="text-xl">Unsupported media type</span>
-        </div>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
