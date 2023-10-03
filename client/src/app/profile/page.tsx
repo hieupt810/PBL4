@@ -3,7 +3,7 @@ import { resetLoading, setLoading } from "@/hook/features/LoadingSlice";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch, useAppSelector } from "@/hook/hook";
 import { Button, Input, Radio, RadioGroup } from "@nextui-org/react";
-import { getCookie } from "cookies-next";
+import { getCookie, hasCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import MobileLayout from "../mobile";
@@ -11,7 +11,6 @@ import MobileLayout from "../mobile";
 export default function Profile() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const token = useAppSelector((state) => state.tokenReducer.token);
   const loading = useAppSelector((state) => state.loadingReducer.onLoading);
 
   const [username, setUsername] = useState("");
@@ -20,11 +19,11 @@ export default function Profile() {
   const [gender, setGender] = useState("");
 
   useEffect(() => {
-    if (!token) {
+    if (!hasCookie("token")) {
       router.push("/login");
       return;
     }
-
+    const token = getCookie("token")?.toString();
     fetch(process.env.BACKEND_URL + `api/auth?token=${token}`, {
       method: "GET",
     })
@@ -37,7 +36,7 @@ export default function Profile() {
           setGender(d.profile["gender"].toString());
         } else router.push("/");
       });
-  }, [dispatch, router, token]);
+  }, [dispatch, router]);
 
   const handleUpdateUser = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

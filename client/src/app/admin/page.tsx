@@ -1,7 +1,6 @@
 "use client";
 import { resetLoading, setLoading } from "@/hook/features/LoadingSlice";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
-import { getToken } from "@/hook/features/TokenSlice";
 import { useAppDispatch, useAppSelector } from "@/hook/hook";
 import { Member } from "@/models/member";
 import {
@@ -18,7 +17,7 @@ import {
   TableRow,
   Tabs,
 } from "@nextui-org/react";
-import { getCookie } from "cookies-next";
+import { getCookie, hasCookie } from "cookies-next";
 import { useEffect, useState } from "react";
 import { BiPlus } from "react-icons/bi";
 import { RiDeleteBin5Line, RiEditBoxLine } from "react-icons/ri";
@@ -32,7 +31,6 @@ interface Home {
 
 export default function Admin() {
   const dispatch = useAppDispatch();
-  const token = useAppSelector((state) => state.tokenReducer.token);
   const loading = useAppSelector((state) => state.loadingReducer.onLoading);
 
   const [homes, setHomes] = useState<Home[]>([]);
@@ -44,12 +42,8 @@ export default function Admin() {
   const [usersAmount, setUsersAmount] = useState(1);
 
   useEffect(() => {
-    dispatch(getToken());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (!token) return;
-
+    if (!hasCookie("token")) return;
+    const token = getCookie("token")?.toString();
     fetch(
       `${process.env.BACKEND_URL}api/home/list-home?token=${token}&page=${homesPage}`,
       { method: "GET" }
@@ -61,9 +55,13 @@ export default function Admin() {
           setHomesAmount(Math.floor(d.amount / 10) + 1);
         } else dispatch(failPopUp(d.message));
       });
+  }, [dispatch, homesPage]);
 
+  useEffect(() => {
+    if (!hasCookie("token")) return;
+    const token = getCookie("token")?.toString();
     fetch(
-      `${process.env.BACKEND_URL}api/user/list-user?token=${token}&page=${homesPage}`,
+      `${process.env.BACKEND_URL}api/user/list-user?token=${token}&page=${usersPage}`,
       { method: "GET" }
     )
       .then((r) => r.json())
@@ -73,7 +71,7 @@ export default function Admin() {
           setUsersAmount(Math.floor(d.amount / 10) + 1);
         } else dispatch(failPopUp(d.message));
       });
-  }, [dispatch, homesPage, token, loading]);
+  }, [dispatch, usersPage]);
 
   return (
     <div className="text-black/90 text-base font-normal font-sans w-[1440px] mx-auto">

@@ -3,7 +3,7 @@ import { resetLoading, setLoading } from "@/hook/features/LoadingSlice";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch, useAppSelector } from "@/hook/hook";
 import { Button, Input, Link } from "@nextui-org/react";
-import { setCookie } from "cookies-next";
+import { hasCookie, setCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { TbSmartHome } from "react-icons/tb";
@@ -12,17 +12,16 @@ import MobileLayout from "../mobile";
 export default function Login() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const token = useAppSelector((state) => state.tokenReducer.token);
   const loading = useAppSelector((state) => state.loadingReducer.onLoading);
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
   useEffect(() => {
-    if (token) {
+    if (hasCookie("token")) {
       router.push("/home");
       return;
     }
-  }, [router, token]);
+  }, [router]);
 
   const handleLogin = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

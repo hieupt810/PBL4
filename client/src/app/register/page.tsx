@@ -3,6 +3,7 @@ import { resetLoading, setLoading } from "@/hook/features/LoadingSlice";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch, useAppSelector } from "@/hook/hook";
 import { Button, Input, Link, Radio, RadioGroup } from "@nextui-org/react";
+import { hasCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { TbSmartHome } from "react-icons/tb";
@@ -11,7 +12,6 @@ import MobileLayout from "../mobile";
 export default function Register() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const token = useAppSelector((state) => state.tokenReducer.token);
   const loading = useAppSelector((state) => state.loadingReducer.onLoading);
   const [error, setError] = useState<boolean>(false);
   // Input
@@ -23,11 +23,11 @@ export default function Register() {
   const [retype, setRetype] = useState<string>("");
 
   useEffect(() => {
-    if (token) {
+    if (hasCookie("token")) {
       router.push("/home");
       return;
     }
-  }, [router, token]);
+  }, [router]);
 
   const handleRegister = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

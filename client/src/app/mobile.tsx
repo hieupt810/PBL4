@@ -1,7 +1,6 @@
 import Popup from "@/components/Popup";
 import { resetLoading } from "@/hook/features/LoadingSlice";
 import { resetPopUp } from "@/hook/features/PopupSlice";
-import { getToken } from "@/hook/features/TokenSlice";
 import { useAppDispatch, useAppSelector } from "@/hook/hook";
 import { useEffect } from "react";
 
@@ -14,7 +13,6 @@ export default function MobileLayout({
   const popup = useAppSelector((state) => state.popupReducer);
 
   useEffect(() => {
-    dispatch(getToken());
     dispatch(resetPopUp());
     dispatch(resetLoading());
   }, [dispatch]);

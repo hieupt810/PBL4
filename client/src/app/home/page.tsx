@@ -1,12 +1,12 @@
 "use client";
 import ConfirmPopup from "@/components/ConfirmPopup";
 import { failPopUp } from "@/hook/features/PopupSlice";
-import { useAppDispatch, useAppSelector } from "@/hook/hook";
+import { useAppDispatch } from "@/hook/hook";
 import { Member } from "@/models/member";
 import Man from "@/static/man.jpg";
 import Woman from "@/static/woman.png";
 import { Avatar, Button, Skeleton } from "@nextui-org/react";
-import { deleteCookie } from "cookies-next";
+import { deleteCookie, getCookie, hasCookie } from "cookies-next";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -26,7 +26,6 @@ interface ConfirmPopupProps {
 export default function HomeInformation() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const token = useAppSelector((state) => state.tokenReducer.token);
 
   const [user, setUser] = useState<Member>();
   const [members, setMembers] = useState<Member[]>([]);
@@ -36,11 +35,11 @@ export default function HomeInformation() {
   });
 
   useEffect(() => {
-    if (!token) {
+    if (!hasCookie("token")) {
       router.push("/login");
       return;
     }
-
+    const token = getCookie("token")?.toString();
     fetch(process.env.BACKEND_URL + `api/auth?token=${token}`, {
       method: "GET",
     })
@@ -59,7 +58,7 @@ export default function HomeInformation() {
           setMembers(d.members);
         } else dispatch(failPopUp(d.message));
       });
-  }, [dispatch, router, token]);
+  }, [dispatch, router]);
 
   return (
     <div>
