@@ -52,6 +52,8 @@ def user_list():
     token = request.args.get("token", type=str)
     page = request.args.get("page", type=int, default=1)
     size = request.args.get("size", type=int, default=10)
+    username = request.args.get("username", type=str, default="")
+    role = request.args.get("role", type=int, default=-1)
     try:
         records, _, _ = db.execute_query(
             query(
@@ -64,43 +66,102 @@ def user_list():
         if len(records) != 1 or records[0]["role"] == 0:
             return jsonify({"message": "E005", "status": 400}), 200
 
-        records, _, _ = db.execute_query(
-            query(
-                """MATCH (u:User)
-                RETURN  u.username AS username,
-                        u.first_name AS first_name,
-                        u.last_name AS last_name,
-                        u.gender AS gender,
-                        u.role AS role,
-                        u.updated_at AS updated_at,
-                        COUNT(u) AS amount
-                ORDER BY updated_at DESC, first_name ASC, last_name ASC
-                SKIP $skip LIMIT $limit"""
-            ),
-            routing_="r",
-            skip=(page - 1) * size,
-            limit=size,
-        )
-        users = []
-        for record in records:
-            if record is not None:
-                users.append(
-                    {
-                        "username": record["username"],
-                        "first_name": record["first_name"],
-                        "last_name": record["last_name"],
-                        "gender": record["gender"],
-                        "role": record["role"],
-                        "updated_at": record["updated_at"],
-                    }
-                )
+        if username != "" and role == -1:
+            records, _, _ = db.execute_query(
+                query(
+                    """MATCH (u:User)
+                    WHERE toLower(u.username) CONTAINS toLower($username)
+                    RETURN  u.username AS username,
+                            u.first_name AS first_name,
+                            u.last_name AS last_name,
+                            u.gender AS gender,
+                            u.role AS role,
+                            u.updated_at AS updated_at,
+                            COUNT(u) AS amount
+                    ORDER BY updated_at DESC, first_name ASC, last_name ASC
+                    SKIP $skip LIMIT $limit"""
+                ),
+                routing_="r",
+                skip=(page - 1) * size,
+                limit=size,
+                username=username,
+            )
+        elif username != "" and role != -1:
+            records, _, _ = db.execute_query(
+                query(
+                    """MATCH (u:User)
+                    WHERE u.role = $role AND toLower(u.username) CONTAINS toLower($username)
+                    RETURN  u.username AS username,
+                            u.first_name AS first_name,
+                            u.last_name AS last_name,
+                            u.gender AS gender,
+                            u.role AS role,
+                            u.updated_at AS updated_at,
+                            COUNT(u) AS amount
+                    ORDER BY updated_at DESC, first_name ASC, last_name ASC
+                    SKIP $skip LIMIT $limit"""
+                ),
+                routing_="r",
+                skip=(page - 1) * size,
+                limit=size,
+                username=username,
+                role=role,
+            )
+        elif username == "" and role != -1:
+            records, _, _ = db.execute_query(
+                query(
+                    """MATCH (u:User)
+                    WHERE u.role = $role
+                    RETURN  u.username AS username,
+                            u.first_name AS first_name,
+                            u.last_name AS last_name,
+                            u.gender AS gender,
+                            u.role AS role,
+                            u.updated_at AS updated_at,
+                            COUNT(u) AS amount
+                    ORDER BY updated_at DESC, first_name ASC, last_name ASC
+                    SKIP $skip LIMIT $limit"""
+                ),
+                routing_="r",
+                skip=(page - 1) * size,
+                limit=size,
+                role=role,
+            )
+        else:
+            records, _, _ = db.execute_query(
+                query(
+                    """MATCH (u:User)
+                    RETURN  u.username AS username,
+                            u.first_name AS first_name,
+                            u.last_name AS last_name,
+                            u.gender AS gender,
+                            u.role AS role,
+                            u.updated_at AS updated_at,
+                            COUNT(u) AS amount
+                    ORDER BY updated_at DESC, first_name ASC, last_name ASC
+                    SKIP $skip LIMIT $limit"""
+                ),
+                routing_="r",
+                skip=(page - 1) * size,
+                limit=size,
+            )
         return (
             jsonify(
                 {
                     "message": "I012",
                     "status": 200,
-                    "users": users,
-                    "amount": records[0]["amount"],
+                    "users": [
+                        {
+                            "username": record["username"],
+                            "first_name": record["first_name"],
+                            "last_name": record["last_name"],
+                            "gender": record["gender"],
+                            "role": record["role"],
+                            "updated_at": record["updated_at"],
+                        }
+                        for record in records
+                    ],
+                    "amount": records[0]["amount"] if len(records) > 0 else 0,
                 }
             ),
             200,
