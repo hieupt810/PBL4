@@ -124,7 +124,8 @@ def delete_home():
         _, _, _ = db.execute_query(
             query(
                 """MATCH (h:Home {id: $id})
-                DETACH DELETE h"""
+                OPTIONAL MATCH (h)<-[:CONTROL]-(u:User)
+                DETACH DELETE h, u"""
             ),
             routing_="w",
             id=req["id"],
@@ -146,18 +147,18 @@ def add_member():
 
         records, _, _ = db.execute_query(
             query(
-                """MATCH (u:User {token: $token})-[:CONTROL {role: 2}]->(:Home)
-                RETURN u.username AS username LIMIT 1"""
+                """MATCH (:User {token: $token})-[c:CONTROL]->(:Home)
+                RETURN c.role AS role LIMIT 1"""
             ),
             routing_="r",
             token=request.headers.get("token"),
         )
-        if len(records) != 1:
+        if len(records) != 1 or records[0]["role"] != 2:
             return jsonify({"message": "E003", "status": 400}), 200
 
         _, _, _ = db.execute_query(
             query(
-                """MATCH (:User {token: $token})-[:CONTROL {role: 2}]->(h:Home)
+                """MATCH (:User {token: $token})-[:CONTROL]->(h:Home)
                 MATCH (u:User {username: $username})
                 MERGE (u)-[:CONTROL {role: 1}]->(h)
                 SET h.updated_at = $updated_at"""
@@ -184,18 +185,18 @@ def delete_member():
 
         records, _, _ = db.execute_query(
             query(
-                """MATCH (u:User {token: $token})-[:CONTROL {role: 2}]->(:Home)
-                RETURN u.username AS username LIMIT 1"""
+                """MATCH (:User {token: $token})-[c:CONTROL]->(:Home)
+                RETURN c.role AS role LIMIT 1"""
             ),
             routing_="r",
             token=request.headers.get("token"),
         )
-        if len(records) != 1:
+        if len(records) != 1 or records[0]["role"] != 2:
             return jsonify({"message": "E003", "status": 400}), 200
 
         _, _, _ = db.execute_query(
             query(
-                """MATCH (:User {token: $token})-[:CONTROL {role: 2}]->(h:Home)
+                """MATCH (:User {token: $token})-[:CONTROL]->(h:Home)
                 MATCH (:User {username: $username})-[c:CONTROL {role: 1}]->(h)
                 SET h.updated_at = $updated_at
                 DELETE c"""
@@ -218,7 +219,6 @@ def get_members():
     try:
         if page < 1 or size < 1:
             return jsonify({"message": "E002", "status": 400}), 200
-
         if not token:
             return jsonify({"message": "E003", "status": 400}), 200
 
@@ -242,7 +242,7 @@ def get_members():
                         u.gender AS gender,
                         c.role AS role,
                         u.username AS username,
-                        COUNT(c) AS amount
+                        COUNT(u) AS amount
                 ORDER BY role DESC, first_name ASC, last_name ASC
                 SKIP $skip LIMIT $limit"""
             ),

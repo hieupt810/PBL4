@@ -23,9 +23,8 @@ def profile():
             routing_="r",
             token=token,
         )
-        if not len(records) == 1:
+        if len(records) != 1:
             return jsonify({"message": "E005", "status": 400}), 200
-
         return (
             jsonify(
                 {
@@ -77,7 +76,10 @@ def user_list():
                             u.gender AS gender,
                             u.role AS role,
                             u.updated_at AS updated_at,
-                            COUNT(u) AS amount
+                            COUNT {
+                                (t:User)
+                                WHERE toLower(t.username) CONTAINS toLower($username)
+                            } AS amount
                     ORDER BY updated_at DESC, first_name ASC, last_name ASC
                     SKIP $skip LIMIT $limit"""
                 ),
@@ -97,7 +99,10 @@ def user_list():
                             u.gender AS gender,
                             u.role AS role,
                             u.updated_at AS updated_at,
-                            COUNT(u) AS amount
+                            COUNT {
+                                (t:User)
+                                WHERE t.role = $role AND toLower(t.username) CONTAINS toLower($username)
+                            } AS amount
                     ORDER BY updated_at DESC, first_name ASC, last_name ASC
                     SKIP $skip LIMIT $limit"""
                 ),
@@ -110,15 +115,14 @@ def user_list():
         elif username == "" and role != -1:
             records, _, _ = db.execute_query(
                 query(
-                    """MATCH (u:User)
-                    WHERE u.role = $role
+                    """MATCH (u:User {role: $role})
                     RETURN  u.username AS username,
                             u.first_name AS first_name,
                             u.last_name AS last_name,
                             u.gender AS gender,
                             u.role AS role,
                             u.updated_at AS updated_at,
-                            COUNT(u) AS amount
+                            COUNT{ (:User {role: $role}) } AS amount
                     ORDER BY updated_at DESC, first_name ASC, last_name ASC
                     SKIP $skip LIMIT $limit"""
                 ),
@@ -137,7 +141,7 @@ def user_list():
                             u.gender AS gender,
                             u.role AS role,
                             u.updated_at AS updated_at,
-                            COUNT(u) AS amount
+                            COUNT{ (:User) } AS amount
                     ORDER BY updated_at DESC, first_name ASC, last_name ASC
                     SKIP $skip LIMIT $limit"""
                 ),
@@ -241,7 +245,9 @@ def delete_user():
         _, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {username: $username})
-                DETACH DELETE u"""
+                OPTIONAL MATCH (u)-[:CONTROL {role: 2}]->(h:Home)
+                OPTIONAL MATCH (h)<-[:CONTROL]-(m:User)
+                DETACH DELETE u, h, m"""
             ),
             routing_="w",
             username=req["username"],
