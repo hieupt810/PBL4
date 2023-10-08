@@ -4,7 +4,6 @@ from auth.routes import auth_bp
 from config import Config
 from home.routes import home_bp
 from user.routes import user_bp
-from device.routes import device_bp
 from utils import get_app, get_neo4j, query, uniqueid, get_datetime
 from werkzeug.security import generate_password_hash
 
@@ -13,7 +12,6 @@ app = get_app()
 app.register_blueprint(auth_bp, url_prefix="/api/auth")
 app.register_blueprint(home_bp, url_prefix="/api/home")
 app.register_blueprint(user_bp, url_prefix="/api/user")
-app.register_blueprint(device_bp, url_prefix="/api/device")
 
 if __name__ == "__main__":
     if Config.valid_env():
