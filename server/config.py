@@ -15,6 +15,8 @@ class Config(object):
     ROOT_USERNAME = str(os.environ.get("ROOT_USERNAME"))
     ROOT_PASSWORD = str(os.environ.get("ROOT_PASSWORD"))
 
+    ESP_SERVER_URL = str(os.environ.get("ESP_SERVER_URL"))
+
     @staticmethod
     def valid_env() -> bool:
         if (
@@ -24,6 +26,7 @@ class Config(object):
             and Config.NEO4J_PASSWORD
             and Config.ROOT_USERNAME
             and Config.ROOT_PASSWORD
+            and Config.ESP_SERVER_URL
         ):
             return True
         return False
