@@ -1,181 +1,174 @@
 "use client";
-
-import Button from "@/components/Button";
-import Popup from "@/components/Popup";
-import TranslateCode from "@/language/translate";
-import { FormEvent, useState } from "react";
+import { resetLoading, setLoading } from "@/hook/features/LoadingSlice";
+import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
+import { useAppDispatch, useAppSelector } from "@/hook/hook";
+import { Button, Input, Link, Radio, RadioGroup } from "@nextui-org/react";
+import { hasCookie } from "cookies-next";
+import { useRouter } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
 import { TbSmartHome } from "react-icons/tb";
-import styles from "./register.module.css";
-
-interface FieldProps {
-  text: string;
-  error: boolean;
-}
-
-interface PopupProps {
-  type?: "success" | "failed";
-  text: string;
-}
+import MobileLayout from "../mobile";
 
 export default function Register() {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [popup, setPopup] = useState<PopupProps>({ text: "" });
-  const [fullname, setFullname] = useState<FieldProps>({
-    text: "",
-    error: false,
-  });
-  const [username, setUsername] = useState<FieldProps>({
-    text: "",
-    error: false,
-  });
-  const [password, setPassword] = useState<FieldProps>({
-    text: "",
-    error: false,
-  });
-  const [retype, setRetype] = useState<FieldProps>({
-    text: "",
-    error: false,
-  });
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const loading = useAppSelector((state) => state.loadingReducer.onLoading);
+  const [error, setError] = useState<boolean>(false);
+  // Input
+  const [firstname, setFirstname] = useState<string>("");
+  const [lastname, setLastname] = useState<string>("");
+  const [gender, setGender] = useState<string>("0");
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [retype, setRetype] = useState<string>("");
+
+  useEffect(() => {
+    if (hasCookie("token")) {
+      router.push("/home");
+      return;
+    }
+  }, [router]);
 
   const handleRegister = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
-
-    if (fullname.text.trim() === "") {
-      setFullname({ text: fullname.text.trim(), error: true });
-      setLoading(false);
-      return;
-    }
-
-    if (username.text.trim() === "") {
-      setUsername({ text: username.text.trim(), error: true });
-      setLoading(false);
-      return;
-    }
-
-    if (password.text !== retype.text) {
-      setPassword({ text: password.text, error: true });
-      setRetype({ text: retype.text, error: true });
-      setLoading(false);
+    dispatch(setLoading());
+    if (password !== retype) {
+      setError(true);
+      dispatch(resetLoading());
       return;
     }
 
     const headers: Headers = new Headers();
     headers.append("Accept", "application/json");
     headers.append("Content-Type", "application/json");
-    fetch("http://127.0.0.1:8082" + "/api/auth/register", {
+    fetch(process.env.BACKEND_URL + "api/auth/register", {
       method: "POST",
       headers: headers,
       body: JSON.stringify({
-        name: fullname.text,
-        username: username.text,
-        password: password.text,
+        first_name: firstname,
+        last_name: lastname,
+        gender: parseInt(gender),
+        username: username,
+        password: password,
       }),
     })
-      .then((r) => {
-        if (!r.ok)
-          setPopup({ text: TranslateCode("EN", "E008"), type: "failed" });
-        return r.json();
-      })
+      .then((r) => r.json())
       .then((d) => {
-        if (d.status == 200)
-          setPopup({ text: TranslateCode("EN", d.message), type: "success" });
-        else setPopup({ text: TranslateCode("EN", d.message), type: "failed" });
-        setLoading(false);
+        if (d.status == 200) {
+          dispatch(successPopUp(d.message));
+          router.push("/login");
+        } else {
+          dispatch(failPopUp(d.message));
+          dispatch(resetLoading());
+        }
       });
   };
 
   return (
-    <div>
-      <Popup
-        type={popup.type}
-        text={popup.text}
-        close={() => {
-          setPopup({ text: "", type: undefined });
-        }}
-      />
+    <MobileLayout>
+      <div className="flex flex-col items-center justify-center space-y-2">
+        <TbSmartHome color={"#1f75fe"} size={100} />
+        <h5 className="text-primary font-semibold text-xl">
+          Đăng ký tài khoản
+        </h5>
+      </div>
 
-      <main className={styles.main}>
-        <div className={styles.title_container}>
-          <div>
-            <TbSmartHome color={"#1f75fe"} size={100} />
+      <form onSubmit={handleRegister}>
+        <div className="space-y-4">
+          <div className="flex flex-row items-center justify-start space-x-1">
+            <Input
+              size="md"
+              isRequired
+              color="primary"
+              value={firstname}
+              label="Tên"
+              onChange={(e) => setFirstname(e.target.value)}
+              classNames={{
+                input: "text-black/90",
+                inputWrapper: "bg-white",
+              }}
+            />
+
+            <Input
+              size="md"
+              isRequired
+              color="primary"
+              value={lastname}
+              label="Họ"
+              onChange={(e) => setLastname(e.target.value)}
+              classNames={{
+                input: "text-black/90",
+                inputWrapper: "bg-white",
+              }}
+            />
           </div>
-          <h5 className={styles.title}>Đăng ký tài khoản</h5>
+
+          <RadioGroup
+            isRequired
+            value={gender}
+            label="Giới tính"
+            defaultValue="0"
+            orientation="horizontal"
+            onValueChange={setGender}
+            className="px-1"
+          >
+            <Radio value="0">Nam</Radio>
+            <Radio value="1">Nữ</Radio>
+          </RadioGroup>
+
+          <Input
+            size="md"
+            isRequired
+            color="primary"
+            value={username}
+            label="Tên đăng nhập"
+            onChange={(e) => setUsername(e.target.value)}
+            classNames={{
+              input: "text-black/90",
+              inputWrapper: "bg-white",
+            }}
+          />
+
+          <Input
+            size="md"
+            isRequired
+            type="password"
+            label="Mật khẩu"
+            value={password}
+            color={error ? "danger" : "primary"}
+            onChange={(e) => setPassword(e.target.value)}
+            classNames={{
+              input: "text-black/90",
+              inputWrapper: "bg-white",
+            }}
+          />
+
+          <Input
+            size="md"
+            isRequired
+            value={retype}
+            type="password"
+            label="Nhập lại mật khẩu"
+            color={error ? "danger" : "primary"}
+            onChange={(e) => setRetype(e.target.value)}
+            classNames={{
+              input: "text-black/90",
+              inputWrapper: "bg-white",
+            }}
+          />
         </div>
 
-        <div className={styles.form_container}>
-          <form onSubmit={handleRegister} className={styles.form}>
-            <div className={styles.field_container}>
-              <div className={styles.input_field}>
-                <label>
-                  <p>Họ và tên</p>
-                  <span>*</span>
-                </label>
-                <input
-                  type="text"
-                  value={fullname.text}
-                  className={fullname.error ? styles.field_error : ""}
-                  onChange={(e) =>
-                    setFullname({ text: e.target.value, error: false })
-                  }
-                />
-              </div>
-
-              <div className={styles.input_field}>
-                <label>
-                  <p>Tên đăng nhập</p>
-                  <span>*</span>
-                </label>
-                <input
-                  type="text"
-                  value={username.text}
-                  className={username.error ? styles.field_error : ""}
-                  onChange={(e) =>
-                    setUsername({ text: e.target.value, error: false })
-                  }
-                />
-              </div>
-
-              <div className={styles.input_field}>
-                <label>
-                  <p>Mật khẩu</p>
-                  <span>*</span>
-                </label>
-                <input
-                  type="password"
-                  value={password.text}
-                  className={password.error ? styles.field_error : ""}
-                  onChange={(e) =>
-                    setPassword({ text: e.target.value, error: false })
-                  }
-                />
-              </div>
-
-              <div className={styles.input_field}>
-                <label>
-                  <p>Nhập lại mật khẩu</p>
-                  <span>*</span>
-                </label>
-                <input
-                  type="password"
-                  value={retype.text}
-                  className={retype.error ? styles.field_error : ""}
-                  onChange={(e) =>
-                    setRetype({ text: e.target.value, error: false })
-                  }
-                />
-              </div>
-            </div>
-
-            <Button text="Đăng ký" type="submit" loading={loading} />
-          </form>
+        <div className="flex items-center justify-center my-8">
+          <Button type="submit" isLoading={loading} color="primary">
+            Đăng ký
+          </Button>
         </div>
+      </form>
 
-        <div className={styles.href}>
-          <span>Đã có tài khoản?</span>
-          <a href="/login">Đăng nhập</a>
-        </div>
-      </main>
-    </div>
+      <div className="flex flex-row items-center justify-center space-x-1 border-t border-gray-200 py-4">
+        <span>Đã có tài khoản?</span>
+        <Link href="/login">Đăng nhập</Link>
+      </div>
+    </MobileLayout>
   );
 }

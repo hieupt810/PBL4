@@ -1,0 +1,75 @@
+.container {
+  @apply flex flex-col space-y-3;
+}
+
+.container h5 {
+  @apply text-xl font-bold;
+}
+
+.items_container {
+  @apply grid grid-cols-2 gap-3;
+}
+
+.item {
+  @apply text-white font-medium p-3 rounded-xl shadow-md flex flex-col space-y-2;
+}
+
+.item > .item_icon {
+  @apply flex flex-row items-center justify-between;
+}
+
+.item > .item_name {
+  @apply mx-1;
+}
+
+.title {
+  @apply flex flex-row justify-between items-center;
+}
+
+.title > a {
+  @apply p-1 rounded-md bg-gray-200;
+}
+
+.members {
+  @apply flex flex-row overflow-hidden rounded-xl bg-white px-5 py-3 space-x-5 border border-[#f2f2f2];
+}
+
+.member {
+  @apply flex flex-col items-center justify-between;
+}
+
+.avatar {
+  @apply w-10 h-10 rounded-full;
+}
+
+.member > h5 {
+  @apply text-sm font-medium;
+}
+
+.member > h4 {
+  @apply text-xs text-[#c1c0c5];
+}
+
+.user_container {
+  @apply flex flex-row items-center justify-between w-full;
+}
+
+.user__name > h5 {
+  @apply text-xl font-semibold truncate max-w-full;
+}
+
+.user__name > h4 {
+  @apply text-sm text-gray-500 truncate;
+}
+
+.home__button {
+  @apply flex flex-row space-x-10 flex-wrap;
+}
+
+.home__button > * {
+  @apply p-3 rounded-md bg-[#eeedf1] outline-none transform transition-transform active:scale-90;
+}
+
+.user__name {
+  @apply flex flex-col min-w-0;
+}
