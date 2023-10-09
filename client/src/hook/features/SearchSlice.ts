@@ -17,12 +17,16 @@ const initialState: SearchType = {
   userList: [],
 };
 
+interface UserResponse {
+  users: Users[];
+}
+
 
 export const getUserList = createAsyncThunk(
   "user/getUserList",
   async (_, thunkAPI) => {
     const token = getCookie("token");
-    const response = await http.get<any>(`/api/user/list-user?token=${token}`, {
+    const response = await http.get<UserResponse>(`/api/user/list-user?token=${token}`, {
       signal: thunkAPI.signal,
     });
     return response.data.users;

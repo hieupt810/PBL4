@@ -1,30 +1,49 @@
 "use client";
-import { Select, SelectItem } from "@nextui-org/react";
+import Select from "react-select";
 import AdminLayout from "../layout";
 import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@nextui-org/react";
 import { TbHomePlus } from "react-icons/tb";
 import { getUserList } from "@/hook/features/SearchSlice";
 import { RootState, useAppDispatch } from "@/hook/store";
 import { useSelector } from "react-redux";
 import { Users } from "@/app/types/users.type";
+import useDebounce from "@/hook/custoom/useDebounce";
+
+interface OptionType {
+  value: string;
+  label: string;
+}
+
+type SelectChangeValueType = OptionType | null;
 
 export default function AddHome() {
   const rawUserList: Users[] = useSelector(
     (state: RootState) => state.search.userList
   );
+  const [selectedOption, setSelectedOption] =
+    useState<SelectChangeValueType | null>(null);
   const userList = Array.isArray(rawUserList) ? rawUserList : [];
   console.log(userList);
   const router = useRouter();
   const dispatch = useAppDispatch();
 
+  const [searchValue, setSearchValue] = useState("");
+  const debouncedSearchValue = useDebounce(searchValue, 500);
+
   useEffect(() => {
-    const promise = dispatch(getUserList());
-    return () => {
-      promise.abort();
-    };
-  }, [dispatch]);
+    if (debouncedSearchValue) {
+      dispatch(getUserList());
+    }
+  }, [debouncedSearchValue, dispatch]);
+
+  const selectOptions = userList.map((user) => ({
+    value: user.last_name || "",
+    label: user.username || "",
+  }));
+
+  const NoDropdownIndicator = () => null;
 
   return (
     <AdminLayout>
@@ -43,15 +62,20 @@ export default function AddHome() {
             >
               Tên chủ nhà:
             </label>
-            <Select label="Select an">
-              {userList
-                .filter((user) => user.role !== 2)
-                .map((user, index) => (
-                  <SelectItem key={index} value={String(user.last_name)}>
-                    {user.username}
-                  </SelectItem>
-                ))}
-            </Select>
+            <Select
+              options={selectOptions}
+              placeholder="Địa chỉ email hoặc tên"
+              onChange={(option) =>
+                setSelectedOption(option as SelectChangeValueType)
+              }
+              value={selectedOption}
+              isSearchable={true}
+              instanceId="unique-select-id"
+              onInputChange={(value) => setSearchValue(value)}
+              components={{
+                DropdownIndicator: NoDropdownIndicator,
+              }}
+            />
           </div>
           <div className="flex justify-around">
             <Button

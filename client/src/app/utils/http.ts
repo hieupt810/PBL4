@@ -1,11 +1,15 @@
 import axios, { AxiosInstance } from "axios";
+import { getCookie, hasCookie } from "cookies-next";
 
 class Http {
   instance: AxiosInstance;
   constructor() {
     this.instance = axios.create({
-      baseURL: "http://127.0.0.1:8082/",
+      baseURL: process.env.BACKEND_URL,
       timeout: 10000,
+      // headers: {
+      //   token: hasCookie("token") ? getCookie("token"): "",
+      // },
     });
   }
 }
