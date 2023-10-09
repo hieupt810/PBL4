@@ -8,7 +8,7 @@
 
   "E001": "Internal Server Error",
   "E002": "Bad Request",
-  "E003": "Unauthorized",
+  "E003": "",
   "E004": "Username is existed",
   "E005": "Username is not existed",
   "E006": "Wrong password",

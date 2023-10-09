@@ -1,14 +1,16 @@
 from flask import Blueprint, jsonify, request
-from utils import get_datetime, get_neo4j, query, valid_request
+from utils import getDatetime, getNeo4J, query, validRequest
 
 user_bp = Blueprint("user", __name__)
-db = get_neo4j()
+db = getNeo4J()
 
 
 @user_bp.route("", methods=["GET"])
 def profile():
-    token = request.args.get("token", type=str)
     try:
+        if not "token" in request.headers:
+            return jsonify({"message": "E002", "status": 400}), 200
+
         records, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {token: $token})
@@ -21,7 +23,7 @@ def profile():
                 LIMIT 1"""
             ),
             routing_="r",
-            token=token,
+            token=request.headers.get("token"),
         )
         if len(records) != 1:
             return jsonify({"message": "E005", "status": 400}), 200
@@ -48,34 +50,34 @@ def profile():
 
 @user_bp.route("/list-user", methods=["GET"])
 def user_list():
-    token = request.args.get("token", type=str)
     page = request.args.get("page", type=int, default=1)
     size = request.args.get("size", type=int, default=10)
+    # Search params
     username = request.args.get("username", type=str, default="")
     role = request.args.get("role", type=int, default=-1)
     try:
+        if not "token" in request.headers:
+            return jsonify({"message": "E002", "status": 400}), 200
+
         records, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {token: $token})
                 RETURN u.role AS role LIMIT 1"""
             ),
             routing_="r",
-            token=token,
+            token=request.headers.get("token"),
         )
         if len(records) != 1 or records[0]["role"] == 0:
-            return jsonify({"message": "E005", "status": 400}), 200
+            return jsonify({"message": "E002", "status": 400}), 200
 
         if username != "" and role == -1:
             records, _, _ = db.execute_query(
                 query(
                     """MATCH (u:User)
                     WHERE toLower(u.username) CONTAINS toLower($username)
-                    RETURN  u.username AS username,
-                            u.first_name AS first_name,
-                            u.last_name AS last_name,
-                            u.gender AS gender,
-                            u.role AS role,
-                            u.updated_at AS updated_at,
+                    RETURN  u.username AS username, u.first_name AS first_name,
+                            u.last_name AS last_name, u.gender AS gender,
+                            u.role AS role, u.updated_at AS updated_at,
                             COUNT {
                                 (t:User)
                                 WHERE toLower(t.username) CONTAINS toLower($username)
@@ -93,12 +95,9 @@ def user_list():
                 query(
                     """MATCH (u:User)
                     WHERE u.role = $role AND toLower(u.username) CONTAINS toLower($username)
-                    RETURN  u.username AS username,
-                            u.first_name AS first_name,
-                            u.last_name AS last_name,
-                            u.gender AS gender,
-                            u.role AS role,
-                            u.updated_at AS updated_at,
+                    RETURN  u.username AS username, u.first_name AS first_name,
+                            u.last_name AS last_name, u.gender AS gender,
+                            u.role AS role, u.updated_at AS updated_at,
                             COUNT {
                                 (t:User)
                                 WHERE t.role = $role AND toLower(t.username) CONTAINS toLower($username)
@@ -116,12 +115,9 @@ def user_list():
             records, _, _ = db.execute_query(
                 query(
                     """MATCH (u:User {role: $role})
-                    RETURN  u.username AS username,
-                            u.first_name AS first_name,
-                            u.last_name AS last_name,
-                            u.gender AS gender,
-                            u.role AS role,
-                            u.updated_at AS updated_at,
+                    RETURN  u.username AS username, u.first_name AS first_name,
+                            u.last_name AS last_name, u.gender AS gender,
+                            u.role AS role, u.updated_at AS updated_at,
                             COUNT{ (:User {role: $role}) } AS amount
                     ORDER BY updated_at DESC, first_name ASC, last_name ASC
                     SKIP $skip LIMIT $limit"""
@@ -135,12 +131,9 @@ def user_list():
             records, _, _ = db.execute_query(
                 query(
                     """MATCH (u:User)
-                    RETURN  u.username AS username,
-                            u.first_name AS first_name,
-                            u.last_name AS last_name,
-                            u.gender AS gender,
-                            u.role AS role,
-                            u.updated_at AS updated_at,
+                    RETURN  u.username AS username, u.first_name AS first_name,
+                            u.last_name AS last_name, u.gender AS gender,
+                            u.role AS role, u.updated_at AS updated_at,
                             COUNT{ (:User) } AS amount
                     ORDER BY updated_at DESC, first_name ASC, last_name ASC
                     SKIP $skip LIMIT $limit"""
@@ -179,9 +172,7 @@ def update_user():
     requires = ["username", "first_name", "last_name", "gender", "role"]
     req = request.get_json()
     try:
-        if not "token" in request.headers:
-            return jsonify({"message": "E003", "status": 400}), 200
-        if not valid_request(req, requires):
+        if (not "token" in request.headers) or (not validRequest(req, requires)):
             return jsonify({"message": "E002", "status": 400}), 200
 
         records, _, _ = db.execute_query(
@@ -197,15 +188,13 @@ def update_user():
             or (records[0]["role"] != 2 and req["username"] != records[0]["username"])
             or (records[0]["role"] != 0 and req["role"] != 0)
         ):
-            return jsonify({"message": "E003", "status": 400}), 200
+            return jsonify({"message": "E002", "status": 400}), 200
 
         _, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {username: $username})
-                SET u.first_name = $first_name,
-                    u.last_name = $last_name,
-                    u.gender = $gender,
-                    u.role = $role,
+                SET u.first_name = $first_name, u.last_name = $last_name,
+                    u.gender = $gender, u.role = $role,
                     u.updated_at = $updated_at"""
             ),
             routing_="w",
@@ -214,7 +203,7 @@ def update_user():
             last_name=req["last_name"],
             gender=req["gender"],
             role=req["role"],
-            updated_at=get_datetime(),
+            updated_at=getDatetime(),
         )
         return jsonify({"message": "I003", "status": 200}), 200
     except Exception as error:
@@ -226,9 +215,7 @@ def delete_user():
     requires = ["username"]
     req = request.get_json()
     try:
-        if not "token" in request.headers:
-            return jsonify({"message": "E003", "status": 400}), 200
-        if not valid_request(req, requires):
+        if (not "token" in request.headers) or (not validRequest(req, requires)):
             return jsonify({"message": "E002", "status": 400}), 200
 
         records, _, _ = db.execute_query(
@@ -240,7 +227,7 @@ def delete_user():
             token=request.headers.get("token"),
         )
         if (len(records) != 1) or (records[0]["role"] == 0):
-            return jsonify({"message": "E003", "status": 400}), 200
+            return jsonify({"message": "E002", "status": 400}), 200
 
         _, _, _ = db.execute_query(
             query(
