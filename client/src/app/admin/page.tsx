@@ -22,6 +22,7 @@ import { useEffect, useState } from "react";
 import { BiPlus } from "react-icons/bi";
 import { RiDeleteBin5Line, RiEditBoxLine } from "react-icons/ri";
 import AdminLayout from "./layout";
+import { useRouter } from "next/navigation"
 
 interface Home {
   first_name: string;
@@ -43,6 +44,7 @@ export default function Admin() {
   const [usersPage, setUsersPage] = useState(1);
   const [usersAmount, setUsersAmount] = useState(1);
 
+  const router = useRouter();
   useEffect(() => {
     if (!hasCookie("token")) return;
     const token = getCookie("token")?.toString();
@@ -89,7 +91,7 @@ export default function Admin() {
                     </h5>
 
                     <div className="flex flex-row items-center justify-end space-x-4 px-4">
-                      <Button isIconOnly color="success">
+                      <Button isIconOnly color="success" onClick={() => router.push("/admin/add-home")}>
                         <BiPlus size={25} />
                       </Button>
                     </div>
