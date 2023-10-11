@@ -26,14 +26,14 @@ def get_app() -> Flask:
     return app
 
 
-def get_neo4j():
+def getNeo4J():
     return GraphDatabase.driver(
         uri=Config.NEO4J_URI,
         auth=basic_auth(Config.NEO4J_USERNAME, Config.NEO4J_PASSWORD),
     )
 
 
-def uniqueid() -> str:
+def uniqueID() -> str:
     return str(uuid.uuid4())
 
 
@@ -41,7 +41,7 @@ def query(q: LiteralString) -> LiteralString:
     return cast(LiteralString, dedent(q).strip())
 
 
-def valid_request(request, requires) -> bool:
+def validRequest(request, requires) -> bool:
     if len(requires) == 0:
         return True
     for require in requires:
@@ -50,5 +50,5 @@ def valid_request(request, requires) -> bool:
     return True
 
 
-def get_datetime() -> str:
+def getDatetime() -> str:
     return datetime.now().strftime("%Y/%m/%d %H:%M")
