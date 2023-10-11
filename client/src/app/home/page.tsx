@@ -17,6 +17,9 @@ import { FiEdit, FiLogOut } from "react-icons/fi";
 import { WiHumidity } from "react-icons/wi";
 import MobileLayout from "../mobile";
 import "./styles.css";
+import LightComponent from "@/components/LightComponent";
+import { Light } from "../types/light.type";
+import http from "../utils/http";
 
 interface ConfirmPopupProps {
   text: string;
@@ -34,14 +37,21 @@ export default function HomeInformation() {
     onConfirm: () => {},
   });
 
+  const [lights, setLights] = useState<Light[]>([]);
+  const lightList = Array.isArray(lights) ? lights : [];
+  console.log(lightList)
+
   useEffect(() => {
     if (!hasCookie("token")) {
       router.push("/login");
       return;
     }
     const token = getCookie("token")?.toString();
-    fetch(process.env.BACKEND_URL + `api/user?token=${token}`, {
+    fetch(process.env.BACKEND_URL + "api/user", {
       method: "GET",
+      headers: {
+        token: `${token}`,
+      },
     })
       .then((r) => r.json())
       .then((d) => {
@@ -49,8 +59,11 @@ export default function HomeInformation() {
         else dispatch(failPopUp(d.message));
       });
 
-    fetch(process.env.BACKEND_URL + `api/home/list-member?token=${token}`, {
+    fetch(process.env.BACKEND_URL + "api/home/list-member", {
       method: "GET",
+      headers: {
+        token: `${token}`,
+      },
     })
       .then((r) => r.json())
       .then((d) => {
@@ -58,6 +71,21 @@ export default function HomeInformation() {
           setMembers(d.members);
         } else dispatch(failPopUp(d.message));
       });
+
+    async function fetchLights() {
+      try {
+        const response = await http.get(`api/led`, {
+          headers: {
+            token: `${token}`,
+          },
+        });
+        setLights(response.data.leds);
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
+
+    fetchLights();
   }, [dispatch, router]);
 
   return (
@@ -200,6 +228,15 @@ export default function HomeInformation() {
             </div>
           </div>
         ) : null}
+
+        <div className="container">
+          <h5>Đèn</h5>
+          <div>
+            {lightList.map((light) => (
+              <LightComponent key={light.id} name={light.name} />
+            ))}
+          </div>
+        </div>
       </MobileLayout>
     </div>
   );
