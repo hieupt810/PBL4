@@ -53,11 +53,12 @@ def getHomeLed():
 
         records, _, _ = db.execute_query(
             query(
-                """MATCH (u:User {token: $token})-[c:CONTROL]->(:Home)
+                """MATCH (u:User {token: $token})-[c:CONTROL]->(h:Home {id : $id})
                 RETURN c.role AS role LIMIT 1"""
             ),
             routing_="r",
             token=request.headers.get("token"),
+            id = "49480b29-b900-412b-8394-f1bcee055f8c"
         )
         if len(records) != 1:
             return jsonify({"message": "E002", "status": 400}), 200

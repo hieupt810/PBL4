@@ -16,6 +16,8 @@ class Config(object):
     ROOT_PASSWORD = str(os.environ.get("ROOT_PASSWORD"))
 
     ESP_SERVER_URL = str(os.environ.get("ESP_SERVER_URL"))
+    HOME_ID = str(os.environ.get("HOME_ID"))
+    
 
     @staticmethod
     def valid_env() -> bool:
@@ -27,6 +29,7 @@ class Config(object):
             and Config.ROOT_USERNAME
             and Config.ROOT_PASSWORD
             and Config.ESP_SERVER_URL
+            and Config.HOME_ID
         ):
             return True
         return False

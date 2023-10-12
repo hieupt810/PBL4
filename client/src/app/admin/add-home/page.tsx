@@ -25,7 +25,6 @@ export default function AddHome() {
   const [selectedOption, setSelectedOption] =
     useState<SelectChangeValueType | null>(null);
   const userList = Array.isArray(rawUserList) ? rawUserList : [];
-  console.log(userList);
   const router = useRouter();
   const dispatch = useAppDispatch();
 
