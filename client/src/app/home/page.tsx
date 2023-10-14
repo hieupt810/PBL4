@@ -20,6 +20,7 @@ import "./styles.css";
 import LightComponent from "@/components/LightComponent";
 import { Light } from "../types/light.type";
 import http from "../utils/http";
+import io from "socket.io-client";
 
 interface ConfirmPopupProps {
   text: string;
@@ -29,6 +30,9 @@ interface ConfirmPopupProps {
 export default function HomeInformation() {
   const router = useRouter();
   const dispatch = useAppDispatch();
+
+  const [temperature, setTemperature] = useState(null);
+  const [humidity, setHumidity] = useState(null);
 
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<Member>();
@@ -43,6 +47,22 @@ export default function HomeInformation() {
   console.log(lightList);
 
   useEffect(() => {
+    const socket = io("http://localhost:5005");
+
+    socket.on("temperature", (data) => {
+      setTemperature(data.temperature);
+    });
+
+    socket.on("humidity", (data) => {
+      setHumidity(data.humidity);
+    });
+
+    return () => {
+      socket.off("temperature");
+      socket.off("humidity");
+      socket.close();
+    };
+
     if (!hasCookie("token")) {
       router.push("/login");
       return;
@@ -166,7 +186,10 @@ export default function HomeInformation() {
             <div className="item bg-[#7443eb]">
               <div className="item_icon">
                 <FaTemperatureFull size={30} />
-                <BsArrowRightShort size={25} />
+                {/* <BsArrowRightShort size={25} /> */}
+                <span>
+                  {temperature ? `${temperature}°C` : "Waiting for data..."}
+                </span>
               </div>
 
               <div className="item_name">
@@ -177,7 +200,7 @@ export default function HomeInformation() {
             <div className="item bg-[#edc74c]">
               <div className="item_icon">
                 <WiHumidity size={30} />
-                <BsArrowRightShort size={25} />
+                <span>{humidity ? `${humidity}%` : "Waiting for data..."}</span>
               </div>
 
               <div className="item_name">
