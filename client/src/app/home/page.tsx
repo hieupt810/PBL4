@@ -22,6 +22,7 @@ import { Light } from "../types/light.type";
 import http from "../utils/http";
 import io from "socket.io-client";
 
+
 interface ConfirmPopupProps {
   text: string;
   onConfirm: () => void;
@@ -30,6 +31,7 @@ interface ConfirmPopupProps {
 export default function HomeInformation() {
   const router = useRouter();
   const dispatch = useAppDispatch();
+
 
   const [temperature, setTemperature] = useState(null);
   const [humidity, setHumidity] = useState(null);
