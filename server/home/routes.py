@@ -7,7 +7,7 @@ db = getNeo4J()
 
 @home_bp.route("/add-home", methods=["POST"])
 def create_home():
-    requires = ["username"]
+    requires = ["username", "password"]
     req = request.get_json()
     try:
         if (not "token" in request.headers) or (not validRequest(req, requires)):
@@ -27,12 +27,13 @@ def create_home():
         _, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {username: $username})
-                MERGE (u)-[:CONTROL {role: 2}]->(h:Home {id: $id, updated_at: $updated_at})"""
+                MERGE (u)-[:CONTROL {role: 2}]->(h:Home {id: $id, updated_at: $updated_at, password: $password})"""
             ),
             routing_="w",
             username=req["username"],
             id=uniqueID(),
             updated_at=getDatetime(),
+            password=req["password"],
         )
         return jsonify({"message": "I005", "status": 200}), 200
     except Exception as error:
@@ -64,7 +65,7 @@ def list_home():
                 """MATCH (u:User)-[:CONTROL {role: 2}]-(h:Home)
                 WHERE toLower(u.username) CONTAINS toLower($username)
                 RETURN  u.first_name AS first_name, u.last_name AS last_name,
-                        u.username AS username, h.id AS id,
+                        u.username AS username, h.id AS id, h.password AS password,
                         h.updated_at AS updated_at, COUNT(h) AS amount
                 SKIP $skip LIMIT $limit"""
             ),
@@ -84,6 +85,7 @@ def list_home():
                             "first_name": record["first_name"],
                             "last_name": record["last_name"],
                             "username": record["username"],
+                            "password": record["password"],
                             "id": record["id"],
                         }
                         for record in records

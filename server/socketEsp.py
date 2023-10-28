@@ -4,7 +4,7 @@ from flask_socketio import SocketIO
 app = Flask(__name__)
 socketio = SocketIO(app)
 
-@app.route('/temperature', methods=['POST'])
+@app.route('/temperature', methods=['GET'])
 def handle_temperature():
     data = request.json  
     temperature = data.get('temperature')
@@ -12,7 +12,7 @@ def handle_temperature():
     socketio.emit('temperature', {'temperature': temperature})
     return jsonify({'message': 'Temperature received successfully'})
 
-@app.route('/humidity', methods=['POST'])
+@app.route('/humidity', methods=['GET'])
 def handle_humidity():
     data = request.json 
     humidity = data.get('humidity')

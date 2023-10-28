@@ -61,3 +61,31 @@ def lock_door():
         return jsonify({}), 200
     except Exception as error:
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+
+@door_bp.route("/pass", methods=["GET"])
+def get_pass():
+    try:
+
+        records, _, _ = db.execute_query(
+            query(
+                """MATCH (h:Home {id: $id})
+                    RETURN h.password AS password
+                    LIMIT 1"""
+            ),
+            routing_= "r",
+            id=request.args.get('id'),
+        )
+
+        if records:
+            # Check if the records list is empty
+            if len(records) > 0:
+                password = records[0]["password"]
+                return jsonify(password), 200
+            else:
+                return jsonify({"message": "No records found"}), 404
+
+        else:
+            return jsonify({"message": "No records found"}), 404
+
+    except Exception as error:
+        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
