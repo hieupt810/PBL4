@@ -10,13 +10,18 @@ import { deleteCookie, getCookie, hasCookie } from "cookies-next";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { BsArrowRightShort } from "react-icons/bs";
 import { FaTemperatureFull } from "react-icons/fa6";
 import { FiEdit, FiLogOut } from "react-icons/fi";
 import { WiHumidity } from "react-icons/wi";
 import MobileLayout from "../mobile";
 import "./styles.css";
+import LightComponent from "@/components/LightComponent";
+import { Light } from "../types/light.type";
+import http from "../utils/http";
+import io from "socket.io-client";
+
 
 interface ConfirmPopupProps {
   text: string;
@@ -27,6 +32,11 @@ export default function HomeInformation() {
   const router = useRouter();
   const dispatch = useAppDispatch();
 
+
+  const [temperature, setTemperature] = useState(null);
+  const [humidity, setHumidity] = useState(null);
+
+  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<Member>();
   const [members, setMembers] = useState<Member[]>([]);
   const [confirmPopup, setConfirmPopup] = useState<ConfirmPopupProps>({
@@ -34,38 +44,78 @@ export default function HomeInformation() {
     onConfirm: () => {},
   });
 
+  const [lights, setLights] = useState<Light[]>([]);
+  const lightList = Array.isArray(lights) ? lights : [];
+  console.log(lightList);
+
   useEffect(() => {
+    const socket = io("http://localhost:5005");
+
+    
     if (!hasCookie("token")) {
       router.push("/login");
       return;
     }
     const token = getCookie("token")?.toString();
-    fetch(process.env.BACKEND_URL + `api/user`, {
+    fetch(process.env.BACKEND_URL + "api/user", {
       method: "GET",
       headers: {
-        'token': `${token}` // Thêm token vào header
-      }
+        token: `${token}`,
+      },
     })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.status == 200) setUser(d.profile);
-        else dispatch(failPopUp(d.message));
-      });
-
-    fetch(process.env.BACKEND_URL + `api/home/list-member`, {
+    .then((r) => r.json())
+    .then((d) => {
+      if (d.status == 200) setUser(d.profile);
+      else dispatch(failPopUp(d.message));
+    });
+    
+    fetch(process.env.BACKEND_URL + "api/home/list-member", {
       method: "GET",
       headers: {
-        'token': `${token}` // Thêm token vào header
-      }
+        token: `${token}`,
+      },
     })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.status == 200) {
-          setMembers(d.members);
-        } else dispatch(failPopUp(d.message));
-      });
+    .then((r) => r.json())
+    .then((d) => {
+      if (d.status == 200) {
+        setMembers(d.members);
+      } else dispatch(failPopUp(d.message));
+    });
+    
+    async function fetchLights() {
+      try {
+        const response = await http.get(`api/led`, {
+          headers: {
+            token: `${token}`,
+          },
+        });
+        setLights(response.data.leds);
+        setLoading(false);
+        if (response.status !== 200) {
+          dispatch(failPopUp(response.data.message));
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        setLoading(false);
+      }
+    }
+    
+    fetchLights();
+    socket.on("temperature", (data) => {
+      setTemperature(data.temperature);
+    });
+  
+    socket.on("humidity", (data) => {
+      setHumidity(data.humidity);
+    });
+  
+    return () => {
+      socket.off("temperature");
+      socket.off("humidity");
+      socket.close();
+    };
   }, [dispatch, router]);
-
+  
   return (
     <div>
       <ConfirmPopup
@@ -138,7 +188,10 @@ export default function HomeInformation() {
             <div className="item bg-[#7443eb]">
               <div className="item_icon">
                 <FaTemperatureFull size={30} />
-                <BsArrowRightShort size={25} />
+                {/* <BsArrowRightShort size={25} /> */}
+                <span>
+                  {temperature ? `${temperature}°C` : "Waiting for data..."}
+                </span>
               </div>
 
               <div className="item_name">
@@ -149,7 +202,7 @@ export default function HomeInformation() {
             <div className="item bg-[#edc74c]">
               <div className="item_icon">
                 <WiHumidity size={30} />
-                <BsArrowRightShort size={25} />
+                <span>{humidity ? `${humidity}%` : "Waiting for data..."}</span>
               </div>
 
               <div className="item_name">
@@ -181,14 +234,17 @@ export default function HomeInformation() {
           </div>
         </div>
 
+        <div className="text-xl font-bold">
+          <h5>Thành viên</h5>
+          {members.length > 0 && (
+            <a href="/member">
+              <BsArrowRightShort size={25} />
+            </a>
+          )}
+        </div>
+
         {members.length > 0 ? (
-          <div className="container">
-            <div className="title">
-              <h5>Thành viên</h5>
-              <a href="/member">
-                <BsArrowRightShort size={25} />
-              </a>
-            </div>
+          <div className="container drop-shadow-xl rounded-lg">
             <div className="members">
               {members.map((member, index) => {
                 return (
@@ -205,7 +261,90 @@ export default function HomeInformation() {
               })}
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="max-w-[300px] w-full flex items-center gap-3">
+            <div>
+              <Skeleton className="flex rounded-full w-12 h-12" />
+            </div>
+            <div className="w-full flex flex-col gap-2">
+              <Skeleton className="h-3 w-3/5 rounded-lg" />
+              <Skeleton className="h-3 w-4/5 rounded-lg" />
+            </div>
+            <div>
+              <Skeleton className="flex rounded-full w-12 h-12" />
+            </div>
+            <div className="w-full flex flex-col gap-2">
+              <Skeleton className="h-3 w-3/5 rounded-lg" />
+              <Skeleton className="h-3 w-4/5 rounded-lg" />
+            </div>
+          </div>
+        )}
+
+        <div className="container">
+          <h5>Đèn</h5>
+          <div suppressHydrationWarning={true}>
+            {loading ? (
+              <Fragment>
+                <div className="max-w-[300px] w-full flex items-center gap-3 mb-3">
+                  <div>
+                    <Skeleton className="flex rounded-full w-12 h-12" />
+                  </div>
+                  <div className="w-full flex flex-col gap-2">
+                    <Skeleton className="h-3 w-3/5 rounded-lg" />
+                    <Skeleton className="h-3 w-4/5 rounded-lg" />
+                  </div>
+                  <div>
+                    <Skeleton className="flex rounded-full w-12 h-12" />
+                  </div>
+                  <div className="w-full flex flex-col gap-2">
+                    <Skeleton className="h-3 w-3/5 rounded-lg" />
+                    <Skeleton className="h-3 w-4/5 rounded-lg" />
+                  </div>
+                </div>
+                <div className="max-w-[300px] w-full flex items-center gap-3 mb-3">
+                  <div>
+                    <Skeleton className="flex rounded-full w-12 h-12" />
+                  </div>
+                  <div className="w-full flex flex-col gap-2">
+                    <Skeleton className="h-3 w-3/5 rounded-lg" />
+                    <Skeleton className="h-3 w-4/5 rounded-lg" />
+                  </div>
+                  <div>
+                    <Skeleton className="flex rounded-full w-12 h-12" />
+                  </div>
+                  <div className="w-full flex flex-col gap-2">
+                    <Skeleton className="h-3 w-3/5 rounded-lg" />
+                    <Skeleton className="h-3 w-4/5 rounded-lg" />
+                  </div>
+                </div>
+                <div className="max-w-[300px] w-full flex items-center gap-3 mb-3">
+                  <div>
+                    <Skeleton className="flex rounded-full w-12 h-12" />
+                  </div>
+                  <div className="w-full flex flex-col gap-2">
+                    <Skeleton className="h-3 w-3/5 rounded-lg" />
+                    <Skeleton className="h-3 w-4/5 rounded-lg" />
+                  </div>
+                  <div>
+                    <Skeleton className="flex rounded-full w-12 h-12" />
+                  </div>
+                  <div className="w-full flex flex-col gap-2">
+                    <Skeleton className="h-3 w-3/5 rounded-lg" />
+                    <Skeleton className="h-3 w-4/5 rounded-lg" />
+                  </div>
+                </div>
+              </Fragment>
+            ) : (
+              lightList.map((light) => (
+                <LightComponent
+                  key={light.id}
+                  name={light.name}
+                  id={light.id}
+                />
+              ))
+            )}
+          </div>
+        </div>
       </MobileLayout>
     </div>
   );

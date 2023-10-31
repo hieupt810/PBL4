@@ -36,11 +36,11 @@ def led_switch():
             id=req["id"],
         )
         _ = requests.post(
-            f"{Config.ESP_SERVER_URL}/led/{records[0]['pin']}/{req['mode']}"
+            f"http://{Config.ESP_SERVER_URL}/led/{records[0]['pin']}/{req['mode']}"
         )
         return jsonify({"message": "I014", "status": 200}), 200
     except Exception as error:
-        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+        return jsonify({"message": "E001", "status": 500, "error": str(error), "": Config.ESP_SERVER_URL}), 200
 
 
 @led_bp.route("", methods=["GET"])
