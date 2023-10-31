@@ -51,20 +51,7 @@ export default function HomeInformation() {
   useEffect(() => {
     const socket = io("http://localhost:5005");
 
-    socket.on("temperature", (data) => {
-      setTemperature(data.temperature);
-    });
-
-    socket.on("humidity", (data) => {
-      setHumidity(data.humidity);
-    });
-
-    return () => {
-      socket.off("temperature");
-      socket.off("humidity");
-      socket.close();
-    };
-
+    
     if (!hasCookie("token")) {
       router.push("/login");
       return;
@@ -76,25 +63,25 @@ export default function HomeInformation() {
         token: `${token}`,
       },
     })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.status == 200) setUser(d.profile);
-        else dispatch(failPopUp(d.message));
-      });
-
+    .then((r) => r.json())
+    .then((d) => {
+      if (d.status == 200) setUser(d.profile);
+      else dispatch(failPopUp(d.message));
+    });
+    
     fetch(process.env.BACKEND_URL + "api/home/list-member", {
       method: "GET",
       headers: {
         token: `${token}`,
       },
     })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.status == 200) {
-          setMembers(d.members);
-        } else dispatch(failPopUp(d.message));
-      });
-
+    .then((r) => r.json())
+    .then((d) => {
+      if (d.status == 200) {
+        setMembers(d.members);
+      } else dispatch(failPopUp(d.message));
+    });
+    
     async function fetchLights() {
       try {
         const response = await http.get(`api/led`, {
@@ -112,10 +99,23 @@ export default function HomeInformation() {
         setLoading(false);
       }
     }
-
+    
     fetchLights();
+    socket.on("temperature", (data) => {
+      setTemperature(data.temperature);
+    });
+  
+    socket.on("humidity", (data) => {
+      setHumidity(data.humidity);
+    });
+  
+    return () => {
+      socket.off("temperature");
+      socket.off("humidity");
+      socket.close();
+    };
   }, [dispatch, router]);
-
+  
   return (
     <div>
       <ConfirmPopup
