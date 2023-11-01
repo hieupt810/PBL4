@@ -1,34 +1,37 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request
 from flask_socketio import SocketIO
 
 app = Flask(__name__)
-
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 
-@app.route('/temperature', methods=['POST'])
+@app.route("/temperature", methods=["POST"])
 def handle_temperature():
-    data = request.json  
-    temperature = data.get('temperature')
+    req = request.get_json()
+
+    temperature = req["temperature"]
     print(f"Temperature: {temperature}°C")
-
     if temperature != None:
-        socketio.emit('temperature', {'temperature': temperature})
+        socketio.emit("temperature", {"temperature": temperature})
 
-    humidity = data.get('humidity')
+    humidity = req["humidity"]
     print(f"Humidity: {humidity}%")
     if humidity != None:
-        socketio.emit('humidity', {'humidity': humidity})
+        socketio.emit("humidity", {"humidity": humidity})
+    return jsonify({"message": "Temperature received successfully", "status": 200}), 200
 
-    return jsonify({'message': 'Temperature received successfully'})
 
-@app.route('/humidity', methods=['POST'])
+@app.route("/humidity", methods=["POST"])
 def handle_humidity():
-    data = request.json 
-    humidity = data.get('humidity')
-    print(f"Humidity: {humidity}%")
-    socketio.emit('humidity', {'humidity': humidity})
-    return jsonify({'message': 'Humidity received successfully'})
+    req = request.get_json()
 
-if __name__ == '__main__':
-    socketio.run(app, host="0.0.0.0", port=5005, debug=True)
+    humidity = req["humidity"]
+    print(f"Humidity: {humidity}%")
+    socketio.emit("humidity", {"humidity": humidity})
+    return jsonify({"message": "Humidity received successfully"})
+
+
+if __name__ == "__main__":
+    socketio.run(
+        app, host="0.0.0.0", port=5005, debug=False, use_reloader=True, log_output=False
+    )
