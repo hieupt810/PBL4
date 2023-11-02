@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useState } from "react";
 import { BsArrowRightShort } from "react-icons/bs";
 import { FaTemperatureFull } from "react-icons/fa6";
-import { FiEdit, FiLogOut } from "react-icons/fi";
+import { FiEdit, FiLogOut, FiRefreshCcw } from "react-icons/fi";
 import { WiHumidity } from "react-icons/wi";
 import MobileLayout from "../mobile";
 import "./styles.css";
@@ -44,25 +44,9 @@ export default function HomeInformation() {
 
   const [lights, setLights] = useState<Light[]>([]);
   const lightList = Array.isArray(lights) ? lights : [];
-  console.log(lightList);
+  console.log(lights);
 
   useEffect(() => {
-    const socket = io("http://localhost:5005");
-
-    socket.on("temperature", (data) => {
-      setTemperature(data.temperature);
-    });
-
-    socket.on("humidity", (data) => {
-      setHumidity(data.humidity);
-    });
-
-    return () => {
-      socket.off("temperature");
-      socket.off("humidity");
-      socket.close();
-    };
-
     if (!hasCookie("token")) {
       router.push("/login");
       return;
@@ -93,7 +77,27 @@ export default function HomeInformation() {
         } else dispatch(failPopUp(d.message));
       });
 
+    const socket = io("http://localhost:5005");
+
+    socket.on("temperature", (data) => {
+      setTemperature(data.temperature);
+    });
+
+    socket.on("humidity", (data) => {
+      setHumidity(data.humidity);
+    });
+
+    return () => {
+      socket.off("temperature");
+      socket.off("humidity");
+      socket.close();
+    };
+  }, [dispatch, router]);
+
+  useEffect(() => {
     async function fetchLights() {
+      if (!hasCookie("token")) return;
+      const token = getCookie("token")?.toString();
       try {
         const response = await http.get(`api/led`, {
           headers: {
@@ -110,7 +114,6 @@ export default function HomeInformation() {
         setLoading(false);
       }
     }
-
     fetchLights();
   }, [dispatch, router]);
 
@@ -164,6 +167,12 @@ export default function HomeInformation() {
           <Link href={"/profile"}>
             <Button isIconOnly color="primary">
               <FiEdit size={20} />
+            </Button>
+          </Link>
+
+          <Link href={"/reset_password"}>
+            <Button isIconOnly color="primary">
+              <FiRefreshCcw size={20} />
             </Button>
           </Link>
 

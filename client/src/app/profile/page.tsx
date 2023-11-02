@@ -7,6 +7,7 @@ import { getCookie, hasCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import MobileLayout from "../mobile";
+import http from "../utils/http";
 
 export default function Profile() {
   const router = useRouter();
@@ -20,55 +21,73 @@ export default function Profile() {
   const [role, setRole] = useState(0);
 
   useEffect(() => {
+    async function fetchUser() {
+      if (!hasCookie("token")) {
+        router.push("/login");
+        return;
+      }
+
+      const token = getCookie("token")?.toString();
+      try {
+        const response = await http.get("api/user", {
+          headers: {
+            token: `${token}`,
+          },
+        });
+        const data = await response.data;
+
+        if (data.status === 200) {
+          setUsername(data.profile["username"]);
+          setFirstname(data.profile["first_name"]);
+          setLastname(data.profile["last_name"]);
+          setGender(data.profile["gender"].toString());
+          setRole(data.profile["role"]);
+        } else {
+          router.push("/");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
+    fetchUser();
+  }, [router]);
+
+  const handleUpdateUser = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    dispatch(setLoading());
+
+    const userData = {
+      username: username,
+      first_name: firstname,
+      last_name: lastname,
+      gender: parseInt(gender),
+      role: role,
+    };
     if (!hasCookie("token")) {
       router.push("/login");
       return;
     }
+
     const token = getCookie("token")?.toString();
-    fetch(process.env.BACKEND_URL + `api/user?token=${token}`, {
-      method: "GET",
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.status == 200) {
-          setUsername(d.profile["username"]);
-          setFirstname(d.profile["first_name"]);
-          setLastname(d.profile["last_name"]);
-          setGender(d.profile["gender"].toString());
-          setRole(d.profile["role"]);
-        } else router.push("/");
-      });
-  }, [dispatch, router]);
 
-  const handleUpdateUser = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    dispatch(setLoading());
-
-    const headers: Headers = new Headers();
-    headers.append("Accept", "application/json");
-    headers.append("Content-Type", "application/json");
-    headers.append("token", getCookie("token") as string);
-    fetch(process.env.BACKEND_URL + "api/user", {
-      method: "PUT",
-      headers: headers,
-      body: JSON.stringify({
-        username: username,
-        first_name: firstname,
-        last_name: lastname,
-        gender: parseInt(gender),
-        role: role,
-      }),
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.status == 200) {
-          dispatch(successPopUp(d.message));
-          router.push("/home");
-        } else {
-          dispatch(failPopUp(d.message));
-          dispatch(resetLoading());
-        }
+    try {
+      const response = await http.put("api/user", userData, {
+        headers: {
+          token: `${token}`,
+        },
       });
+
+      const data = await response.data;
+      if (data.status === 200) {
+        dispatch(successPopUp(data.message));
+        router.push("/home");
+      } else {
+        dispatch(failPopUp(data.message));
+        dispatch(resetLoading());
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   return (
