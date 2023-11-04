@@ -114,7 +114,7 @@ def reset_pass():
                 _, _, _ = db.execute_query(
                 query(
                     """MATCH (h:Home {id: $id, password: $password})
-                    SET h.id = $newPass"""
+                    SET h.password = $newPass"""
                 ),
                 routing_="w",
                 id=Config.HOME_ID,
