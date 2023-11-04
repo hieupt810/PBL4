@@ -5,7 +5,7 @@ import { useAppDispatch } from "@/hook/hook";
 import { Member } from "@/models/member";
 import Man from "@/static/man.jpg";
 import Woman from "@/static/woman.png";
-import { Avatar, Button, Skeleton } from "@nextui-org/react";
+import { Avatar, Button, Skeleton, AvatarGroup } from "@nextui-org/react";
 import { deleteCookie, getCookie, hasCookie } from "cookies-next";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,6 +21,9 @@ import LightComponent from "@/components/LightComponent";
 import { Light } from "../types/light.type";
 import http from "../utils/http";
 import io from "socket.io-client";
+import { useFetchLights } from "./fetchData/useFetchLights";
+import DoorComponent from "@/components/DoorComponent";
+import classNames from "classnames";
 
 interface ConfirmPopupProps {
   text: string;
@@ -47,8 +50,8 @@ export default function HomeInformation() {
   console.log(lights);
 
   useEffect(() => {
-    const socket1  = io("http://localhost:5005");
-    
+    const socket1 = io("http://localhost:5005");
+
     if (!hasCookie("token")) {
       router.push("/login");
       return;
@@ -96,29 +99,8 @@ export default function HomeInformation() {
     };
   }, [dispatch, router]);
 
-  useEffect(() => {
-    async function fetchLights() {
-      if (!hasCookie("token")) return;
-      const token = getCookie("token")?.toString();
-      try {
-        const response = await http.get(`api/led`, {
-          headers: {
-            token: `${token}`,
-          },
-        });
-        setLights(response.data.leds);
-        setLoading(false);
-        if (response.status !== 200) {
-          dispatch(failPopUp(response.data.message));
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        setLoading(false);
-      }
-    }
-    fetchLights();
-  }, [dispatch, router]);
-  
+  useFetchLights(setLights, setLoading);
+
   return (
     <div>
       <ConfirmPopup
@@ -191,7 +173,7 @@ export default function HomeInformation() {
         </div>
 
         <div className="container">
-          <h5>Thiết bị của tôi</h5>
+          <h5>Trạng thái</h5>
 
           <div className="items_container">
             <div className="item bg-[#7443eb]">
@@ -243,34 +225,41 @@ export default function HomeInformation() {
           </div>
         </div>
 
-        <div className="text-xl font-bold">
+        <div className="text-xl font-bold flex items-center justify-between">
           <h5>Thành viên</h5>
           {members.length > 0 && (
-            <a href="/member">
+            <a href="/member" className="text-blue-500 hover:text-blue-700">
               <BsArrowRightShort size={25} />
             </a>
           )}
         </div>
 
         {members.length > 0 ? (
-          <div className="container drop-shadow-xl rounded-lg">
-            <div className="members">
-              {members.map((member, index) => {
-                return (
-                  <div className="member" key={index}>
-                    <Image
-                      src={member.gender == 0 ? Man : Woman}
-                      alt={"Avatar"}
-                      className="avatar"
-                    />
-                    <h5>{member.first_name}</h5>
-                    <h4>{member.role == 2 ? "Admin" : "Full Access"}</h4>
-                  </div>
-                );
-              })}
-            </div>
+          <div>
+            <AvatarGroup isBordered>
+              {members.map((member, index) => (
+                <Avatar src={member.gender === 0 ? Man.src : Woman.src} key={index} />
+              ))}
+            </AvatarGroup>
           </div>
         ) : (
+          // <div className="container drop-shadow-xl rounded-lg">
+          //   <div className="members">
+          //     {members.map((member, index) => {
+          //       return (
+          //         <div className="member" key={index}>
+          //           <Image
+          //             src={member.gender == 0 ? Man : Woman}
+          //             alt={"Avatar"}
+          //             className="avatar"
+          //           />
+          //           <h5>{member.first_name}</h5>
+          //           <h4>{member.role == 2 ? "Admin" : "Full Access"}</h4>
+          //         </div>
+          //       );
+          //     })}
+          //   </div>
+          // </div>
           <div className="max-w-[300px] w-full flex items-center gap-3">
             <div>
               <Skeleton className="flex rounded-full w-12 h-12" />
@@ -290,7 +279,7 @@ export default function HomeInformation() {
         )}
 
         <div className="container">
-          <h5>Đèn</h5>
+          <h5>Thiết bị của tôi</h5>
           <div suppressHydrationWarning={true}>
             {loading ? (
               <Fragment>
@@ -344,13 +333,16 @@ export default function HomeInformation() {
                 </div>
               </Fragment>
             ) : (
-              lightList.map((light) => (
-                <LightComponent
-                  key={light.id}
-                  name={light.name}
-                  id={light.id}
-                />
-              ))
+              <>
+                <DoorComponent name="Door" />
+                {lightList.map((light) => (
+                  <LightComponent
+                    key={light.id}
+                    name={light.name}
+                    id={light.id}
+                  />
+                ))}
+              </>
             )}
           </div>
         </div>

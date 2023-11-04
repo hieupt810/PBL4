@@ -7,6 +7,6 @@ export interface Users {
   gender?: number;
   last_name?: string;
   role?: number;
-  updated_at?: string;
+  // updated_at?: string;
   username?: string;
 }

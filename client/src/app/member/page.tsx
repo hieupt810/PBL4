@@ -7,6 +7,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
 import MobileLayout from "../mobile";
+import http from "../utils/http";
+import { User, Link, Skeleton } from "@nextui-org/react";
+import Man from "@/static/man.jpg";
+import Woman from "@/static/woman.png";
+import { MemberComponent } from "@/components/MemberComponent";
 
 export default function Member() {
   const router = useRouter();
@@ -19,24 +24,116 @@ export default function Member() {
       router.push("/login");
       return;
     }
+
     const token = getCookie("token")?.toString();
-    fetch(process.env.BACKEND_URL + `api/home?token=${token}&page=${page}`, {
-      method: "GET",
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.status === 200) {
-          setMembers(d.members);
-        } else dispatch(failPopUp(d.message));
-      });
+
+    const fetchListMembers = async () => {
+      try {
+        const response = await http.get(`api/home/list-member`, {
+          headers: {
+            token: `${token}`,
+          },
+        });
+
+        if (response.status === 200) {
+          const membersData = response.data.members;
+          setMembers(membersData);
+        } else {
+          dispatch(failPopUp(response.data.message));
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
+    fetchListMembers();
   }, [dispatch, page, router]);
 
   return (
     <MobileLayout>
-      <div className="title">
-        <h5>Thành viên</h5>
+      <h5 className="text-primary font-semibold text-xl text-center">
+        Danh sách thành viên
+      </h5>
 
+      {members.length > 0 ? (
         <div>
+          {members.map((value, index) => {
+            return (
+              <MemberComponent
+                key={index}
+                value={value}
+                Man={Man}
+                Woman={Woman}
+              />
+
+              // <tbody key={index}>
+              //   <tr>
+              //     <h5>
+              //       {value.last_name} {value.first_name}
+              //     </h5>
+              //     <span>@{value.username}</span>
+              //   </tr>
+
+              //   <tr>{value.role == 2 ? <h4>Quản trị</h4> : null}</tr>
+              // </tbody>
+            );
+          })}
+        </div>
+      ) : (
+        <div>
+          <div className="max-w-[300px] w-full flex items-center mb-7">
+            <div>
+              <Skeleton className="flex rounded-full w-12 h-12" />
+            </div>
+            <div className="w-full flex flex-col gap-2">
+              <Skeleton className="h-5 w-4/5 rounded-lg" />
+              <Skeleton className="h-3 w-3/5 rounded-lg" />
+            </div>
+          </div>
+          <div className="max-w-[300px] w-full flex items-center mb-7">
+            <div>
+              <Skeleton className="flex rounded-full w-12 h-12" />
+            </div>
+            <div className="w-full flex flex-col gap-2">
+              <Skeleton className="h-5 w-4/5 rounded-lg" />
+              <Skeleton className="h-3 w-3/5 rounded-lg" />
+            </div>
+          </div>
+          <div className="max-w-[300px] w-full flex items-center mb-7">
+            <div>
+              <Skeleton className="flex rounded-full w-12 h-12" />
+            </div>
+            <div className="w-full flex flex-col gap-2">
+              <Skeleton className="h-5 w-4/5 rounded-lg" />
+              <Skeleton className="h-3 w-3/5 rounded-lg" />
+            </div>
+          </div>
+          <div className="max-w-[300px] w-full flex items-center mb-7">
+            <div>
+              <Skeleton className="flex rounded-full w-12 h-12" />
+            </div>
+            <div className="w-full flex flex-col gap-2">
+              <Skeleton className="h-5 w-4/5 rounded-lg" />
+              <Skeleton className="h-3 w-3/5 rounded-lg" />
+            </div>
+          </div>
+          <div className="max-w-[300px] w-full flex items-center mb-7">
+            <div>
+              <Skeleton className="flex rounded-full w-12 h-12" />
+            </div>
+            <div className="w-full flex flex-col gap-2">
+              <Skeleton className="h-5 w-4/5 rounded-lg" />
+              <Skeleton className="h-3 w-3/5 rounded-lg" />
+            </div>
+          </div>
+        </div>
+      )}
+    </MobileLayout>
+  );
+}
+
+{
+  /* <div>
           <button
             type="button"
             onClick={() => setPage(page - 1 >= 1 ? page - 1 : 1)}
@@ -48,29 +145,5 @@ export default function Member() {
             <BiChevronRight size={25} />
           </button>
         </div>
-      </div>
-
-      <table className="table">
-        <tbody>
-          <tr>Thành viên</tr>
-          <tr>Quyền hạn</tr>
-        </tbody>
-
-        {members.map((value, index) => {
-          return (
-            <tbody key={index}>
-              <tr>
-                <h5>
-                  {value.last_name} {value.first_name}
-                </h5>
-                <span>@{value.username}</span>
-              </tr>
-
-              <tr>{value.role == 2 ? <h4>Quản trị</h4> : null}</tr>
-            </tbody>
-          );
-        })}
-      </table>
-    </MobileLayout>
-  );
+      </div> */
 }

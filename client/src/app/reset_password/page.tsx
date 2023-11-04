@@ -2,7 +2,7 @@
 import { resetLoading, setLoading } from "@/hook/features/LoadingSlice";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch, useAppSelector } from "@/hook/hook";
-import { Button, Input, Radio, RadioGroup } from "@nextui-org/react";
+import { Button, Input } from "@nextui-org/react";
 import { getCookie, hasCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
@@ -16,7 +16,7 @@ export default function Profile() {
 
   const [password_old, setPassword_old] = useState("");
   const [password_new, setPassword_new] = useState("");
-  const [role, setRole] = useState(0);
+  const [role, setRole] = useState(1);
 
   useEffect(() => {
     async function fetchUser() {
@@ -48,28 +48,29 @@ export default function Profile() {
 
   const handlePassword = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (role === 1) {
       const data = {
-        password_old,
-        password_new,
+        oldPass :password_old,
+        newPass :password_new,
       };
 
       try {
-        const response = await http.post("api/door/resetPass", data, {
+        const response = await http.put("/api/door/resetPass", data, {
           headers: {
             token: `${getCookie("token")?.toString()}`,
           },
         });
 
         const result = await response.data;
-        if (result?.status !== 200 || result == null) {
+        console.log(result)
+        if (result?.status !== 200) {
           dispatch(failPopUp(result.message));
-        } else if (result.status === 200) {
+        } else if (result.status == 200) {
           dispatch(successPopUp(result.message));
+          dispatch(resetLoading());
         }
       } catch (error) {
-        console.error("Error:", error);
+        dispatch(failPopUp("E001"));
       }
     } else {
       alert("Tính năng không được hỗ trợ");
@@ -90,6 +91,7 @@ export default function Profile() {
                 size="md"
                 isRequired
                 color="primary"
+                type="password"
                 value={password_old}
                 label="Nhập mật khẩu cũ"
                 onChange={(e) => {
@@ -109,6 +111,7 @@ export default function Profile() {
                   size="md"
                   isRequired
                   color="primary"
+                  type="password"
                   value={password_new}
                   label="Nhập mật khẩu mới"
                   onChange={(e) => {
