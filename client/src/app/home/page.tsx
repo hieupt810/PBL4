@@ -47,6 +47,8 @@ export default function HomeInformation() {
   console.log(lights);
 
   useEffect(() => {
+    const socket1  = io("http://localhost:5005");
+    
     if (!hasCookie("token")) {
       router.push("/login");
       return;
@@ -116,7 +118,7 @@ export default function HomeInformation() {
     }
     fetchLights();
   }, [dispatch, router]);
-
+  
   return (
     <div>
       <ConfirmPopup

@@ -62,7 +62,7 @@ export default function AddHome() {
   const handleButton = async () => {
     if (selectedOption && password != "") {
       const data = {
-        selectedValue: selectedOption.value,
+        username: selectedOption.value,
         password,
       };
       try {
@@ -71,18 +71,20 @@ export default function AddHome() {
             token: `${getCookie("token")?.toString()}`,
           },
         });
-
         const result = await response.data;
-        if (result?.status !== 200 || result == null) {
-          dispatch(failPopUp(result.message));
-        } else if (result.status === 200) {
+        console.log(result);
+        if (result.status == 200) {
           dispatch(successPopUp(result.message));
+        } else if (result.status != 200) {
+          dispatch(failPopUp(result.message));
         }
       } catch (error) {
         console.error("Error:", error);
       }
     } else {
-      alert("Please select a value from the select box and enter a valid password.")
+      alert(
+        "Please select a value from the select box and enter a valid password."
+      );
     }
   };
 
@@ -152,7 +154,6 @@ export default function AddHome() {
               pattern="[1-9]{1,5}"
               maxLength={5}
             />
-            
           </div>
           <div className="flex justify-around">
             <Button
