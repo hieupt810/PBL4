@@ -23,6 +23,18 @@ def create_home():
         )
         if len(records) != 1 or records[0]["role"] == 0:
             return jsonify({"message": "E002", "status": 400}), 200
+        
+        existing_homes, _, _ = db.execute_query(
+            query(
+                """MATCH (u:User {username: $username})-[:CONTROL]->(h:Home)
+                RETURN COUNT(h) AS home_count"""
+            ),
+            routing_="r",
+            username=req["username"],
+        )
+
+        if existing_homes[0]["home_count"] > 0:
+            return jsonify({"message": "E007", "status": 400}), 200 
 
         _, _, _ = db.execute_query(
             query(
