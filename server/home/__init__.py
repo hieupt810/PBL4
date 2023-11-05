@@ -170,10 +170,8 @@ def add_member():
 
 @home_bp.route("/delete-member", methods=["DELETE"])
 def delete_member():
-    requires = ["username"]
-    req = request.get_json()
     try:
-        if (not "token" in request.headers) or (not validRequest(req, requires)):
+        if (not "token" in request.headers) or (not "username" in request.args):
             return jsonify({"message": "E002", "status": 400}), 200
 
         records, _, _ = db.execute_query(
@@ -196,7 +194,7 @@ def delete_member():
             ),
             routing_="w",
             token=request.headers.get("token"),
-            username=req["username"],
+            username=request.args.get("username"),
             updated_at=getDatetime(),
         )
         return jsonify({"message": "I009", "status": 200}), 200
