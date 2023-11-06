@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useState } from "react";
 import { BsArrowRightShort } from "react-icons/bs";
 import { FaTemperatureFull } from "react-icons/fa6";
+import { VscHistory } from "react-icons/vsc";
 import { FiEdit, FiLogOut, FiRefreshCcw } from "react-icons/fi";
 import { WiHumidity } from "react-icons/wi";
 import MobileLayout from "../mobile";
@@ -151,6 +152,12 @@ export default function HomeInformation() {
           <Link href={"/profile"}>
             <Button isIconOnly color="primary">
               <FiEdit size={20} />
+            </Button>
+          </Link>
+
+          <Link href={"/history"}>
+            <Button isIconOnly color="primary">
+              <VscHistory size={20} />
             </Button>
           </Link>
 

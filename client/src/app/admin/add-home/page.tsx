@@ -82,9 +82,7 @@ export default function AddHome() {
         console.error("Error:", error);
       }
     } else {
-      alert(
-        "Please select a value from the select box and enter a valid password."
-      );
+      dispatch(failPopUp("E005"))
     }
   };
 

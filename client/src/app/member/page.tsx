@@ -1,23 +1,31 @@
 "use client";
-import { failPopUp } from "@/hook/features/PopupSlice";
+import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
 import { Member } from "@/models/member";
 import { getCookie, hasCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
 import MobileLayout from "../mobile";
 import http from "../utils/http";
-import { User, Link, Skeleton } from "@nextui-org/react";
+import { Skeleton } from "@nextui-org/react";
 import Man from "@/static/man.jpg";
 import Woman from "@/static/woman.png";
 import { MemberComponent } from "@/components/MemberComponent";
+import ModalComponent from "@/components/ModalComponent";
+import { AiOutlineUsergroupAdd } from "react-icons/ai";
 
 export default function Member() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [page, setPage] = useState<number>(1);
   const [members, setMembers] = useState<Member[]>([]);
+  const membersList = Array.isArray(members) ? members : [];
+  const [username, setUsername] = useState("");
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setUsername(value);
+  };
 
   useEffect(() => {
     if (!hasCookie("token")) {
@@ -49,15 +57,42 @@ export default function Member() {
     fetchListMembers();
   }, [dispatch, page, router]);
 
+  const handleAddMember = async () => {
+    if (username != "") {
+      const data = {
+        username,
+      };
+      try {
+        const response = await http.post("api/home/add-member", data, {
+          headers: {
+            token: `${getCookie("token")?.toString()}`,
+          },
+        });
+        const result = await response.data;
+        console.log(result);
+        if (result.status == 200) {
+          dispatch(successPopUp(result.message));
+        } else if (result.status != 200) {
+          dispatch(failPopUp(result.message));
+        }
+        setUsername("");
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    } else {
+      dispatch(failPopUp("E005"))
+    }
+  };
+
   return (
     <MobileLayout>
       <h5 className="text-primary font-semibold text-xl text-center">
         Danh sách thành viên
       </h5>
 
-      {members.length > 0 ? (
+      {membersList.length > 0 ? (
         <div>
-          {members.map((value, index) => {
+          {membersList.map((value, index) => {
             return (
               <MemberComponent
                 key={index}
@@ -128,6 +163,15 @@ export default function Member() {
           </div>
         </div>
       )}
+      <div className="fixed bottom-7 right-7">
+        <ModalComponent
+          icon={<AiOutlineUsergroupAdd size={20} className="text--500" />}
+          name="Add"
+          title="Add member"
+          handleInputChange={handleInputChange}
+          handleAddMember={handleAddMember}
+        />
+      </div>
     </MobileLayout>
   );
 }
