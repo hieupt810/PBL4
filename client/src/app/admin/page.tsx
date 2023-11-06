@@ -23,6 +23,7 @@ import { BiPlus } from "react-icons/bi";
 import { RiDeleteBin5Line, RiEditBoxLine } from "react-icons/ri";
 import AdminLayout from "./layout";
 import { useRouter } from "next/navigation"
+import http from "../utils/http";
 
 interface Home {
   first_name: string;
@@ -46,36 +47,56 @@ export default function Admin() {
 
   const router = useRouter();
   useEffect(() => {
-    if (!hasCookie("token")) return;
-    const token = getCookie("token")?.toString();
-    fetch(
-      `${process.env.BACKEND_URL}api/home/list-home?token=${token}&page=${homesPage}`,
-      { method: "GET" }
-    )
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.status === 200) {
-          setHomes(d.homes);
-          setHomesAmount(Math.floor(d.amount / 10) + 1);
-        } else dispatch(failPopUp(d.message));
-      });
+    async function fetchData() {
+      if (!hasCookie("token")) return;
+      const token = getCookie("token")?.toString();
+      try {
+        const response = await http.get(`api/home/list-home`, {
+          headers: {
+            token: `${token}`,
+          },
+        });
+  
+        if (response.status === 200) {
+          setHomes(response.data.homes);
+          setHomesAmount(Math.floor(response.data.amount / 10) + 1);
+        } else {
+          dispatch(failPopUp(response.data.message));
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
+  
+    fetchData();
   }, [dispatch, homesPage, refetch]);
+  
 
   useEffect(() => {
-    if (!hasCookie("token")) return;
-    const token = getCookie("token")?.toString();
-    fetch(
-      `${process.env.BACKEND_URL}api/user/list-user?token=${token}&page=${usersPage}`,
-      { method: "GET" }
-    )
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.status === 200) {
-          setUsers(d.users);
-          setUsersAmount(Math.floor(d.amount / 10) + 1);
-        } else dispatch(failPopUp(d.message));
-      });
+    async function fetchData() {
+      if (!hasCookie("token")) return;
+      const token = getCookie("token")?.toString();
+      try {
+        const response = await http.get(`api/user/list-user`, {
+          headers: {
+            token: `${token}`,
+          },
+        });
+  
+        if (response.status === 200) {
+          setUsers(response.data.users);
+          setUsersAmount(Math.floor(response.data.amount / 10) + 1);
+        } else {
+          dispatch(failPopUp(response.data.message));
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
+  
+    fetchData();
   }, [dispatch, usersPage, refetch]);
+  
 
   return (
     <AdminLayout>

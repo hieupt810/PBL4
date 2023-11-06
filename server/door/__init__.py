@@ -1,7 +1,7 @@
 import requests
 from config import Config
 from flask import Blueprint, jsonify, request
-from utils import getNeo4J, query
+from utils import getNeo4J, query, validRequest
 
 door_bp = Blueprint("door", __name__)
 db = getNeo4J()
@@ -89,3 +89,71 @@ def get_pass():
 
     except Exception as error:
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+
+
+@door_bp.route("/resetPass", methods=["PUT"])
+def reset_pass():
+    requires = ["oldPass", "newPass"]
+    req = request.get_json()
+    try:
+        if not validRequest(req, requires):
+            return jsonify({"message": "E002", "status": 400}), 200
+        records, _, _ = db.execute_query(
+            query(
+                """MATCH (h:Home {id: $id, password: $password})
+                    RETURN h.id AS password
+                    LIMIT 1"""
+            ),
+            routing_="r",
+            id=Config.HOME_ID,
+            password=req['oldPass']
+        )
+        if records:
+            # Check if the records list is empty
+            if len(records) > 0:
+                _, _, _ = db.execute_query(
+                query(
+                    """MATCH (h:Home {id: $id, password: $password})
+                    SET h.password = $newPass"""
+                ),
+                routing_="w",
+                id=Config.HOME_ID,
+                password=req['oldPass'],
+                newPass=req['newPass'],
+                )
+                return jsonify({"message": "I003", "status": 200}), 200
+            else:
+                return jsonify({"message": "No records found"}), 404
+
+        else:
+            return jsonify({"message": "HomeID or Password is incorrect"}), 404
+    except Exception as error:
+        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+    
+@door_bp.route("/history", methods=["GET"])
+def history():  
+    try:
+        records, _, _ = db.execute_query(
+            query(
+                """MATCH (o:Open)
+                    RETURN h.password AS password
+                    LIMIT 1"""
+            ),
+            routing_="r",
+        )
+
+        if records:
+            # Check if the records list is empty
+            if len(records) > 0:
+                password = records[0]["password"]
+                return jsonify(password), 200
+            else:
+                return jsonify({"message": "No records found"}), 404
+
+        else:
+            return jsonify({"message": "No records found"}), 404
+
+    except Exception as error:
+        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+    
+

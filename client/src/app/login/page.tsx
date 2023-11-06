@@ -1,13 +1,14 @@
 "use client";
 import { resetLoading, setLoading } from "@/hook/features/LoadingSlice";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
-import { useAppDispatch, useAppSelector } from "@/hook/hook";
+import { useAppSelector } from "@/hook/hook";
 import { Button, Input, Link } from "@nextui-org/react";
 import { hasCookie, setCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { TbSmartHome } from "react-icons/tb";
 import MobileLayout from "../mobile";
+import { useAppDispatch } from "@/hook/store";
 
 export default function Login() {
   const router = useRouter();

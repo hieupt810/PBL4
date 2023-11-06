@@ -29,9 +29,7 @@ export default function LightComponent({ name, id }: LightType) {
       });
 
       const result = await response.data;
-
       if (result?.status !== 200 || result == null) {
-
         dispatch(failPopUp(result.message));
       } else if (result.status == 200) {
         dispatch(successPopUp(result.message));
@@ -42,9 +40,7 @@ export default function LightComponent({ name, id }: LightType) {
   };
 
   return (
-
     <div className="flex items-center justify-between p-4 border rounded-lg shadow-xl" >
-
       <MdOutlineLight className="mr-2.5" size={30} />
 
       <p className="mx-2.5 flex-grow font-sans">{name}</p>

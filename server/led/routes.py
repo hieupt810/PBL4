@@ -36,21 +36,11 @@ def led_switch():
             id=req["id"],
         )
         _ = requests.post(
-            f"http://{Config.ESP_SERVER_URL}/led/{records[0]['pin']}/{req['mode']}"
+            f"{Config.ESP_SERVER_URL}/led/{records[0]['pin']}/{req['mode']}"
         )
         return jsonify({"message": "I014", "status": 200}), 200
     except Exception as error:
-        return (
-            jsonify(
-                {
-                    "message": "E001",
-                    "status": 500,
-                    "error": str(error),
-                    "": Config.ESP_SERVER_URL,
-                }
-            ),
-            200,
-        )
+        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
 
 
 @led_bp.route("", methods=["GET"])
@@ -68,7 +58,7 @@ def getHomeLed():
             ),
             routing_="r",
             token=request.headers.get("token"),
-            id="49480b29-b900-412b-8394-f1bcee055f8c",
+            id = "49480b29-b900-412b-8394-f1bcee055f8c"
         )
         if len(records) != 1:
             return jsonify({"message": "E002", "status": 400}), 200

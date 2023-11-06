@@ -26,7 +26,10 @@ export const getUserList = createAsyncThunk(
   "user/getUserList",
   async (_, thunkAPI) => {
     const token = getCookie("token");
-    const response = await http.get<UserResponse>(`/api/user/list-user?token=${token}`, {
+    const response = await http.get<UserResponse>(`/api/user/list-user`, {
+      headers : {
+        token: `${token}`
+      },
       signal: thunkAPI.signal,
     });
     return response.data.users;
