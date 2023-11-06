@@ -162,6 +162,18 @@ def add_member():
         )
         if len(records) != 1 or records[0]["role"] != 2:
             return jsonify({"message": "E002", "status": 400}), 200
+        
+        user_records, _, _ = db.execute_query(
+            query(
+                """MATCH (u:User {username: $username})
+                RETURN u"""
+            ),
+            routing_="r",
+            username=req["username"],
+        )
+
+        if not user_records:
+            return jsonify({"message": "E005", "status": 404}), 200
 
         _, _, _ = db.execute_query(
             query(
