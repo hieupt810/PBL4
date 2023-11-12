@@ -135,18 +135,20 @@ def history():
     try:
         records, _, _ = db.execute_query(
             query(
-                """MATCH (o:Open)
-                    RETURN h.password AS password
-                    LIMIT 1"""
+                """MATCH (o:Open)-[:TO]->(h:Home)
+                MATCH (o)-[:BY]->(u:User)
+                WHERE h.id = $home_id
+                RETURN o.imgUrl AS imgUrl, u.username AS username, o.atTime AS atTime, o.success AS success"""
             ),
             routing_="r",
+            home_id = Config.HOME_ID,
         )
 
         if records:
             # Check if the records list is empty
             if len(records) > 0:
-                password = records[0]["password"]
-                return jsonify(password), 200
+                history = [{"imgUrl": record["imgUrl"], "username": record["username"], "atTime": record["atTime"], "success": record["success"]} for record in records]
+                return jsonify({"history": history}), 200
             else:
                 return jsonify({"message": "No records found"}), 404
 
