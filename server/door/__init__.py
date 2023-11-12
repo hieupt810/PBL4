@@ -1,7 +1,8 @@
 import requests
 from config import Config
 from flask import Blueprint, jsonify, request
-from utils import getNeo4J, query, validRequest
+from utils import getNeo4J, query, validRequest, allowed_file, getDatetime
+from werkzeug.utils import secure_filename
 
 door_bp = Blueprint("door", __name__)
 db = getNeo4J()
@@ -138,7 +139,7 @@ def history():
                 """MATCH (o:Open)-[:TO]->(h:Home)
                 MATCH (o)-[:BY]->(u:User)
                 WHERE h.id = $home_id
-                RETURN o.imgUrl AS imgUrl, u.username AS username, o.atTime AS atTime, o.success AS success"""
+                RETURN o.id AS id o.imgUrl AS imgUrl, u.username AS username, o.atTime AS atTime, o.success AS success"""
             ),
             routing_="r",
             home_id = Config.HOME_ID,
@@ -147,7 +148,7 @@ def history():
         if records:
             # Check if the records list is empty
             if len(records) > 0:
-                history = [{"imgUrl": record["imgUrl"], "username": record["username"], "atTime": record["atTime"], "success": record["success"]} for record in records]
+                history = [{"id": record["id"],"imgUrl": record["imgUrl"], "username": record["username"], "atTime": record["atTime"], "success": record["success"]} for record in records]
                 return jsonify({"history": history}), 200
             else:
                 return jsonify({"message": "No records found"}), 404
@@ -159,3 +160,65 @@ def history():
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
     
 
+@door_bp.route("/faceCheck", methods=["POST"])
+def face_recognition():
+    try:
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image part in the request'}), 400
+        
+        file = request.files['image']
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = Config.UPLOAD_FOLDER+filename
+            file.save(file_path)
+            
+            if AI():
+                _, _, _ = db.execute_query(
+                    query(
+                        """MATCH (u:User {username: $username})
+                        MATCH (h:Home {id: $home_id})
+                        CREATE (o:Open {imgUrl: $imgUrl, atTime: $atTime, success: $success})
+                        CREATE (o)-[:TO]->(h)
+                        CREATE (o)-[:BY]->(u)"""
+                    ),
+                    routing_="w",
+                    imgUrl=file_path,
+                    username=req["username"],
+                    home_id=Config.HOME_ID,
+                    atTime=getDatetime(),
+                    success=True,
+                )
+                response = requests.post(f"{Config.ESP_SERVER_URL}/door/unlock")
+                if response.status_code == 200:
+                    # Xử lý phản hồi thành công
+                    print("Request successful.")
+                else:
+                    # Xử lý lỗi
+                    print("Request failed with status code:", response.status_code)
+                    print("Response:", response.text)
+                return jsonify({'message': 'Face recognized successfully'}), 200
+            else:
+                _, _, _ = db.execute_query(
+                    query(
+                        """MATCH (u:User {username: $username})
+                        MATCH (h:Home {id: $home_id})
+                        CREATE (o:Open {imgUrl: $imgUrl, atTime: $atTime, success: $success})
+                        CREATE (o)-[:TO]->(h)
+                        CREATE (o)-[:BY]->(u)"""
+                    ),
+                    routing_="w",
+                    imgUrl=file_path,
+                    username='unknow',
+                    home_id=Config.HOME_ID,
+                    atTime=getDatetime(),
+                    success=False,
+                )
+                return jsonify({'error': 'Face recognition failed'}), 400
+        else:
+            return jsonify({'error': 'Invalid file type'}), 400
+
+
+
+    except Exception as error:
+        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
