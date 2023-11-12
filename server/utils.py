@@ -4,7 +4,7 @@ from textwrap import dedent
 from typing import cast
 
 from config import Config
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 from neo4j import GraphDatabase, basic_auth
 from typing_extensions import LiteralString
@@ -52,3 +52,9 @@ def validRequest(request, requires) -> bool:
 
 def getDatetime() -> str:
     return datetime.now().strftime("%Y/%m/%d %H:%M")
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
+
+def history_file(filename):
+    return send_from_directory('static/history', filename)
