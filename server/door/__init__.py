@@ -3,6 +3,7 @@ from config import Config
 from flask import Blueprint, jsonify, request
 from utils import getNeo4J, query, validRequest, allowed_file, getDatetime
 from werkzeug.utils import secure_filename
+from verificator import identify
 
 door_bp = Blueprint("door", __name__)
 db = getNeo4J()
@@ -139,7 +140,7 @@ def history():
                 """MATCH (o:Open)-[:TO]->(h:Home)
                 MATCH (o)-[:BY]->(u:User)
                 WHERE h.id = $home_id
-                RETURN o.id AS id o.imgUrl AS imgUrl, u.username AS username, o.atTime AS atTime, o.success AS success"""
+                RETURN o.id AS id, o.imgUrl AS imgUrl, u.username AS username, o.atTime AS atTime, o.success AS success"""
             ),
             routing_="r",
             home_id = Config.HOME_ID,
@@ -172,8 +173,8 @@ def face_recognition():
             filename = secure_filename(file.filename)
             file_path = Config.UPLOAD_FOLDER+filename
             file.save(file_path)
-            
-            if AI():
+            c , user = identify(,file_path)
+            if c:
                 _, _, _ = db.execute_query(
                     query(
                         """MATCH (u:User {username: $username})
@@ -184,7 +185,7 @@ def face_recognition():
                     ),
                     routing_="w",
                     imgUrl=file_path,
-                    username=req["username"],
+                    username=user,
                     home_id=Config.HOME_ID,
                     atTime=getDatetime(),
                     success=True,
