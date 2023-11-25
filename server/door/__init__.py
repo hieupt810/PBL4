@@ -1,13 +1,15 @@
+import os
 import requests
 from config import Config
 from flask import Blueprint, jsonify, request
 from utils import getNeo4J, query, validRequest, allowed_file, getDatetime
 from werkzeug.utils import secure_filename
-from verificator import identify
+from verificator import check
 
 door_bp = Blueprint("door", __name__)
 db = getNeo4J()
 
+basedir = os.path.join(os.getcwd(), "application")
 
 @door_bp.route("/door/open", methods=["POST"])
 def open_door():
@@ -171,9 +173,9 @@ def face_recognition():
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file_path = Config.UPLOAD_FOLDER+filename
+            file_path = os.path.join(basedir, "upload", filename)
             file.save(file_path)
-            c , user = identify(,file_path)
+            c , user = check(file_path)
             if c:
                 _, _, _ = db.execute_query(
                     query(

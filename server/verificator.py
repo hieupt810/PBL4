@@ -70,3 +70,21 @@ def identify(model, image_dir: str, accept_threshold: float = 0.7):
             return True, user
 
     return False, "unknown"
+
+def check(image_dir: str, accept_threshold: float = 0.7):
+    if not os.path.isdir(basedir):
+        os.mkdir(basedir)
+
+    if not os.path.isdir(os.path.join(basedir, "data")):
+        os.mkdir(os.path.join(basedir, "data"))
+
+    siamese_model = tf.keras.models.load_model(
+        "model.h5",
+        custom_objects={
+            "L1Dist": L1Dist,
+            "BinaryCrossentropy": tf.losses.BinaryCrossentropy,
+        },
+        compile=False,
+    )
+    return identify(siamese_model,image_dir,accept_threshold)
+    
