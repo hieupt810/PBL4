@@ -2,7 +2,7 @@ import os
 import requests
 from config import Config
 from flask import Blueprint, jsonify, request
-from utils import getNeo4J, query, validRequest, allowed_file, getDatetime
+from utils import getNeo4J, query, validRequest, allowed_file, getDatetime, uniqueID
 from werkzeug.utils import secure_filename
 from verificator import check
 
@@ -172,8 +172,7 @@ def face_recognition():
         file = request.files['image']
 
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(basedir, "upload", filename)
+            file_path = os.path.join(basedir, "upload", uniqueID(),".jpg")
             file.save(file_path)
             c , user = check(file_path)
             if c:
@@ -218,10 +217,8 @@ def face_recognition():
                     success=False,
                 )
                 return jsonify({'error': 'Face recognition failed'}), 400
+            
         else:
             return jsonify({'error': 'Invalid file type'}), 400
-
-
-
     except Exception as error:
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
