@@ -7,16 +7,17 @@ db = getNeo4J()
 
 @ir_bp.route("/create", methods=["POST"])
 def createIR():
-    requires = ["name","ir", "mode", "device"]
+    requires = ["name","ir", "mode", "device","pin"]
     req = request.get_json()
     try:
         if (not "token" in request.headers) or (not validRequest(req, requires)):
             return jsonify({"message": "E002", "status": 400}), 200
 
         records, _, _ = db.execute_query(
-            query("""MATCH (u:User {token: $token}) RETURN u.role AS role LIMIT 1"""),
+            query("""MATCH (u:User {token: $token, role: $role}) RETURN u.role AS role LIMIT 1"""),
             routing_="r",
             token=request.headers.get("token"),
+            role = 2,
         )
         if len(records) != 1 or records[0]["role"] == 0:
             return jsonify({"message": "E002", "status": 400}), 200
@@ -24,25 +25,72 @@ def createIR():
         records, _, _ = db.execute_query(
             query(
                 """MATCH (h:Home {id: $home_id})
-                CREATE (ir:IR {ir: $ir, name: $name, mode: $mode, id : $id, device : $device, updated_at : $updated_at})
-                MERGE (ir)-[:CONTAINS]->(:Home {id: $home_id})"""
+                CREATE (ir:IR {ir: $ir, name: $name, mode: $mode, id : $id, device : $device, updated_at : $updated_at, pin: $pin})-[:CONTAINS]->(h)"""
             ),
             routing_="w",
             home_id=Config.HOME_ID,
-            ir=req["ir"],
             name=req["name"],
-            mode=req["mode"],
             id=uniqueID(),
             updated_at=getDatetime(),
             device = req["device"],
+            pin = req["pin"],
+        )
+        return jsonify({"message": "I016", "status": 200}), 200
+    except Exception as error:
+        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+
+@ir_bp.route("/createFunc", methods=["POST"])
+def addFunc():
+    requires = ["mode"]
+    req = request.get_json()
+    try :
+        records, _, _ = db.execute_query(
+            query(
+                """CREATE (f:Func {mode:$mode, id:$id })"""
+            ),
+            routing_="w",
+            id=uniqueID(),
+            mode=req["mode"],
         )
         return jsonify({"message": "I016", "status": 200}), 200
     except Exception as error:
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
     
+@ir_bp.route("/addIr", methods=["POST"])
+def addIr():
+    requires = ["ir_code","id_device", "id_mode"]
+    req = request.get_json()
+    try :
+        if (not "token" in request.headers) or (not validRequest(req, requires)):
+            return jsonify({"message": "E002", "status": 400}), 200
+
+        records, _, _ = db.execute_query(
+            query("""MATCH (u:User {token: $token, role: $role}) RETURN u.role AS role LIMIT 1"""),
+            routing_="r",
+            token=request.headers.get("token"),
+            role = 2,
+        )
+        if len(records) != 1 or records[0]["role"] == 0:
+            return jsonify({"message": "E002", "status": 400}), 200
+        records, _, _ = db.execute_query(
+            query(
+                """
+                MATCH (ir:IR {id: $id_device}), (func:Func {id: $id_mode})
+                MERGE (ir)-[r:HAS_FUNC]->(func)
+                SET r.ir_code = $ir_code
+                """
+            ),
+            routing_="w",
+            id_device=req["id_device"],  # ID của IR mới tạo
+            id_mode=req["id_mode"],  # Lấy ID của Func từ kết quả truy vấn tạo Func
+            ir_code=req["ir_code"],  # Thay YOUR_IR_CODE_HERE bằng giá trị thực của ir_code
+        )
+        return jsonify({"message": "I016", "status": 200}), 200
+    except Exception as error:
+        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
 @ir_bp.route("/control", methods=["POST"])
 def controlIR():
-    requires = ["id","mode"]
+    requires = ["id"]
     req = request.get_json()
     try:
         if (not "token" in request.headers) or (not validRequest(req, requires)):
@@ -63,7 +111,7 @@ def controlIR():
             routing_="r",
             ir_id=req["id"],
         )
-        _ = requests.post(
+        _ = request.post(
             f"http://{Config.ESP_SERVER_URL}/{records[0]['device']}/{records[0]['pin']}/{req['mode']}",
             json={"body_key": records[0]["ir"]}  # Thêm body cho POST request ở đây
         )
@@ -87,10 +135,11 @@ def getAll():
 
         devices, _, _ = db.execute_query(
             query(
-                """MATCH (h:Home)<-[:CONTAINS]-(ir:IR)
+                """MATCH (h:Home{id:$homeId})<-[:CONTAINS]-(ir:IR)
                 RETURN ir.id AS id, ir.name AS name, ir.ir AS ir_code, ir.mode AS mode, ir.device AS device"""
             ),
             routing_="r",
+            homeId=Config.HOME_ID
         )
         
         devices_list = []
@@ -98,7 +147,7 @@ def getAll():
             devices_list.append({
                 "id": device["id"],
                 "name": device["name"],
-                "ir_code": device["ir_code"],
+                "ir": device["ir"],
                 "mode": device["mode"],
                 "device": device["device"],
             })
@@ -136,7 +185,7 @@ def getByDevice(device):
             devices_list.append({
                 "id": device["id"],
                 "name": device["name"],
-                "ir_code": device["ir_code"],
+                "ir": device["ir"],
                 "mode": device["mode"],
                 "device": device["device"],
             })

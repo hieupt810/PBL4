@@ -13,7 +13,7 @@ String str = "";
 String urlBe = "http://10.20.3.196:8082";
 String header;
 String beSocket = "http://10.20.0.155:5005/temperature";
-String homeId = "49480b29-b900-412b-8394-f1bcee055f8c";
+String homeId = "a3086737-9ecb-4998-923d-1bfe24c24310";
 char cstr[2];
 
 void setup()

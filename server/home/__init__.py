@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from utils import getDatetime, getNeo4J, query, uniqueID, validRequest
+from config import Config
 
 home_bp = Blueprint("home", __name__)
 db = getNeo4J()
@@ -282,3 +283,53 @@ def get_members():
         )
     except Exception as error:
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+    
+@home_bp.route("/getAllDevice", methods=["GET"])
+def get_Devices():
+    try:
+        if (not "token" in request.headers) :
+            return jsonify({"message": "E002", "status": 400}), 200
+
+        records, _, _ = db.execute_query(
+            query("""MATCH (u:User {token: $token, role:$role}) RETURN u.role AS role LIMIT 1"""),
+            routing_="r",
+            token=request.headers.get("token"),
+            role = 2
+        )
+        if len(records) != 1 or records[0]["role"] == 0:
+            return jsonify({"message": "E002", "status": 400}), 200
+        records, _, _ = db.execute_query(
+            query(
+                """MATCH (h:Home{id:$homeId})<-[:CONTAINS]-(l:Led)
+                RETURN  l.id AS id, l.name AS name, l.pin AS pin"""
+            ),
+            routing_="r",
+            homeId=Config.HOME_ID,
+        )
+        data = []
+        for led in records:
+            data.append({
+                "id": led["id"],
+                "name": led["name"],
+                "pin": led["pin"],
+                "device": "led",
+            })
+        devices, _, _ = db.execute_query(
+            query(
+                """MATCH (h:Home{id:$homeId})<-[:CONTAINS]-(ir:IR)
+                RETURN ir.id AS id, ir.name AS name, ir.device AS device, ir.pin AS pin"""
+            ),
+            routing_="r",
+            homeId=Config.HOME_ID
+        )
+        for device in devices:
+            data.append({
+                "id": device["id"],
+                "name": device["name"],
+                "device": device["device"],
+                "pin": device["pin"],
+            })
+        return jsonify({"data": data, "status": 200}), 200
+    except Exception as error:
+        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+        
