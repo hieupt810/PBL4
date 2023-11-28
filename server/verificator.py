@@ -1,7 +1,7 @@
 import os
 import uuid
 
-import cv2
+# import cv2
 import numpy as np
 import tensorflow as tf
 from keras.layers import Layer
