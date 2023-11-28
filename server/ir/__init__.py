@@ -55,6 +55,27 @@ def addFunc():
         return jsonify({"message": "I016", "status": 200}), 200
     except Exception as error:
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+@ir_bp.route("/getFuncs", methods=["GET"])
+def getFuncs():
+    try:
+        records, _, _ = db.execute_query(
+            query(
+                """MATCH (func:Func) RETURN func"""
+            ),
+            routing_="r", 
+        )
+
+        funcs = [
+            {
+                "id": record["func"]["id"], 
+                "mode": record["func"]["mode"], 
+            }
+            for record in records 
+        ]
+
+        return jsonify({"funcs": funcs, "status": 200}), 200
+    except Exception as error:
+        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
     
 @ir_bp.route("/addIr", methods=["POST"])
 def addIr():
@@ -90,7 +111,7 @@ def addIr():
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
 @ir_bp.route("/control", methods=["POST"])
 def controlIR():
-    requires = ["id"]
+    requires = ["id_device", "id_mode"]
     req = request.get_json()
     try:
         if (not "token" in request.headers) or (not validRequest(req, requires)):
@@ -105,15 +126,16 @@ def controlIR():
             return jsonify({"message": "E002", "status": 400}), 200
         records, _, _ = db.execute_query(
             query(
-                """MATCH (ir:IR {id: $ir_id})
-                RETURN ir.ir AS ir_code, ir.name AS ir_name, ir.mode AS ir_mode, ir.device AS ir_device"""
+                """MATCH (ir:IR {id: $ir_id})-[r:HAS_FUNC]->(func:Func {id: $id_mode})
+                RETURN r.ir_code AS ir_code, ir.name AS name, func.mode AS mode, ir.device AS ir_device, ir.pin AS pin"""
             ),
             routing_="r",
-            ir_id=req["id"],
+            ir_id=req["id_device"],
+            id_mode= req ["id_mode"],
         )
         _ = request.post(
-            f"http://{Config.ESP_SERVER_URL}/{records[0]['device']}/{records[0]['pin']}/{req['mode']}",
-            json={"body_key": records[0]["ir"]}  # Thêm body cho POST request ở đây
+            f"http://{Config.ESP_SERVER_URL}/{records[0]['device']}/{records[0]['pin']}",
+            json={"ir_code": records[0]["ir_code"]}  # Thêm body cho POST request ở đây
         )
         return jsonify({"message": "I016", "status": 200}), 200
     except Exception as error:
@@ -136,7 +158,7 @@ def getAll():
         devices, _, _ = db.execute_query(
             query(
                 """MATCH (h:Home{id:$homeId})<-[:CONTAINS]-(ir:IR)
-                RETURN ir.id AS id, ir.name AS name, ir.ir AS ir_code, ir.mode AS mode, ir.device AS device"""
+                RETURN ir.id AS id, ir.name AS name, ir.device AS device, ir.pin AS pin"""
             ),
             routing_="r",
             homeId=Config.HOME_ID
@@ -147,9 +169,8 @@ def getAll():
             devices_list.append({
                 "id": device["id"],
                 "name": device["name"],
-                "ir": device["ir"],
-                "mode": device["mode"],
                 "device": device["device"],
+                "pin": device["pin"],
             })
 
         return jsonify({"devices": devices_list, "status": 200}), 200
