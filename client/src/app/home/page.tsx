@@ -24,7 +24,6 @@ import { useFetchLights } from "./fetchData/useFetchLights";
 import DoorComponent from "@/components/DoorComponent";
 import { Television } from "../types/television.type";
 import TelevisionComponent from "@/components/TelevisionComponent";
-import { useFetchTvs } from "./fetchData/useFetchTv";
 
 interface ConfirmPopupProps {
   text: string;
@@ -104,7 +103,6 @@ export default function HomeInformation() {
   }, [dispatch, router]);
 
   useFetchLights(setLights, setLoading);
-  useFetchTvs(setTelevisions,setLoading)
 
   return (
     <div>
@@ -350,7 +348,7 @@ export default function HomeInformation() {
                   <LightComponent
                     key={light.id}
                     name={light.name}
-                    id={light.id}
+                    id={light.id} 
                   />
                 ))}
                 {televisionList.map((television) => (
