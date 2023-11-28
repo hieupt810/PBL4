@@ -68,14 +68,14 @@ def getHomeLed():
             ),
             routing_="r",
             token=request.headers.get("token"),
-            id="49480b29-b900-412b-8394-f1bcee055f8c",
+            id=Config.HOME_ID,
         )
         if len(records) != 1:
             return jsonify({"message": "E002", "status": 400}), 200
 
         records, _, _ = db.execute_query(
             query(
-                """MATCH (l:Led)
+                """MATCH MATCH (h:Home{id:$homeId})<-[:CONTAINS]-(l:Led)
                 RETURN  l.id AS id, l.name AS name, l.pin AS pin
                 SKIP $skip LIMIT $limit"""
             ),
@@ -113,21 +113,23 @@ def createLed():
             return jsonify({"message": "E002", "status": 400}), 200
 
         records, _, _ = db.execute_query(
-            query("""MATCH (u:User {token: $token}) RETURN u.role AS role LIMIT 1"""),
+            query("""MATCH (u:User {token: $token, role:$role}) RETURN u.role AS role LIMIT 1"""),
             routing_="r",
             token=request.headers.get("token"),
+            role = 2
         )
         if len(records) != 1 or records[0]["role"] == 0:
             return jsonify({"message": "E002", "status": 400}), 200
 
         records, _, _ = db.execute_query(
             query(
-                """CREATE (l:Led {id: $id, pin: $pin, name: $name, updated_at: $updated_at})
-                MERGE (l)-[:CONTAINS]->(:Home {id: $home_id})"""
+                """MATCH (h:Home {id: $home_id})
+                CREATE (l:Led {id: $id, pin: $pin, name: $name, updated_at: $updated_at})-[:CONTAINS]->(h)
+                """
             ),
             routing_="w",
             id=uniqueID(),
-            pin=req["pin"],
+            pin=req["pin"], 
             name=req["name"],
             updated_at=getDatetime(),
             home_id=Config.HOME_ID,
