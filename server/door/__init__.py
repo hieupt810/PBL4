@@ -139,7 +139,7 @@ def history():
                 """MATCH (o:Open)-[:TO]->(h:Home)
                 MATCH (o)-[:BY]->(u:User)
                 WHERE h.id = $home_id
-                RETURN o.id AS id o.imgUrl AS imgUrl, u.username AS username, o.atTime AS atTime, o.success AS success"""
+                RETURN o.id AS id, o.imgUrl AS imgUrl, u.username AS username, o.atTime AS atTime, o.success AS success"""
             ),
             routing_="r",
             home_id = Config.HOME_ID,
