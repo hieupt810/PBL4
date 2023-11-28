@@ -19,7 +19,7 @@ def led_switch():
         ):
             return jsonify({"message": "E002", "status": 400}), 200
 
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {token: $token})-[c:CONTROL]->(:Home)
                 RETURN c.role AS role LIMIT 1"""
@@ -27,17 +27,15 @@ def led_switch():
             routing_="r",
             token=request.headers.get("token"),
         )
-        if len(records) != 1:
+        if len(rec) != 1:
             return jsonify({"message": "E002", "status": 400}), 200
 
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query("""MATCH (l:Led {id: $id}) RETURN l.pin AS pin"""),
             routing_="r",
             id=req["id"],
         )
-        _ = requests.post(
-            f"{Config.ESP_SERVER_URL}/led/{records[0]['pin']}/{req['mode']}"
-        )
+        _ = requests.post(f"{Config.ESP_SERVER_URL}/led/{rec[0]['pin']}/{req['mode']}")
         return jsonify({"message": "I014", "status": 200}), 200
     except Exception as error:
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
@@ -51,19 +49,19 @@ def getHomeLed():
         if not "token" in request.headers:
             return jsonify({"message": "E002", "status": 400}), 200
 
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {token: $token})-[c:CONTROL]->(h:Home {id : $id})
                 RETURN c.role AS role LIMIT 1"""
             ),
             routing_="r",
             token=request.headers.get("token"),
-            id = "49480b29-b900-412b-8394-f1bcee055f8c"
+            id="49480b29-b900-412b-8394-f1bcee055f8c",
         )
-        if len(records) != 1:
+        if len(rec) != 1:
             return jsonify({"message": "E002", "status": 400}), 200
 
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query(
                 """MATCH (l:Led)
                 RETURN  l.id AS id, l.name AS name, l.pin AS pin
@@ -84,7 +82,7 @@ def getHomeLed():
                             "name": record["name"],
                             "pin": record["pin"],
                         }
-                        for record in records
+                        for record in rec
                     ],
                 }
             ),
@@ -102,15 +100,15 @@ def createLed():
         if (not "token" in request.headers) or (not validRequest(req, requires)):
             return jsonify({"message": "E002", "status": 400}), 200
 
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query("""MATCH (u:User {token: $token}) RETURN u.role AS role LIMIT 1"""),
             routing_="r",
             token=request.headers.get("token"),
         )
-        if len(records) != 1 or records[0]["role"] == 0:
+        if len(rec) != 1 or rec[0]["role"] == 0:
             return jsonify({"message": "E002", "status": 400}), 200
 
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query(
                 """CREATE (l:Led {id: $id, pin: $pin, name: $name, updated_at: $updated_at})
                 MERGE (l)-[:CONTAINS]->(:Home {id: $home_id})"""

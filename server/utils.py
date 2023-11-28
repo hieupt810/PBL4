@@ -59,4 +59,4 @@ def respond(data=[], msg: str = "I001", code: int = 200):
 
 
 def respondWithError(msg: str = "E001", code: int = 404):
-    return jsonify({"message": msg, "code": code}), 404
+    return jsonify({"message": msg, "code": code}), 400
