@@ -22,13 +22,13 @@ def register():
             return respondWithError()
 
         req = request.get_json()
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query("""MATCH (u:User {username: $username}) RETURN u.name LIMIT 1"""),
             routing_="r",
             username=req["username"],
         )
-        if len(records) == 1:
-            return respondWithError()
+        if len(rec) == 1:
+            return respondWithError(msg="E005")
 
         _, _, _ = db.execute_query(
             query(
@@ -53,7 +53,7 @@ def register():
             token=uniqueID(),
             updated_at=getDatetime(),
         )
-        return respond([], "I002")
+        return respond(msg="I002")
     except:
         return respondWithError(code=500)
 
@@ -66,7 +66,7 @@ def login():
             return respondWithError()
 
         req = request.get_json()
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {username: $username})
                 RETURN u.password AS password, u.role AS role LIMIT 1"""
@@ -74,8 +74,8 @@ def login():
             routing_="r",
             username=req["username"],
         )
-        if (not len(records) == 1) or (
-            not check_password_hash(records[0]["password"], req["password"])
+        if (not len(rec) == 1) or (
+            not check_password_hash(rec[0]["password"], req["password"])
         ):
             return respondWithError("E002", 401)
 
@@ -98,19 +98,17 @@ def change_password():
         if not validRequest(request, requires):
             return respondWithError()
 
-        records, _, _ = db.execute_query(
-            query(
-                """MATCH (u:User {token: $token}) RETURN u.password AS password LIMIT 1"""
-            ),
+        rec, _, _ = db.execute_query(
+            query("""MATCH (u:User {token: $token}) RETURN u.password LIMIT 1"""),
             routing_="r",
             token=request.headers.get("Authorization"),
         )
-        if not len(records) == 1:
-            return respondWithError("E003", 401)
+        if len(rec) != 1:
+            return respondWithError()
 
         req = request.get_json()
-        if not check_password_hash(records[0]["password"], req["old_password"]):
-            return respondWithError("E004", 400)
+        if not check_password_hash(rec[0]["u.password"], req["old_password"]):
+            return respondWithError(msg="E004")
 
         _, _, _ = db.execute_query(
             query("""MATCH (u:User {token: $token}) SET u.password = $password"""),

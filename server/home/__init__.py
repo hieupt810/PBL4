@@ -23,12 +23,12 @@ def create_home():
         if not validRequest(request, requires):
             return respondWithError()
 
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query("""MATCH (u:User {token: $token}) RETURN u.role AS role LIMIT 1"""),
             routing_="r",
             token=request.headers.get("Authorization"),
         )
-        if len(records) != 1 or records[0]["role"] == 0:
+        if len(rec) != 1 or rec[0]["role"] == 0:
             return respondWithError()
 
         req = request.get_json()
@@ -43,7 +43,7 @@ def create_home():
             updated_at=getDatetime(),
             password=req["password"],
         )
-        return respond(msg="I005")
+        return respond()
     except:
         return respondWithError(code=500)
 
@@ -57,15 +57,15 @@ def list_home():
         if not "Authorization" in request.headers:
             return respondWithError()
 
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query("""MATCH (u:User {token: $token}) RETURN u.role AS role LIMIT 1"""),
             routing_="r",
             token=request.headers.get("Authorization"),
         )
-        if len(records) != 1 or records[0]["role"] == 0:
+        if len(rec) != 1 or rec[0]["role"] == 0:
             return respondWithError()
 
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query(
                 """MATCH (u:User)-[:CONTROL {role: 2}]-(h:Home)
                 WHERE toLower(u.username) CONTAINS toLower($username)
@@ -86,9 +86,7 @@ def list_home():
         return respond(
             data={
                 "total": (
-                    math.ceil(records[0]["amount"] / per_page)
-                    if len(records) > 0
-                    else 0
+                    math.ceil(rec[0]["amount"] / per_page) if len(rec) > 0 else 0
                 ),
                 "homes": [
                     {
@@ -97,7 +95,7 @@ def list_home():
                         "username": record["username"],
                         "id": record["id"],
                     }
-                    for record in records
+                    for record in rec
                 ],
             }
         )
@@ -111,12 +109,12 @@ def delete_home(id):
         if not "Authorization" in request.headers:
             return respondWithError()
 
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query("""MATCH (u:User {token: $token}) RETURN u.role AS role LIMIT 1"""),
             routing_="r",
             token=request.headers.get("Authorization"),
         )
-        if len(records) != 1 or records[0]["role"] == 0:
+        if len(rec) != 1 or rec[0]["role"] == 0:
             return respondWithError()
 
         _, _, _ = db.execute_query(
@@ -127,7 +125,7 @@ def delete_home(id):
             routing_="w",
             id=id,
         )
-        return respond(msg="I006")
+        return respond()
     except:
         return respondWithError(code=500)
 
@@ -139,7 +137,7 @@ def add_member(id):
         if not ("Authorization" in request.headers and validRequest(request, requires)):
             return respondWithError()
 
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query(
                 """MATCH (:User {token: $token})-[c:CONTROL]->(:Home {id: $id}) RETURN c.role AS role LIMIT 1"""
             ),
@@ -147,7 +145,7 @@ def add_member(id):
             token=request.headers.get("Authorization"),
             id=id,
         )
-        if len(records) != 1 or records[0]["role"] != 2:
+        if len(rec) != 1 or rec[0]["role"] != 2:
             return respondWithError()
 
         req = request.get_json()
@@ -163,7 +161,7 @@ def add_member(id):
             username=req["username"],
             updated_at=getDatetime(),
         )
-        return respond(msg="I007")
+        return respond()
     except:
         return respondWithError(code=500)
 
@@ -174,7 +172,7 @@ def delete_member(home_id, id):
         if not ("Authorization" in request.headers):
             return respondWithError()
 
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query(
                 """MATCH (:User {token: $token})-[c:CONTROL]->(:Home {id: $id}) RETURN c.role AS role LIMIT 1"""
             ),
@@ -182,7 +180,7 @@ def delete_member(home_id, id):
             token=request.headers.get("Authorization"),
             id=home_id,
         )
-        if len(records) != 1 or records[0]["role"] != 2:
+        if len(rec) != 1 or rec[0]["role"] != 2:
             return respondWithError()
 
         _, _, _ = db.execute_query(
@@ -195,7 +193,7 @@ def delete_member(home_id, id):
             home_id=home_id,
             updated_at=getDatetime(),
         )
-        return respond(msg="I008")
+        return respond()
     except:
         return respondWithError(code=500)
 
@@ -208,15 +206,15 @@ def get_members(id):
         if not "Authorization" in request.headers:
             return respondWithError()
 
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query("""MATCH (u:User {token: $token}) RETURN u.role AS role LIMIT 1"""),
             routing_="r",
             token=request.headers.get("Authorization"),
         )
-        if len(records) != 1:
+        if len(rec) != 1:
             return respondWithError()
 
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {token: $token})-[c:CONTROL]->(:Home {id: $id})
                 RETURN  u.first_name AS first_name,
@@ -237,9 +235,7 @@ def get_members(id):
         return respond(
             data={
                 "total": (
-                    math.ceil(records[0]["amount"] / per_page)
-                    if len(records) > 0
-                    else 0
+                    math.ceil(rec[0]["amount"] / per_page) if len(rec) > 0 else 0
                 ),
                 "members": [
                     {
@@ -249,7 +245,7 @@ def get_members(id):
                         "role": record["role"],
                         "username": record["username"],
                     }
-                    for record in records
+                    for record in rec
                 ],
             }
         )
