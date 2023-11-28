@@ -1,6 +1,6 @@
 import React from "react";
-import { User, Link, Button } from "@nextui-org/react";
-import { Member } from "@/models/member";
+import { User, Link } from "@nextui-org/react";
+import { Members } from "@/models/member";
 import { StaticImageData } from "next/image";
 import {
   SwipeableList,
@@ -13,21 +13,22 @@ import { getCookie } from "cookies-next";
 import { useAppDispatch } from "@/hook/store";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { BsCaretLeft, BsTrash } from "react-icons/bs";
+import { getMemberList } from "@/hook/features/SearchSlice";
 interface ListMember {
-  value: Member;
+  value: Members;
   Man: StaticImageData;
   Woman: StaticImageData;
 }
 
 export function MemberComponent({ value, Man, Woman }: ListMember) {
   const dispatch = useAppDispatch();
-  const handleDelete = async () => {
+  const handleDelete = async (username: string) => {
     const data = {
-      username: value.username,
+      username,
     };
     try {
       const response = await http.delete(
-        `api/home/delete-member?username=${data}`,
+        `api/home/delete-member?username=${data.username}`,
         {
           headers: {
             token: `${getCookie("token")?.toString()}`,
@@ -41,6 +42,7 @@ export function MemberComponent({ value, Man, Woman }: ListMember) {
       } else if (result.status != 200) {
         dispatch(failPopUp(result.message));
       }
+      dispatch(getMemberList());
     } catch (error) {
       console.error("Error:", error);
     }
@@ -82,7 +84,10 @@ export function MemberComponent({ value, Man, Woman }: ListMember) {
         <SwipeableListItem
           trailingActions={
             <TrailingActions>
-              <SwipeAction destructive onClick={handleDelete}>
+              <SwipeAction
+                destructive
+                onClick={() => value.username && handleDelete(value.username)}
+              >
                 {null}
               </SwipeAction>
             </TrailingActions>
@@ -117,3 +122,4 @@ export function MemberComponent({ value, Man, Woman }: ListMember) {
     </SwipeableList>
   );
 }
+

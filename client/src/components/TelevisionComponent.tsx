@@ -1,28 +1,30 @@
 import React from "react";
 import { Button } from "@nextui-org/react";
-import { MdOutlineLight } from "react-icons/md";
-import { BsLightbulb, BsLightbulbOff } from "react-icons/bs";
+import {
+  PiTelevisionBold,
+  PiTelevision,
+  PiTelevisionLight,
+} from "react-icons/pi";
 import { getCookie } from "cookies-next";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
 import http from "@/app/utils/http";
 
-interface LightType {
+interface TelevisionType {
   name: string;
   id: string;
 }
 
-export default function LightComponent({ name, id }: LightType) {
+export default function TelevisionComponent({ name, id }: TelevisionType) {
   const dispatch = useAppDispatch();
 
-  const handleButton = async (mode: string) => {
+  const handleButton = async () => {
     const data = {
       id: id,
-      mode: mode,
     };
 
     try {
-      const response = await http.post("api/led", data, {
+      const response = await http.post("api/control", data, {
         headers: {
           token: `${getCookie("token")?.toString()}`,
         },
@@ -42,7 +44,7 @@ export default function LightComponent({ name, id }: LightType) {
   return (
     <div className="mb-5">
       <div className="flex items-center justify-between p-4 border rounded-lg shadow-xl">
-        <MdOutlineLight className="mr-2.5" size={30} />
+        <PiTelevisionBold className="mr-2.5" size={30} />
 
         <p className="mx-2.5 flex-grow font-sans">{name}</p>
 
@@ -51,18 +53,18 @@ export default function LightComponent({ name, id }: LightType) {
             isIconOnly
             color="danger"
             aria-label="On"
-            onClick={() => handleButton("on")}
+            onClick={() => handleButton()}
           >
-            <BsLightbulb size={24} className="text--500" />
+            <PiTelevision size={24} className="text--500" />
           </Button>
           <Button
             isIconOnly
             color="warning"
             variant="faded"
             aria-label="Off"
-            onClick={() => handleButton("off")}
+            onClick={() => handleButton()}
           >
-            <BsLightbulbOff size={24} className="text-red-500" />
+            <PiTelevisionLight size={24} className="text-red-500" />
           </Button>
         </div>
       </div>

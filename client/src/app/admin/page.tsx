@@ -2,7 +2,7 @@
 import { resetLoading, setLoading } from "@/hook/features/LoadingSlice";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
-import { Member } from "@/models/member";
+import { Members } from "@/models/member";
 import {
   Button,
   Card,
@@ -41,7 +41,7 @@ export default function Admin() {
   const [homesPage, setHomesPage] = useState(1);
   const [homesAmount, setHomesAmount] = useState(1);
 
-  const [users, setUsers] = useState<Member[]>([]);
+  const [users, setUsers] = useState<Members[]>([]);
   const [usersPage, setUsersPage] = useState(1);
   const [usersAmount, setUsersAmount] = useState(1);
 

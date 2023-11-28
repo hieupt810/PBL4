@@ -2,12 +2,11 @@
 import ConfirmPopup from "@/components/ConfirmPopup";
 import { failPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
-import { Member } from "@/models/member";
+import { Members } from "@/models/member";
 import Man from "@/static/man.jpg";
 import Woman from "@/static/woman.png";
 import { Avatar, Button, Skeleton, AvatarGroup } from "@nextui-org/react";
 import { deleteCookie, getCookie, hasCookie } from "cookies-next";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useState } from "react";
@@ -20,11 +19,12 @@ import MobileLayout from "../mobile";
 import "./styles.css";
 import LightComponent from "@/components/LightComponent";
 import { Light } from "../types/light.type";
-import http from "../utils/http";
 import io from "socket.io-client";
 import { useFetchLights } from "./fetchData/useFetchLights";
 import DoorComponent from "@/components/DoorComponent";
-import classNames from "classnames";
+import { Television } from "../types/television.type";
+import TelevisionComponent from "@/components/TelevisionComponent";
+import { useFetchTvs } from "./fetchData/useFetchTv";
 
 interface ConfirmPopupProps {
   text: string;
@@ -39,8 +39,8 @@ export default function HomeInformation() {
   const [humidity, setHumidity] = useState(null);
 
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<Member>();
-  const [members, setMembers] = useState<Member[]>([]);
+  const [user, setUser] = useState<Members>();
+  const [members, setMembers] = useState<Members[]>([]);
   const [confirmPopup, setConfirmPopup] = useState<ConfirmPopupProps>({
     text: "",
     onConfirm: () => {},
@@ -48,7 +48,10 @@ export default function HomeInformation() {
 
   const [lights, setLights] = useState<Light[]>([]);
   const lightList = Array.isArray(lights) ? lights : [];
+  const [televisions, setTelevisions] = useState<Television[]>([]);
+  const televisionList = Array.isArray(televisions) ? televisions : [];
   console.log(lights);
+  console.log(televisionList);
 
   useEffect(() => {
     const socket1 = io("http://localhost:5005");
@@ -101,6 +104,7 @@ export default function HomeInformation() {
   }, [dispatch, router]);
 
   useFetchLights(setLights, setLoading);
+  useFetchTvs(setTelevisions,setLoading)
 
   return (
     <div>
@@ -347,6 +351,13 @@ export default function HomeInformation() {
                     key={light.id}
                     name={light.name}
                     id={light.id}
+                  />
+                ))}
+                {televisionList.map((television) => (
+                  <TelevisionComponent
+                    key={television.id}
+                    name={television.name}
+                    id={television.id}
                   />
                 ))}
               </>
