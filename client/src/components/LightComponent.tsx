@@ -40,31 +40,23 @@ export default function LightComponent({ name, id }: LightType) {
   };
 
   return (
-    <div className="mb-5">
-      <div className="flex items-center justify-between p-4 border rounded-lg shadow-xl">
-        <MdOutlineLight className="mr-2.5" size={30} />
+    <div className="flex items-center justify-between p-4 border rounded-lg shadow-xl" >
+      <MdOutlineLight className="mr-2.5" size={30} />
 
-        <p className="mx-2.5 flex-grow font-sans">{name}</p>
+      <p className="mx-2.5 flex-grow font-sans">{name}</p>
 
-        <div className="flex gap-4 items-center">
-          <Button
-            isIconOnly
-            color="danger"
-            aria-label="On"
-            onClick={() => handleButton("on")}
-          >
-            <BsLightbulb size={24} className="text--500" />
-          </Button>
-          <Button
-            isIconOnly
-            color="warning"
-            variant="faded"
-            aria-label="Off"
-            onClick={() => handleButton("off")}
-          >
-            <BsLightbulbOff size={24} className="text-red-500" />
-          </Button>
-        </div>
+      <div className="flex gap-4 items-center">
+        <Button
+          isIconOnly
+          color="danger"
+          aria-label="On"
+          onClick={() => handleButton("on")}
+        >
+          <BsLightbulb size={24} className="text--500" />
+        </Button>
+        <Button isIconOnly color="warning" variant="faded" aria-label="Off" onClick={() => handleButton("off")}>
+          <BsLightbulbOff size={24} className="text-red-500" />
+        </Button>
       </div>
     </div>
   );

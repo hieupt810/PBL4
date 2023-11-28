@@ -22,9 +22,7 @@ import { Light } from "../types/light.type";
 import io from "socket.io-client";
 import { useFetchLights } from "./fetchData/useFetchLights";
 import DoorComponent from "@/components/DoorComponent";
-import { Television } from "../types/television.type";
-import TelevisionComponent from "@/components/TelevisionComponent";
-import { useFetchTvs } from "./fetchData/useFetchTv";
+import classNames from "classnames";
 
 interface ConfirmPopupProps {
   text: string;
@@ -48,10 +46,7 @@ export default function HomeInformation() {
 
   const [lights, setLights] = useState<Light[]>([]);
   const lightList = Array.isArray(lights) ? lights : [];
-  const [televisions, setTelevisions] = useState<Television[]>([]);
-  const televisionList = Array.isArray(televisions) ? televisions : [];
-  console.log(lights);
-  console.log(televisionList);
+  console.log(lightList);
 
   useEffect(() => {
     const socket1 = io("http://localhost:5005");
@@ -102,10 +97,7 @@ export default function HomeInformation() {
       socket.close();
     };
   }, [dispatch, router]);
-
-  useFetchLights(setLights, setLoading);
-  useFetchTvs(setTelevisions,setLoading)
-
+  
   return (
     <div>
       <ConfirmPopup
@@ -351,13 +343,6 @@ export default function HomeInformation() {
                     key={light.id}
                     name={light.name}
                     id={light.id}
-                  />
-                ))}
-                {televisionList.map((television) => (
-                  <TelevisionComponent
-                    key={television.id}
-                    name={television.name}
-                    id={television.id}
                   />
                 ))}
               </>

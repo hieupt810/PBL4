@@ -76,7 +76,7 @@ export default function ModalComponent({
                 <Button
                   color="primary"
                   onClick={() => {
-                    handleAddMember();                    
+                    handleAddMember();
                     onClose();
                   }}
                 >

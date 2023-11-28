@@ -7,7 +7,7 @@ db = getNeo4J()
 
 @ir_bp.route("/create", methods=["POST"])
 def createIR():
-    requires = ["name","ir", "mode", "device","pin"]
+    requires = ["name","device","pin"]
     req = request.get_json()
     try:
         if (not "token" in request.headers) or (not validRequest(req, requires)):
@@ -117,14 +117,15 @@ def controlIR():
         if (not "token" in request.headers) or (not validRequest(req, requires)):
             return jsonify({"message": "E002", "status": 400}), 200
 
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query("""MATCH (u:User {token: $token}) RETURN u.role AS role LIMIT 1"""),
             routing_="r",
             token=request.headers.get("token"),
         )
-        if len(records) != 1 or records[0]["role"] == 0:
+        if len(rec) != 1 or rec[0]["role"] == 0:
             return jsonify({"message": "E002", "status": 400}), 200
-        records, _, _ = db.execute_query(
+
+        rec, _, _ = db.execute_query(
             query(
                 """MATCH (ir:IR {id: $ir_id})-[r:HAS_FUNC]->(func:Func {id: $id_mode})
                 RETURN r.ir_code AS ir_code, ir.name AS name, func.mode AS mode, ir.device AS ir_device, ir.pin AS pin"""
