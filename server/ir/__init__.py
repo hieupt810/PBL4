@@ -195,7 +195,7 @@ def getByDevice(device):
         devices, _, _ = db.execute_query(
             query(
                 """MATCH (h:Home {id : $home_id})<-[:CONTAINS]-(ir:IR {device: $device})
-                RETURN ir.id AS id, ir.name AS name, ir.ir AS ir_code, ir.mode AS mode, ir.device AS device"""
+                RETURN ir.id AS id, ir.name AS name, ir.device AS device, ir.pin AS pin"""
             ),
             routing_="r",
             home_id = Config.HOME_ID,
@@ -207,9 +207,8 @@ def getByDevice(device):
             devices_list.append({
                 "id": device["id"],
                 "name": device["name"],
-                "ir": device["ir"],
-                "mode": device["mode"],
                 "device": device["device"],
+                "pin": device["pin"]
             })
 
         return jsonify({"devices": devices_list, "status": 200}), 200
