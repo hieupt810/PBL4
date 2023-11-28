@@ -75,13 +75,14 @@ def getHomeLed():
 
         rec, _, _ = db.execute_query(
             query(
-                """MATCH MATCH (h:Home{id:$homeId})<-[:CONTAINS]-(l:Led)
+                """MATCH (h:Home{id:$homeId})<-[:CONTAINS]-(l:Led)
                 RETURN  l.id AS id, l.name AS name, l.pin AS pin
                 SKIP $skip LIMIT $limit"""
             ),
             routing_="r",
             skip=(page - 1) * size,
             limit=size,
+            homeId=Config.HOME_ID,
         )
         return (
             jsonify(

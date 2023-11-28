@@ -8,6 +8,7 @@ from flask import Flask, Request, jsonify
 from flask_cors import CORS
 from neo4j import Driver, GraphDatabase, basic_auth
 from typing_extensions import LiteralString
+from flask import Flask, send_from_directory
 
 app = None
 
