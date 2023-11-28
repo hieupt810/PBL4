@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from utils import getDatetime, getNeo4J, query, uniqueID, validRequest
+from config import Config
 
 ir_bp = Blueprint("ir", __name__)
 db = getNeo4J()
@@ -23,10 +24,11 @@ def createIR():
         records, _, _ = db.execute_query(
             query(
                 """MATCH (h:Home {id: $home_id})
-                CREATE (:IR {ir: $ir, name: $name, mode: $mode, id = $id, device = $device, updated_at : $updated_at})<-[:CONTAINS]-(h)"""
+                CREATE (ir:IR {ir: $ir, name: $name, mode: $mode, id : $id, device : $device, updated_at : $updated_at})
+                MERGE (ir)-[:CONTAINS]->(:Home {id: $home_id})"""
             ),
             routing_="w",
-            home_id=req["id"],
+            home_id=Config.HOME_ID,
             ir=req["ir"],
             name=req["name"],
             mode=req["mode"],
@@ -121,10 +123,11 @@ def getByDevice(device):
 
         devices, _, _ = db.execute_query(
             query(
-                """MATCH (h:Home)<-[:CONTAINS]-(ir:IR {device: $device})
+                """MATCH (h:Home {id : $home_id})<-[:CONTAINS]-(ir:IR {device: $device})
                 RETURN ir.id AS id, ir.name AS name, ir.ir AS ir_code, ir.mode AS mode, ir.device AS device"""
             ),
             routing_="r",
+            home_id = Config.HOME_ID,
             device=device,
         )
         
