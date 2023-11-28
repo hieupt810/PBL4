@@ -46,8 +46,32 @@ class L1Dist(Layer):
     def call(self, input_embedding, validation_embedding):
         return tf.math.abs(input_embedding - validation_embedding)
 
+def face_verificate(model, user_dir: str, image_dir: str) -> float:
+    results = []
+    for image in os.listdir(user_dir):
+        input_image = preprocess(image_dir)
+        validation_image = preprocess(os.path.join(user_dir, image))
 
-if __name__ == "__main__":
+        result = model.predict(
+            list(np.expand_dims([input_image, validation_image], axis=1))
+        )
+        results.append(result)
+    return np.average(results)
+
+
+def identify(model, image_dir: str, accept_threshold: float = 0.7):
+    users_dir = os.path.join(os.getcwd(),"application/users") 
+    for user in os.listdir(users_dir):
+        user_dir = os.path.join(users_dir, user)
+        if not os.path.isdir(user_dir):
+            continue
+
+        if face_verificate(model, user_dir, image_dir) >= accept_threshold:
+            return True, user
+
+    return False, "unknown"
+
+def check(image_dir: str, accept_threshold: float = 0.7):
     if not os.path.isdir(basedir):
         os.mkdir(basedir)
 
@@ -62,31 +86,5 @@ if __name__ == "__main__":
         },
         compile=False,
     )
-
-    cap = cv2.VideoCapture(0)
-    while cap.isOpened():
-        ret, frame = cap.read()
-        frame = frame[250 : 250 + 400, 450 : 450 + 400, :]
-
-        cv2.imshow("Verification", frame)
-
-        # Collect new person
-        if cv2.waitKey(1) & 0xFF == ord("c"):
-            if len(os.listdir(os.path.join(basedir, "data"))) < 20:
-                img_name = os.path.join(basedir, "data", "{}.png".format(uuid.uuid4()))
-                cv2.imwrite(img_name, frame)
-            else:
-                print("Enough data")
-
-        # Verification trigger
-        if cv2.waitKey(10) & 0xFF == ord("v"):
-            cv2.imwrite(os.path.join(basedir, "input_image.png"), frame)
-
-            results, verified = verify(siamese_model, 0.5)
-            print(1 - np.average(results), verified)
-
-        if cv2.waitKey(10) & 0xFF == ord("q"):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
+    return identify(siamese_model,image_dir,accept_threshold)
+    

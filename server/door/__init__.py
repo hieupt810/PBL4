@@ -1,12 +1,15 @@
+import os
 import requests
 from config import Config
 from flask import Blueprint, jsonify, request
-from utils import getNeo4J, query, validRequest, allowed_file, getDatetime
+from utils import getNeo4J, query, validRequest, allowed_file, getDatetime, uniqueID
 from werkzeug.utils import secure_filename
+from verificator import check
 
 door_bp = Blueprint("door", __name__)
 db = getNeo4J()
 
+basedir = os.path.join(os.getcwd(), "application")
 
 @door_bp.route("/door/open", methods=["POST"])
 def open_door():
@@ -169,11 +172,11 @@ def face_recognition():
         file = request.files['image']
 
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file_path = Config.UPLOAD_FOLDER+filename
+            file_name = uniqueID()+".jpe"
+            file_path = os.path.join(basedir, "upload", file_name)
             file.save(file_path)
-            
-            if AI():
+            c , user = check(file_path)
+            if c:
                 _, _, _ = db.execute_query(
                     query(
                         """MATCH (u:User {username: $username})
@@ -183,20 +186,20 @@ def face_recognition():
                         CREATE (o)-[:BY]->(u)"""
                     ),
                     routing_="w",
-                    imgUrl=file_path,
-                    username=req["username"],
+                    imgUrl=file_name,
+                    username=user,
                     home_id=Config.HOME_ID,
                     atTime=getDatetime(),
                     success=True,
                 )
-                response = requests.post(f"{Config.ESP_SERVER_URL}/door/unlock")
-                if response.status_code == 200:
-                    # Xử lý phản hồi thành công
-                    print("Request successful.")
-                else:
-                    # Xử lý lỗi
-                    print("Request failed with status code:", response.status_code)
-                    print("Response:", response.text)
+                response = requests.post(f"http://{Config.ESP_SERVER_URL}/door/unlock")
+                # if response.status_code == 200:
+                #     # Xử lý phản hồi thành công
+                #     print("Request successful.")
+                # else:
+                #     # Xử lý lỗi
+                #     print("Request failed with status code:", response.status_code)
+                #     print("Response:", response.text)
                 return jsonify({'message': 'Face recognized successfully'}), 200
             else:
                 _, _, _ = db.execute_query(
@@ -208,17 +211,15 @@ def face_recognition():
                         CREATE (o)-[:BY]->(u)"""
                     ),
                     routing_="w",
-                    imgUrl=file_path,
-                    username='unknow',
+                    imgUrl=file_name,
+                    username='unknown',
                     home_id=Config.HOME_ID,
                     atTime=getDatetime(),
                     success=False,
                 )
                 return jsonify({'error': 'Face recognition failed'}), 400
+            
         else:
             return jsonify({'error': 'Invalid file type'}), 400
-
-
-
     except Exception as error:
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
