@@ -42,14 +42,14 @@ def createIR():
     
 @ir_bp.route("/control", methods=["POST"])
 def controlIR():
-    requires = ["id","mode"]
+    requires = ["id"]
     req = request.get_json()
     try:
         if (not "token" in request.headers) or (not validRequest(req, requires)):
             return jsonify({"message": "E002", "status": 400}), 200
 
         records, _, _ = db.execute_query(
-            query("""MATCH (u:User {token: $token}) RETURN u.role AS role LIMIT 1"""),
+            query("""MATCH (u:User {token: $token}) RETURN u.role AS role LIMIT 1"""),  
             routing_="r",
             token=request.headers.get("token"),
         )

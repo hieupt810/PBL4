@@ -106,7 +106,7 @@ def getHomeLed():
 
 @led_bp.route("/create", methods=["POST"])
 def createLed():
-    requires = ["name", "pin", "id"]
+    requires = ["name", "pin"]
     req = request.get_json()
     try:
         if (not "token" in request.headers) or (not validRequest(req, requires)):
@@ -130,7 +130,7 @@ def createLed():
             pin=req["pin"],
             name=req["name"],
             updated_at=getDatetime(),
-            home_id=req["id"],
+            home_id=Config.HOME_ID,
         )
         return jsonify({"message": "I015", "status": 200}), 200
     except Exception as error:
