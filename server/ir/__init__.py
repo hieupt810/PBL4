@@ -6,7 +6,7 @@ db = getNeo4J()
 
 @ir_bp.route("/create", methods=["POST"])
 def createIR():
-    requires = ["name", "id", "ir", "mode", "device"]
+    requires = ["name","ir", "mode", "device"]
     req = request.get_json()
     try:
         if (not "token" in request.headers) or (not validRequest(req, requires)):

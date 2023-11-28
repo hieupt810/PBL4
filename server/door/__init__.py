@@ -172,7 +172,8 @@ def face_recognition():
         file = request.files['image']
 
         if file and allowed_file(file.filename):
-            file_path = os.path.join(basedir, "upload", uniqueID(),".jpg")
+            file_name = uniqueID()+".jpe"
+            file_path = os.path.join(basedir, "upload", file_name)
             file.save(file_path)
             c , user = check(file_path)
             if c:
@@ -185,20 +186,20 @@ def face_recognition():
                         CREATE (o)-[:BY]->(u)"""
                     ),
                     routing_="w",
-                    imgUrl=file_path,
+                    imgUrl=file_name,
                     username=user,
                     home_id=Config.HOME_ID,
                     atTime=getDatetime(),
                     success=True,
                 )
-                response = requests.post(f"{Config.ESP_SERVER_URL}/door/unlock")
-                if response.status_code == 200:
-                    # Xử lý phản hồi thành công
-                    print("Request successful.")
-                else:
-                    # Xử lý lỗi
-                    print("Request failed with status code:", response.status_code)
-                    print("Response:", response.text)
+                response = requests.post(f"http://{Config.ESP_SERVER_URL}/door/unlock")
+                # if response.status_code == 200:
+                #     # Xử lý phản hồi thành công
+                #     print("Request successful.")
+                # else:
+                #     # Xử lý lỗi
+                #     print("Request failed with status code:", response.status_code)
+                #     print("Response:", response.text)
                 return jsonify({'message': 'Face recognized successfully'}), 200
             else:
                 _, _, _ = db.execute_query(
@@ -210,8 +211,8 @@ def face_recognition():
                         CREATE (o)-[:BY]->(u)"""
                     ),
                     routing_="w",
-                    imgUrl=file_path,
-                    username='unknow',
+                    imgUrl=file_name,
+                    username='unknown',
                     home_id=Config.HOME_ID,
                     atTime=getDatetime(),
                     success=False,

@@ -60,7 +60,7 @@ def face_verificate(model, user_dir: str, image_dir: str) -> float:
 
 
 def identify(model, image_dir: str, accept_threshold: float = 0.7):
-    users_dir = os.path.join(os.getcwd(), "users")
+    users_dir = os.path.join(os.getcwd(),"application/users") 
     for user in os.listdir(users_dir):
         user_dir = os.path.join(users_dir, user)
         if not os.path.isdir(user_dir):
