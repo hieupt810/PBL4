@@ -7,31 +7,15 @@ user_bp = Blueprint("user", __name__)
 db = getNeo4J()
 
 
-@user_bp.route("/<id>", methods=["GET"])
-def profile(id):
+@user_bp.route("", methods=["GET"])
+def profile():
     try:
         if not ("Authorization" in request.headers):
             return respondWithError()
 
         rec, _, _ = db.execute_query(
             query(
-                """MATCH (session:User {token: $token})
-                MATCH (user:User {id: $id})
-                RETURN session.username, session.role, user.username"""
-            ),
-            routing_="r",
-            token=request.headers.get("Authorization"),
-            id=id,
-        )
-        if len(rec) != 1 and not (
-            rec[0]["session.username"] == rec[0]["user.username"]
-            or rec[0]["session.role"] > 0
-        ):
-            return respondWithError()
-
-        rec, _, _ = db.execute_query(
-            query(
-                """MATCH (u:User {id: $id})
+                """MATCH (u:User {token: $token})
                 RETURN  u.username AS username,
                         u.first_name AS first_name,
                         u.last_name AS last_name,
@@ -41,10 +25,26 @@ def profile(id):
                 LIMIT 1"""
             ),
             routing_="r",
-            token=id,
+            token=request.headers.get("Authorization"),
         )
         if len(rec) != 1:
             return respondWithError()
+
+        members, _, _ = db.execute_query(
+            query(
+                """MATCH (:User {token: $token})-[:CONTROL]->(h:Home)
+                MATCH (h)<-[c:CONTROL]-(u:User)
+                RETURN  u.first_name AS first_name,
+                        u.last_name AS last_name,
+                        u.gender AS gender,
+                        c.role AS role,
+                        u.username AS username
+                ORDER BY role DESC, first_name ASC, last_name ASC
+                """
+            ),
+            routing_="r",
+            token=request.headers.get("Authorization"),
+        )
 
         return respond(
             data={
@@ -54,10 +54,20 @@ def profile(id):
                 "gender": rec[0]["gender"],
                 "role": rec[0]["role"],
                 "updated_at": rec[0]["updated_at"],
+                "home": [
+                    {
+                        "first_name": member["first_name"],
+                        "last_name": member["last_name"],
+                        "gender": member["gender"],
+                        "role": member["role"],
+                        "username": member["username"],
+                    }
+                    for member in members
+                ],
             }
         )
-    except:
-        return respondWithError(code=500)
+    except Exception as error:
+        return respondWithError(code=500, error=str(error))
 
 
 @user_bp.route("", methods=["GET"])

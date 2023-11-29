@@ -18,12 +18,12 @@ import {
   Tabs,
 } from "@nextui-org/react";
 import { getCookie, hasCookie } from "cookies-next";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BiPlus } from "react-icons/bi";
 import { RiDeleteBin5Line, RiEditBoxLine } from "react-icons/ri";
-import AdminLayout from "./layout";
-import { useRouter } from "next/navigation"
 import http from "../utils/http";
+import AdminLayout from "./layout";
 
 interface Home {
   first_name: string;
@@ -69,10 +69,9 @@ export default function Admin() {
         console.error("Error:", error);
       }
     }
-  
+
     fetchData();
   }, [dispatch, homesPage, refetch]);
-  
 
   useEffect(() => {
     async function fetchData() {
@@ -81,7 +80,7 @@ export default function Admin() {
       try {
         const response = await http.get(`api/user/list-user`, {
           headers: {
-            token: `${token}`,
+            Authorization: `${token}`,
           },
         });
   
@@ -95,10 +94,9 @@ export default function Admin() {
         console.error("Error:", error);
       }
     }
-  
+
     fetchData();
   }, [dispatch, usersPage, refetch]);
-  
 
   return (
     <AdminLayout>
@@ -114,7 +112,11 @@ export default function Admin() {
                     </h5>
 
                     <div className="flex flex-row items-center justify-end space-x-4 px-4">
-                      <Button isIconOnly color="success" onClick={() => router.push("/admin/add-home")}>
+                      <Button
+                        isIconOnly
+                        color="success"
+                        onClick={() => router.push("/admin/add-home")}
+                      >
                         <BiPlus size={25} />
                       </Button>
                     </div>
@@ -185,7 +187,7 @@ export default function Admin() {
                                       "application/json"
                                     );
                                     headers.append(
-                                      "token",
+                                      "Authorization",
                                       getCookie("token") as string
                                     );
                                     fetch(
@@ -299,7 +301,7 @@ export default function Admin() {
                                       "application/json"
                                     );
                                     headers.append(
-                                      "token",
+                                      "Authorization",
                                       getCookie("token") as string
                                     );
                                     fetch(

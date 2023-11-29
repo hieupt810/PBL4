@@ -58,7 +58,7 @@ export default function Admin() {
           },
         });
 
-        if (response.status === 200) {
+        if (response.data.code === 200) {
           
           setDevices(response.data.data);
           console.log(response.data.data);

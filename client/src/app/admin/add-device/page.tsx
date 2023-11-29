@@ -10,15 +10,13 @@ import { RootState, useAppDispatch } from "@/hook/store";
 import { useSelector } from "react-redux";
 import { Users } from "@/app/types/users.type";
 import useDebounce from "@/hook/custoom/useDebounce";
-import { Input } from "@nextui-org/react";
 
 import http from "@/app/utils/http";
 import { getCookie } from "cookies-next";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
-import EyeSlashFilledIcon from "../add-home/icon_eye/EyeSlashFilledIcon";
-import EyeFilledIcon from "../add-home/icon_eye/EyeFilledIcon";
 import { MdOutlineDevicesOther } from "react-icons/md";
 import FormComponent from "@/components/FormComponent";
+import { Tabs, Tab, Card, CardBody, CardHeader } from "@nextui-org/react";
 
 interface OptionType {
   value: string;
@@ -48,8 +46,8 @@ export default function AddHome() {
     if (debouncedSearchValue) {
       const promise = dispatch(getUserList());
       return () => {
-        promise.abort()
-      }
+        promise.abort();
+      };
     }
   }, [debouncedSearchValue, dispatch]);
 
@@ -88,7 +86,7 @@ export default function AddHome() {
         console.error("Error:", error);
       }
     } else {
-      dispatch(failPopUp("E005"))
+      dispatch(failPopUp("E005"));
     }
   };
 
@@ -100,23 +98,22 @@ export default function AddHome() {
             <div className="flex flex-col justify-center items-center gap-1 font-bold h-[desiredHeight] text-lg mb-2.5">
               <MdOutlineDevicesOther className="text-2xl" />
               Thêm thiết bị
+              <Tabs
+                key="primary"
+                color="primary"
+                aria-label="Tabs colors"
+                radius="full"
+              >
+                <Tab key="led" title="LED">
+                  <FormComponent title="LED" />
+                </Tab>
+                <Tab key="ir" title="Device IR">
+                  <FormComponent title="Device IR" />
+                </Tab>
+              </Tabs>
             </div>
           </div>
-          <FormComponent/>
-
-
-          <div className="flex justify-around">
-            <Button
-              color="danger"
-              variant="flat"
-              onClick={() => router.push("/admin/list-device")}
-            >
-              Cancel
-            </Button>
-            <Button color="primary" onClick={() => handleButton()}>
-              Add
-            </Button>
-          </div>
+          
         </div>
       </div>
     </AdminLayout>

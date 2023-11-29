@@ -29,11 +29,7 @@ export default function Profile() {
 
       const token = getCookie("token")?.toString();
       try {
-        const response = await http.get("api/user", {
-          headers: {
-            token: `${token}`,
-          },
-        });
+        const response = await http.get("api/user");
         const data = await response.data;
 
         if (data.status === 200) {
@@ -73,7 +69,7 @@ export default function Profile() {
     try {
       const response = await http.put("api/user", userData, {
         headers: {
-          token: `${token}`,
+          Authorization: `${token}`,
         },
       });
 

@@ -1,7 +1,7 @@
 "use client";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
-import { Members} from "@/models/member";
+import { Member } from "@/models/member";
 import { getCookie, hasCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -15,9 +15,7 @@ import ModalComponent from "@/components/ModalComponent";
 import { AiOutlineUsergroupAdd } from "react-icons/ai";
 
 export default function Member() {
-  const rawMemberList: Members[] = useSelector(
-    (state: RootState) => state.search.memberList
-  );
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const [page, setPage] = useState<number>(1);
   const [members, setMembers] = useState<Member[]>([]);
@@ -30,9 +28,9 @@ export default function Member() {
   };
 
   useEffect(() => {
-    if (hasCalledApi) {
-      dispatch(getMemberList());
-      setHasCalledApi(false);
+    if (!hasCookie("token")) {
+      router.push("/login");
+      return;
     }
 
     const token = getCookie("token")?.toString();

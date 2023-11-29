@@ -1,10 +1,9 @@
-import { useEffect } from "react";
-import { useAppDispatch } from "@/hook/store";
-import { useRouter } from "next/router";
-import { getCookie, hasCookie } from "cookies-next";
+import { Light } from "@/app/types/light.type";
 import http from "@/app/utils/http";
 import { failPopUp } from "@/hook/features/PopupSlice";
-import { Light } from "@/app/types/light.type";
+import { useAppDispatch } from "@/hook/store";
+import { getCookie, hasCookie } from "cookies-next";
+import { useEffect } from "react";
 
 export function useFetchLights(
   setLights: React.Dispatch<React.SetStateAction<Light[]>>,
@@ -19,7 +18,7 @@ export function useFetchLights(
       try {
         const response = await http.get(`api/led`, {
           headers: {
-            token: `${token}`,
+            Authorization: `${token}`,
           },
         });
         if (response.status === 200) {

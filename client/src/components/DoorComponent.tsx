@@ -1,11 +1,10 @@
-import React from "react";
-import { Button } from "@nextui-org/react";
-import { MdOutlineDoorFront } from "react-icons/md";
-import { BsLock, BsUnlock } from "react-icons/bs";
-import { getCookie } from "cookies-next";
+import http from "@/app/utils/http";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
-import http from "@/app/utils/http";
+import { Button } from "@nextui-org/react";
+import { getCookie } from "cookies-next";
+import { BsLock, BsUnlock } from "react-icons/bs";
+import { MdOutlineDoorFront } from "react-icons/md";
 
 interface DoorType {
   name: string;
@@ -18,7 +17,7 @@ export default function DoorComponent({ name }: DoorType) {
     try {
       const response = await http.post(`/door/${mode}`, {
         headers: {
-          token: `${getCookie("token")?.toString()}`,
+          Authorization: `${getCookie("token")?.toString()}`,
         },
       });
 
