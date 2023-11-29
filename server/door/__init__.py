@@ -2,6 +2,7 @@ import os
 import requests
 from config import Config
 from flask import Blueprint, jsonify, request
+from utils import getNeo4J, query, validRequest
 from utils import getNeo4J, query, validRequest, allowed_file, getDatetime, uniqueID
 from werkzeug.utils import secure_filename
 from verificator import check
@@ -16,7 +17,7 @@ def open_door():
     try:
         if not "token" in request.headers:
             return jsonify({"message": "E002", "status": 400}), 200
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {token: $token})- [c:CONTROL]-> (home:Home)
                 RETURN c.role AS control_role LIMIT 1"""
@@ -24,7 +25,7 @@ def open_door():
             routing_="r",
             token=request.headers.get("token"),
         )
-        if len(records) != 1:
+        if len(rec) != 1:
             return jsonify({"message": "E002", "status": 400}), 200
 
         response = requests.post(f"{Config.ESP_SERVER_URL}/door/unlock")
@@ -43,7 +44,7 @@ def open_door():
 @door_bp.route("/door/lock", methods=["POST"])
 def lock_door():
     try:
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {token: $token})
                 RETURN u.role AS role LIMIT 1"""
@@ -51,7 +52,7 @@ def lock_door():
             routing_="r",
             token=request.headers.get("token"),
         )
-        if len(records) != 1 or records[0]["role"] == 0:
+        if len(rec) != 1 or rec[0]["role"] == 0:
             return jsonify({"message": "E002", "status": 400}), 200
 
         response = requests.post(f"{Config.ESP_SERVER_URL}/door/lock")
@@ -70,7 +71,7 @@ def lock_door():
 @door_bp.route("/pass", methods=["GET"])
 def get_pass():
     try:
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query(
                 """MATCH (h:Home {id: $id})
                     RETURN h.password AS password
@@ -80,16 +81,16 @@ def get_pass():
             id=request.args.get("id"),
         )
 
-        if records:
-            # Check if the records list is empty
-            if len(records) > 0:
-                password = records[0]["password"]
+        if rec:
+            # Check if the rec list is empty
+            if len(rec) > 0:
+                password = rec[0]["password"]
                 return jsonify(password), 200
             else:
-                return jsonify({"message": "No records found"}), 404
+                return jsonify({"message": "No rec found"}), 404
 
         else:
-            return jsonify({"message": "No records found"}), 404
+            return jsonify({"message": "No rec found"}), 404
 
     except Exception as error:
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
@@ -102,7 +103,7 @@ def reset_pass():
     try:
         if not validRequest(req, requires):
             return jsonify({"message": "E002", "status": 400}), 200
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query(
                 """MATCH (h:Home {id: $id, password: $password})
                     RETURN h.id AS password
@@ -110,34 +111,35 @@ def reset_pass():
             ),
             routing_="r",
             id=Config.HOME_ID,
-            password=req['oldPass']
+            password=req["oldPass"],
         )
-        if records:
-            # Check if the records list is empty
-            if len(records) > 0:
+        if rec:
+            # Check if the rec list is empty
+            if len(rec) > 0:
                 _, _, _ = db.execute_query(
-                query(
-                    """MATCH (h:Home {id: $id, password: $password})
+                    query(
+                        """MATCH (h:Home {id: $id, password: $password})
                     SET h.password = $newPass"""
-                ),
-                routing_="w",
-                id=Config.HOME_ID,
-                password=req['oldPass'],
-                newPass=req['newPass'],
+                    ),
+                    routing_="w",
+                    id=Config.HOME_ID,
+                    password=req["oldPass"],
+                    newPass=req["newPass"],
                 )
                 return jsonify({"message": "I003", "status": 200}), 200
             else:
-                return jsonify({"message": "No records found"}), 404
+                return jsonify({"message": "No rec found"}), 404
 
         else:
             return jsonify({"message": "HomeID or Password is incorrect"}), 404
     except Exception as error:
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
-    
+
+
 @door_bp.route("/history", methods=["GET"])
 def history():  
     try:
-        records, _, _ = db.execute_query(
+        rec, _, _ = db.execute_query(
             query(
                 """MATCH (o:Open)-[:TO]->(h:Home)
                 MATCH (o)-[:BY]->(u:User)
@@ -147,17 +149,16 @@ def history():
             routing_="r",
             home_id = Config.HOME_ID,
         )
-
-        if records:
-            # Check if the records list is empty
-            if len(records) > 0:
-                history = [{"id": record["id"],"imgUrl": record["imgUrl"], "username": record["username"], "atTime": record["atTime"], "success": record["success"]} for record in records]
-                return jsonify({"history": history}), 200
+        if rec:
+            # Check if the rec list is empty
+            if len(rec) > 0:
+                password = rec[0]["password"]
+                return jsonify(password), 200
             else:
-                return jsonify({"message": "No records found"}), 404
+                return jsonify({"message": "No rec found"}), 404
 
         else:
-            return jsonify({"message": "No records found"}), 404
+            return jsonify({"message": "No rec found"}), 404
 
     except Exception as error:
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200

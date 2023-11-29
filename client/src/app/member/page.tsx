@@ -1,5 +1,4 @@
 "use client";
-
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
 import { Members} from "@/models/member";
@@ -14,9 +13,6 @@ import Woman from "@/static/woman.png";
 import { MemberComponent } from "@/components/MemberComponent";
 import ModalComponent from "@/components/ModalComponent";
 import { AiOutlineUsergroupAdd } from "react-icons/ai";
-import { getMemberList } from "@/hook/features/SearchSlice";
-import { useSelector } from "react-redux";
-import { RootState } from "@/hook/store";
 
 export default function Member() {
   const rawMemberList: Members[] = useSelector(
@@ -24,51 +20,44 @@ export default function Member() {
   );
   const dispatch = useAppDispatch();
   const [page, setPage] = useState<number>(1);
-  const membersList = Array.isArray(rawMemberList) ? rawMemberList : [];
+  const [members, setMembers] = useState<Member[]>([]);
+  const membersList = Array.isArray(members) ? members : [];
   const [username, setUsername] = useState("");
-  const [hasCalledApi, setHasCalledApi] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setUsername(value);
   };
 
-  // useEffect(() => {
-  //   if (!hasCookie("token")) {
-  //     router.push("/login");
-  //     return;
-  //   }
-
-  //   const token = getCookie("token")?.toString();
-
-  //   const fetchListMembers = async () => {
-  //     try {
-  //       const response = await http.get(`api/home/list-member`, {
-  //         headers: {
-  //           token: `${token}`,
-  //         },
-  //       });
-
-  //       if (response.status === 200) {
-  //         const membersData = response.data.members;
-  //         setMembers(membersData);
-  //       } else {
-  //         dispatch(failPopUp(response.data.message));
-  //       }
-  //     } catch (error) {
-  //       console.error("Error:", error);
-  //     }
-  //   };
-
-  //   fetchListMembers();
-  // }, [dispatch, router]);
-  // FetchMembers(setMembers, router);
   useEffect(() => {
-    const promise = dispatch(getMemberList());
-    return () => {
-      promise.abort()
+    if (hasCalledApi) {
+      dispatch(getMemberList());
+      setHasCalledApi(false);
     }
-  }, [dispatch]);
+
+    const token = getCookie("token")?.toString();
+
+    const fetchListMembers = async () => {
+      try {
+        const response = await http.get(`api/home/list-member`, {
+          headers: {
+            token: `${token}`,
+          },
+        });
+
+        if (response.status === 200) {
+          const membersData = response.data.members;
+          setMembers(membersData);
+        } else {
+          dispatch(failPopUp(response.data.message));
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    };
+
+    fetchListMembers();
+  }, [dispatch, page, router]);
 
   const handleAddMember = async () => {
     if (username != "") {
@@ -89,21 +78,13 @@ export default function Member() {
           dispatch(failPopUp(result.message));
         }
         setUsername("");
-        setHasCalledApi(true);
       } catch (error) {
         console.error("Error:", error);
       }
     } else {
-      dispatch(failPopUp("E005"));
+      dispatch(failPopUp("E005"))
     }
   };
-
-  useEffect(() => {
-    if (hasCalledApi) {
-      dispatch(getMemberList());
-      setHasCalledApi(false);
-    }
-  }, [dispatch, hasCalledApi]);
 
   return (
     <MobileLayout>

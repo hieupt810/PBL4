@@ -1,5 +1,13 @@
-from flask import Blueprint, jsonify, request
-from utils import getDatetime, getNeo4J, query, uniqueID, validRequest
+from flask import Blueprint, request
+from utils import (
+    getDatetime,
+    getNeo4J,
+    query,
+    respond,
+    respondWithError,
+    uniqueID,
+    validRequest,
+)
 from werkzeug.security import check_password_hash, generate_password_hash
 
 auth_bp = Blueprint("auth", __name__)
@@ -9,18 +17,18 @@ db = getNeo4J()
 @auth_bp.route("/register", methods=["POST"])
 def register():
     requires = ["first_name", "last_name", "gender", "username", "password"]
-    req = request.get_json()
     try:
-        if not validRequest(req, requires):
-            return jsonify({"message": "E002", "status": 400}), 200
+        if not validRequest(request, requires):
+            return respondWithError()
 
-        records, _, _ = db.execute_query(
+        req = request.get_json()
+        rec, _, _ = db.execute_query(
             query("""MATCH (u:User {username: $username}) RETURN u.name LIMIT 1"""),
             routing_="r",
             username=req["username"],
         )
-        if len(records) > 0:
-            return jsonify({"message": "E004", "status": 400}), 200
+        if len(rec) == 1:
+            return respondWithError(msg="E005")
 
         _, _, _ = db.execute_query(
             query(
@@ -45,20 +53,20 @@ def register():
             token=uniqueID(),
             updated_at=getDatetime(),
         )
-        return jsonify({"message": "I001", "status": 200}), 200
-    except Exception as error:
-        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+        return respond(msg="I002")
+    except:
+        return respondWithError(code=500)
 
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
     requires = ["username", "password"]
-    req = request.get_json()
     try:
-        if not validRequest(req, requires):
-            return jsonify({"message": "E002", "status": 400}), 200
+        if not validRequest(request, requires):
+            return respondWithError()
 
-        records, _, _ = db.execute_query(
+        req = request.get_json()
+        rec, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {username: $username})
                 RETURN u.password AS password, u.role AS role LIMIT 1"""
@@ -66,66 +74,48 @@ def login():
             routing_="r",
             username=req["username"],
         )
-        if (not len(records) == 1) or (
-            not check_password_hash(records[0]["password"], req["password"])
+        if (not len(rec) == 1) or (
+            not check_password_hash(rec[0]["password"], req["password"])
         ):
-            return jsonify({"message": "E006", "status": 400}), 200
+            return respondWithError("E002", 401)
 
         token = uniqueID()
         _, _, _ = db.execute_query(
-            query(
-                """MATCH (u:User {username: $username})
-                SET u.token = $token"""
-            ),
+            query("""MATCH (u:User {username: $username}) SET u.token = $token"""),
             routing_="w",
             username=req["username"],
             token=token,
         )
-        return (
-            jsonify(
-                {
-                    "message": "I002",
-                    "status": 200,
-                    "token": token,
-                    "role": records[0]["role"],
-                }
-            ),
-            200,
-        )
-    except Exception as error:
-        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+        return respond({"token": token}, "I003")
+    except:
+        return respondWithError(code=500)
 
 
 @auth_bp.route("/change-password", methods=["PUT"])
 def change_password():
     requires = ["old_password", "new_password"]
-    req = request.get_json()
     try:
-        if (not "token" in request.headers) or (not validRequest(req, requires)):
-            return jsonify({"message": "E002", "status": 400}), 200
+        if not validRequest(request, requires):
+            return respondWithError()
 
-        records, _, _ = db.execute_query(
-            query(
-                """MATCH (u:User {token: $token})
-                RETURN u.password AS password LIMIT 1"""
-            ),
+        rec, _, _ = db.execute_query(
+            query("""MATCH (u:User {token: $token}) RETURN u.password LIMIT 1"""),
             routing_="r",
-            token=request.headers.get("token"),
+            token=request.headers.get("Authorization"),
         )
-        if not len(records) == 1:
-            return jsonify({"message": "E002", "status": 400}), 200
-        if not check_password_hash(records[0]["password"], req["old_password"]):
-            return jsonify({"message": "E008", "status": 400}), 200
+        if len(rec) != 1:
+            return respondWithError()
+
+        req = request.get_json()
+        if not check_password_hash(rec[0]["u.password"], req["old_password"]):
+            return respondWithError(msg="E004")
 
         _, _, _ = db.execute_query(
-            query(
-                """MATCH (u:User {token: $token})
-                SET u.password = $password"""
-            ),
+            query("""MATCH (u:User {token: $token}) SET u.password = $password"""),
             routing_="w",
-            token=request.headers.get("token"),
+            token=request.headers.get("Authorization"),
             password=generate_password_hash(req["new_password"]),
         )
-        return jsonify({"message": "I010", "status": 200}), 200
-    except Exception as error:
-        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+        return respond(msg="I004")
+    except:
+        return respondWithError(code=500)

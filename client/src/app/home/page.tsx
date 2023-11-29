@@ -2,7 +2,7 @@
 import ConfirmPopup from "@/components/ConfirmPopup";
 import { failPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
-import { Members } from "@/models/member";
+import { Member } from "@/models/member";
 import Man from "@/static/man.jpg";
 import Woman from "@/static/woman.png";
 import { Avatar, Button, Skeleton, AvatarGroup } from "@nextui-org/react";
@@ -38,8 +38,8 @@ export default function HomeInformation() {
   const [humidity, setHumidity] = useState(null);
 
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<Members>();
-  const [members, setMembers] = useState<Members[]>([]);
+  const [user, setUser] = useState<Member>();
+  const [members, setMembers] = useState<Member[]>([]);
   const [confirmPopup, setConfirmPopup] = useState<ConfirmPopupProps>({
     text: "",
     onConfirm: () => {},
@@ -47,10 +47,7 @@ export default function HomeInformation() {
 
   const [lights, setLights] = useState<Light[]>([]);
   const lightList = Array.isArray(lights) ? lights : [];
-  const [televisions, setTelevisions] = useState<Television[]>([]);
-  const televisionList = Array.isArray(televisions) ? televisions : [];
-  console.log(lights);
-  console.log(televisionList);
+  console.log(lightList);
 
   useEffect(() => {
     const socket1 = io("http://localhost:5005");
@@ -349,13 +346,6 @@ export default function HomeInformation() {
                     key={light.id}
                     name={light.name}
                     id={light.id} 
-                  />
-                ))}
-                {televisionList.map((television) => (
-                  <TelevisionComponent
-                    key={television.id}
-                    name={television.name}
-                    id={television.id}
                   />
                 ))}
               </>
