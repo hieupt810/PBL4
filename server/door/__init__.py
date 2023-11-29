@@ -149,11 +149,12 @@ def history():
             routing_="r",
             home_id = Config.HOME_ID,
         )
+        
         if rec:
             # Check if the rec list is empty
             if len(rec) > 0:
-                password = rec[0]["password"]
-                return jsonify(password), 200
+                history = [{"id": r["id"],"imgUrl": r["imgUrl"], "username": r["username"], "atTime": r["atTime"], "success": r["success"]} for r in rec]
+                return jsonify({"history": history}), 200
             else:
                 return jsonify({"message": "No rec found"}), 404
 
