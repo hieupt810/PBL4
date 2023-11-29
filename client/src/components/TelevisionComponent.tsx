@@ -10,17 +10,27 @@ import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
 import http from "@/app/utils/http";
 
+interface Ctr{
+  id: string;
+  mode: string;
+}
 interface TelevisionType {
   name: string;
-  id: string;
+  ctr : Ctr[];
 }
 
-export default function TelevisionComponent({ name, id }: TelevisionType) {
+export default function TelevisionComponent({ name, ctr }: TelevisionType) {
   const dispatch = useAppDispatch();
 
-  const handleButton = async () => {
+  const handleButton = async (mod:string) => {
+    let id_
+    for (let i = 0; i < ctr.length; i++) {
+      if(ctr[i].mode === mod){ 
+        id_ = ctr[i].id;
+      }
+    }
     const data = {
-      id: id,
+      id: id_,
     };
 
     try {

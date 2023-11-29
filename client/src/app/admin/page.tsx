@@ -22,7 +22,7 @@ import { useEffect, useState } from "react";
 import { BiPlus } from "react-icons/bi";
 import { RiDeleteBin5Line, RiEditBoxLine } from "react-icons/ri";
 import AdminLayout from "./layout";
-import { useParams, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import http from "../utils/http";
 
 interface Home {
@@ -44,7 +44,6 @@ export default function Admin() {
   const [users, setUsers] = useState<Members[]>([]);
   const [usersPage, setUsersPage] = useState(1);
   const [usersAmount, setUsersAmount] = useState(1);
-  
 
   const router = useRouter();
   useEffect(() => {
@@ -145,7 +144,7 @@ export default function Admin() {
                     </TableHeader>
 
                     <TableBody>
-                      {homes?.map((value, index) => {
+                      {homes.map((value, index) => {
                         return (
                           <TableRow key={index}>
                             <TableCell>
@@ -165,7 +164,7 @@ export default function Admin() {
 
                             <TableCell>
                               <div className="flex flex-row items-center justify-start space-x-4">
-                                <Button isIconOnly color="primary"  onClick={() => router.push(`/admin/list-device?id=${value.id}`)}>
+                                <Button isIconOnly color="primary">
                                   <RiEditBoxLine size={20} />
                                 </Button>
 
@@ -259,7 +258,7 @@ export default function Admin() {
                     </TableHeader>
 
                     <TableBody>
-                      {users?.map((value, index) => {
+                      {users.map((value, index) => {
                         return (
                           <TableRow key={index}>
                             <TableCell>
