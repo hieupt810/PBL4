@@ -1,7 +1,7 @@
 
 import { Users } from "@/app/types/users.type";
 import http from "@/app/utils/http";
-import { Members } from "@/models/member";
+import { Member } from "@/models/member";
 import { AsyncThunk, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { getCookie } from "cookies-next";
 
@@ -13,7 +13,7 @@ type FulfilledAction = ReturnType<GenericAsyncThunk["fulfilled"]>;
 
 interface SearchType {
   userList: Users[];
-  memberList: Members[];
+  memberList: Member[];
 }
 
 const initialState: SearchType = {
@@ -27,7 +27,7 @@ interface UserResponse {
   users: Users[];
 }
 interface MemberResponse {
-  members: Members[];
+  members: Member[];
 }
 
 
@@ -35,7 +35,7 @@ export const getUserList = createAsyncThunk(
   "user/getUserList",
   async (_, thunkAPI) => {
     const token = getCookie("token");
-    const response = await http.get<UserResponse>(`/api/user/list-user`, {
+    const response = await http.get<UserResponse>(`/api/user`, {
       headers : {
         token: `${token}`
       },

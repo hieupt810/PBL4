@@ -41,9 +41,9 @@ export default function Login() {
     })
       .then((r) => r.json())
       .then((d) => {
-        if (d.status == 200) {
+        if (d.code == 200) {
           dispatch(successPopUp(d.message));
-          setCookie("token", d.token, { maxAge: 60 * 60 * 24 * 7 });
+          setCookie("token", d.data.token, { maxAge: 60 * 60 * 24 * 7 });
           if (d.role == 2) router.push("/admin");
           else router.push("/home");
         } else {

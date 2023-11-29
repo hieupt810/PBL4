@@ -48,6 +48,8 @@ export default function HomeInformation() {
 
   const [lights, setLights] = useState<Light[]>([]);
   const lightList = Array.isArray(lights) ? lights : [];
+  const [televisions, setTelevisions] = useState<Television[]>([]);
+  const televisionList = Array.isArray(televisions) ? televisions : [];
   console.log(lightList);
 
   useEffect(() => {
@@ -61,7 +63,7 @@ export default function HomeInformation() {
     fetch(process.env.BACKEND_URL + "api/user", {
       method: "GET",
       headers: {
-        token: `${token}`,
+        Authorization: `${token}`,
       },
     })
       .then((r) => r.json())
@@ -73,13 +75,13 @@ export default function HomeInformation() {
     fetch(process.env.BACKEND_URL + "api/home/list-member", {
       method: "GET",
       headers: {
-        token: `${token}`,
+        Authorization: `${token}`,
       },
     })
       .then((r) => r.json())
       .then((d) => {
-        if (d.status == 200) {
-          setMembers(d.members);
+        if (d.code == 200) {
+          setMembers(d.data.members);
         } else dispatch(failPopUp(d.message));
       });
 
@@ -348,6 +350,13 @@ export default function HomeInformation() {
                     key={light.id}
                     name={light.name}
                     id={light.id}
+                  />
+                ))}
+                {televisionList.map((television) => (
+                  <TelevisionComponent
+                    key={television.id}
+                    name={television.name}
+                    id={television.id}
                   />
                 ))}
               </>
