@@ -1,18 +1,18 @@
 "use client";
+import { MemberComponent } from "@/components/MemberComponent";
+import ModalComponent from "@/components/ModalComponent";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
 import { Member } from "@/models/member";
+import Man from "@/static/man.jpg";
+import Woman from "@/static/woman.png";
+import { Skeleton } from "@nextui-org/react";
 import { getCookie, hasCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { AiOutlineUsergroupAdd } from "react-icons/ai";
 import MobileLayout from "../mobile";
 import http from "../utils/http";
-import { Skeleton } from "@nextui-org/react";
-import Man from "@/static/man.jpg";
-import Woman from "@/static/woman.png";
-import { MemberComponent } from "@/components/MemberComponent";
-import ModalComponent from "@/components/ModalComponent";
-import { AiOutlineUsergroupAdd } from "react-icons/ai";
 
 export default function Member() {
   const router = useRouter();
@@ -37,11 +37,7 @@ export default function Member() {
 
     const fetchListMembers = async () => {
       try {
-        const response = await http.get(`api/home/list-member`, {
-          headers: {
-            token: `${token}`,
-          },
-        });
+        const response = await http.get(`api/home/list-member`);
 
         if (response.status === 200) {
           const membersData = response.data.members;
@@ -65,7 +61,7 @@ export default function Member() {
       try {
         const response = await http.post("api/home/add-member", data, {
           headers: {
-            token: `${getCookie("token")?.toString()}`,
+            Authorization: `${getCookie("token")?.toString()}`,
           },
         });
         const result = await response.data;
@@ -80,7 +76,7 @@ export default function Member() {
         console.error("Error:", error);
       }
     } else {
-      dispatch(failPopUp("E005"))
+      dispatch(failPopUp("E005"));
     }
   };
 

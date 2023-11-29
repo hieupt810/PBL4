@@ -6,10 +6,10 @@ class Http {
   constructor() {
     this.instance = axios.create({
       baseURL: process.env.BACKEND_URL,
-      timeout: 10000,
-      // headers: {
-      //   token: hasCookie("token") ? getCookie("token"): "",
-      // },
+      timeout: 5000,
+      headers: {
+        Authorization: hasCookie("token") ? getCookie("token") : "",
+      },
     });
   }
 }

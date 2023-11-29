@@ -18,12 +18,12 @@ import {
   Tabs,
 } from "@nextui-org/react";
 import { getCookie, hasCookie } from "cookies-next";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BiPlus } from "react-icons/bi";
 import { RiDeleteBin5Line, RiEditBoxLine } from "react-icons/ri";
-import AdminLayout from "./layout";
-import { useRouter } from "next/navigation"
 import http from "../utils/http";
+import AdminLayout from "./layout";
 
 interface Home {
   first_name: string;
@@ -51,12 +51,8 @@ export default function Admin() {
       if (!hasCookie("token")) return;
       const token = getCookie("token")?.toString();
       try {
-        const response = await http.get(`api/home/list-home`, {
-          headers: {
-            token: `${token}`,
-          },
-        });
-  
+        const response = await http.get(`api/home/list-home`);
+
         if (response.status === 200) {
           setHomes(response.data.homes);
           setHomesAmount(Math.floor(response.data.amount / 10) + 1);
@@ -67,10 +63,9 @@ export default function Admin() {
         console.error("Error:", error);
       }
     }
-  
+
     fetchData();
   }, [dispatch, homesPage, refetch]);
-  
 
   useEffect(() => {
     async function fetchData() {
@@ -79,10 +74,10 @@ export default function Admin() {
       try {
         const response = await http.get(`api/user/list-user`, {
           headers: {
-            token: `${token}`,
+            Authorization: `${token}`,
           },
         });
-  
+
         if (response.status === 200) {
           setUsers(response.data.users);
           setUsersAmount(Math.floor(response.data.amount / 10) + 1);
@@ -93,10 +88,9 @@ export default function Admin() {
         console.error("Error:", error);
       }
     }
-  
+
     fetchData();
   }, [dispatch, usersPage, refetch]);
-  
 
   return (
     <AdminLayout>
@@ -112,7 +106,11 @@ export default function Admin() {
                     </h5>
 
                     <div className="flex flex-row items-center justify-end space-x-4 px-4">
-                      <Button isIconOnly color="success" onClick={() => router.push("/admin/add-home")}>
+                      <Button
+                        isIconOnly
+                        color="success"
+                        onClick={() => router.push("/admin/add-home")}
+                      >
                         <BiPlus size={25} />
                       </Button>
                     </div>
@@ -183,7 +181,7 @@ export default function Admin() {
                                       "application/json"
                                     );
                                     headers.append(
-                                      "token",
+                                      "Authorization",
                                       getCookie("token") as string
                                     );
                                     fetch(
@@ -297,7 +295,7 @@ export default function Admin() {
                                       "application/json"
                                     );
                                     headers.append(
-                                      "token",
+                                      "Authorization",
                                       getCookie("token") as string
                                     );
                                     fetch(

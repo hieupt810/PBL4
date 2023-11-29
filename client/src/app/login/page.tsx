@@ -2,13 +2,13 @@
 import { resetLoading, setLoading } from "@/hook/features/LoadingSlice";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppSelector } from "@/hook/hook";
+import { useAppDispatch } from "@/hook/store";
 import { Button, Input, Link } from "@nextui-org/react";
 import { hasCookie, setCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { TbSmartHome } from "react-icons/tb";
 import MobileLayout from "../mobile";
-import { useAppDispatch } from "@/hook/store";
 
 export default function Login() {
   const router = useRouter();
@@ -41,11 +41,10 @@ export default function Login() {
     })
       .then((r) => r.json())
       .then((d) => {
-        if (d.status == 200) {
+        if (d.code == 200) {
           dispatch(successPopUp(d.message));
-          setCookie("token", d.token, { maxAge: 60 * 60 * 24 * 7 });
-          if (d.role == 2) router.push("/admin");
-          else router.push("/home");
+          setCookie("token", d.data.token, { maxAge: 60 * 60 * 24 });
+          router.push("/home");
         } else {
           dispatch(failPopUp(d.message));
           dispatch(resetLoading());
