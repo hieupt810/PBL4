@@ -152,13 +152,12 @@ def history():
         if rec:
             # Check if the rec list is empty
             if len(rec) > 0:
-                password = rec[0]["password"]
-                return jsonify(password), 200
+                history = [{"id": r["id"],"imgUrl": r["imgUrl"], "username": r["username"], "atTime": r["atTime"], "success": r["success"]} for r in rec]
+                return jsonify({"history": history}), 200
             else:
-                return jsonify({"message": "No rec found"}), 404
-
+                return jsonify({"message": "No r found"}), 404
         else:
-            return jsonify({"message": "No rec found"}), 404
+            return jsonify({"message": "No r found"}), 404
 
     except Exception as error:
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
