@@ -75,6 +75,7 @@ def list_home():
                         h.id AS id,
                         h.updated_at AS updated_at,
                         COUNT(h) AS amount
+                ORDER BY h.updated_at DESC
                 SKIP $skip LIMIT $limit"""
             ),
             routing_="r",
@@ -83,16 +84,29 @@ def list_home():
             skip=(page - 1) * per_page,
             limit=per_page,
         )
+
+        amount, _, _ = db.execute_query(
+            query(
+                """MATCH (u:User)-[:CONTROL {role: 2}]-(h:Home)
+                WHERE toLower(u.username) CONTAINS toLower($username)
+                RETURN COUNT(h) AS amount"""
+            ),
+            routing_="r",
+            token=request.headers.get("Authorization"),
+            username=username,
+        )
+
         return respond(
             data={
                 "total": (
-                    math.ceil(rec[0]["amount"] / per_page) if len(rec) > 0 else 0
+                    math.ceil(amount[0]["amount"] / per_page) if len(rec) > 0 else 0
                 ),
                 "homes": [
                     {
                         "first_name": record["first_name"],
                         "last_name": record["last_name"],
                         "username": record["username"],
+                        "updated_at": record["updated_at"],
                         "id": record["id"],
                     }
                     for record in rec
@@ -162,8 +176,8 @@ def add_member(id):
             updated_at=getDatetime(),
         )
         return respond()
-    except:
-        return respondWithError(code=500)
+    except Exception as error:
+        return respondWithError(code=500, error=str(error))
 
 
 @home_bp.route("/<home_id>/member/<id>", methods=["DELETE"])

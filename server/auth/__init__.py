@@ -86,7 +86,7 @@ def login():
             username=req["username"],
             token=token,
         )
-        return respond({"token": token}, "I003")
+        return respond({"token": token, "role": rec[0]["role"]}, "I003")
     except:
         return respondWithError(code=500)
 
