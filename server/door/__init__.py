@@ -4,7 +4,6 @@ from config import Config
 from flask import Blueprint, jsonify, request
 from utils import getNeo4J, query, validRequest
 from utils import getNeo4J, query, validRequest, allowed_file, getDatetime, uniqueID
-from werkzeug.utils import secure_filename
 from verificator import check
 
 door_bp = Blueprint("door", __name__)
@@ -174,7 +173,7 @@ def face_recognition():
         file = request.files['image']
 
         if file and allowed_file(file.filename):
-            file_name = uniqueID()+".jpe"
+            file_name = uniqueID()+".png"
             file_path = os.path.join(basedir, "upload", file_name)
             file.save(file_path)
             c , user = check(file_path)

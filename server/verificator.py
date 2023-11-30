@@ -63,12 +63,16 @@ def load_model():
 def face_verificate(model, user_dir: str, image_dir: str) -> float:
     results = []
     for image in os.listdir(user_dir):
+        print(image)
+        
         input_image = preprocess(image_dir)
         validation_image = preprocess(os.path.join(user_dir, image))
 
         output1, output2 = model.forward(input_image, validation_image)
         euclidean_distance = F.pairwise_distance(output1, output2)
         results.append(euclidean_distance.item())
+        
+    print("abc", results)
     return np.average(results)
 
 
