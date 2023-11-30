@@ -13,11 +13,6 @@ def handle_temperature():
     print(f"Temperature: {temperature}°C")
     if temperature != None:
         socketio.emit("temperature", {"temperature": temperature})
-
-    humidity = req["humidity"]
-    print(f"Humidity: {humidity}%")
-    if humidity != None:
-        socketio.emit("humidity", {"humidity": humidity})
     return jsonify({"message": "Temperature received successfully", "status": 200}), 200
 
 
@@ -27,8 +22,9 @@ def handle_humidity():
 
     humidity = req["humidity"]
     print(f"Humidity: {humidity}%")
-    socketio.emit("humidity", {"humidity": humidity})
-    return jsonify({"message": "Humidity received successfully"})
+    if humidity != None:
+        socketio.emit("humidity", {"humidity": humidity})
+    return jsonify({"message": "Temperature received successfully", "status": 200}), 200
 
 
 if __name__ == "__main__":

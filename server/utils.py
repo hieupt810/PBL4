@@ -42,8 +42,7 @@ def query(q: LiteralString) -> LiteralString:
     return cast(LiteralString, dedent(q).strip())
 
 
-def validRequest(request: Request, requires: list[str]) -> bool:
-    req = request.get_json()
+def validRequest(req: dict, requires: list[str]) -> bool:
     for require in requires:
         if require not in req:
             return False

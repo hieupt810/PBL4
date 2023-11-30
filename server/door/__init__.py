@@ -11,7 +11,7 @@ db = getNeo4J()
 
 basedir = os.path.join(os.getcwd(), "application")
 
-@door_bp.route("/door/open", methods=["POST"])
+@door_bp.route("/open", methods=["POST"])
 def open_door():
     try:
         if not "token" in request.headers:
@@ -40,7 +40,7 @@ def open_door():
         return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
 
 
-@door_bp.route("/door/lock", methods=["POST"])
+@door_bp.route("/lock", methods=["POST"])
 def lock_door():
     try:
         rec, _, _ = db.execute_query(
@@ -125,6 +125,14 @@ def reset_pass():
                     password=req["oldPass"],
                     newPass=req["newPass"],
                 )
+                response = requests.post(f"{Config.ESP_SERVER_URL}/door/changePass")
+                if response.status_code == 200:
+                    # Xử lý phản hồi thành công
+                    print("Request successful.")
+                else:
+                    # Xử lý lỗi
+                    print("Request failed with status code:", response.status_code)
+                    print("Response:", response.text)
                 return jsonify({"message": "I003", "status": 200}), 200
             else:
                 return jsonify({"message": "No rec found"}), 404
