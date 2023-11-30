@@ -1,5 +1,5 @@
 "use client";
-import { resetLoading, setLoading } from "@/hook/features/LoadingSlice";
+import { resetLoading } from "@/hook/features/LoadingSlice";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch, useAppSelector } from "@/hook/hook";
 import { Button, Input } from "@nextui-org/react";
@@ -29,7 +29,7 @@ export default function Profile() {
       try {
         const response = await http.get(`api/user`, {
           headers: {
-            token: `${token}`,
+            Authorization: `${token}`,
           },
         });
         const data = await response.data;
@@ -50,19 +50,19 @@ export default function Profile() {
     e.preventDefault();
     if (role === 1) {
       const data = {
-        oldPass :password_old,
-        newPass :password_new,
+        oldPass: password_old,
+        newPass: password_new,
       };
 
       try {
         const response = await http.put("/api/door/resetPass", data, {
           headers: {
-            token: `${getCookie("token")?.toString()}`,
+            Authorization: `${getCookie("token")?.toString()}`,
           },
         });
 
         const result = await response.data;
-        console.log(result)
+        console.log(result);
         if (result?.status !== 200) {
           dispatch(failPopUp(result.message));
         } else if (result.status == 200) {

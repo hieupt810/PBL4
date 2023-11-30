@@ -1,18 +1,17 @@
-import React from "react";
-import { User, Link, Button } from "@nextui-org/react";
+import http from "@/app/utils/http";
+import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
+import { useAppDispatch } from "@/hook/store";
 import { Member } from "@/models/member";
+import { Link, User } from "@nextui-org/react";
+import { getCookie } from "cookies-next";
 import { StaticImageData } from "next/image";
+import { BsCaretLeft, BsTrash } from "react-icons/bs";
 import {
+  SwipeAction,
   SwipeableList,
   SwipeableListItem,
-  SwipeAction,
   TrailingActions,
 } from "react-swipeable-list";
-import http from "@/app/utils/http";
-import { getCookie } from "cookies-next";
-import { useAppDispatch } from "@/hook/store";
-import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
-import { BsCaretLeft, BsTrash } from "react-icons/bs";
 interface ListMember {
   value: Member;
   Man: StaticImageData;
@@ -30,7 +29,7 @@ export function MemberComponent({ value, Man, Woman }: ListMember) {
         `api/home/delete-member?username=${data}`,
         {
           headers: {
-            token: `${getCookie("token")?.toString()}`,
+            Authorization: `${getCookie("token")?.toString()}`,
           },
         }
       );
