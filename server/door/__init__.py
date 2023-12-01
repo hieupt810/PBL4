@@ -201,14 +201,14 @@ def face_recognition():
                     atTime=getDatetime(),
                     success=True,
                 )
-                response = requests.post(f"http://{Config.ESP_SERVER_URL}/door/unlock")
-                # if response.status_code == 200:
-                #     # Xử lý phản hồi thành công
-                #     print("Request successful.")
-                # else:
-                #     # Xử lý lỗi
-                #     print("Request failed with status code:", response.status_code)
-                #     print("Response:", response.text)
+                response = requests.post(f"{Config.ESP_SERVER_URL}/door/unlock")
+                if response.status_code == 200:
+                    # Xử lý phản hồi thành công
+                    print("Request successful.")
+                else:
+                    # Xử lý lỗi
+                    print("Request failed with status code:", response.status_code)
+                    print("Response:", response.text)
                 return jsonify({'message': 'Face recognized successfully'}), 200
             else:
                 _, _, _ = db.execute_query(

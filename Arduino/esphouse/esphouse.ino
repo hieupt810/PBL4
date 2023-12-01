@@ -9,7 +9,7 @@ SoftwareSerial SUART(4, 5);  //SRX = D2 = GPIO-4; STX = D1 = GPIO-5
 WiFiServer server(80);
 String str = "";
 String header;
-String beSocket = "http://10.20.0.155:5005/temperature";
+String beSocket = "http://192.168.144.23:5005";
 char cstr[2];
 
 void setup() {
@@ -22,8 +22,7 @@ void setup() {
   server.begin();
 }
 
-void handleRESTControl(String s) {
-  // led
+void checkLed(String s){
   int idIndex = s.indexOf("/led/") + 5;               
   int stateIndexOn = s.indexOf("/on");
   int stateIndexOff = s.indexOf("/off");
@@ -45,18 +44,41 @@ void handleRESTControl(String s) {
       SUART.write(" OFF\n");
     }
   }
+}
 
-  // temperature
+void checkTemp(String s){
   int temp = s.indexOf("/temp");
   if (temp >= 0){
     SUART.write("temperature \n");
   }
+}
 
-  //humidity
+void checkHumid(String s){
   int humid = s.indexOf("/humid");
   if (humid >= 0){
     SUART.write("humidity \n");
   }
+}
+
+void checkIR(String s){
+  int humid = s.indexOf("/humid");
+  if (humid >= 0){
+    SUART.write("humidity \n");
+  }
+}
+
+void handleRESTControl(String s) {
+  // led
+  checkLed(s);
+
+  // temperature
+  checkTemp(s);
+
+  //humidity
+  checkHumid(s);
+
+  //IR
+  checkIR(s);
 }
 
 void loop() {
@@ -101,31 +123,29 @@ void loop() {
       if (str.indexOf("temperature") >= 0){
         HTTPClient http;
         // Start the HTTP request
-        http.begin(client, beSocket);
+        String uri = beSocket + "/temperature";
+        http.begin(client, uri);
         http.addHeader("Content-Type", "application/json");
         // Send the GET request
         int httpResponseCode = http.POST(str);
         Serial.println(httpResponseCode);
         String payload = http.getString();
-        // Serial.println(payload);
+        http.end(); // Close connection
+      }
+      if (str.indexOf("humidity") >= 0){
+        HTTPClient http;
+        // Start the HTTP request
+        String uri = beSocket + "/humidity";
+        http.begin(client, uri);
+        http.addHeader("Content-Type", "application/json");
+        // Send the GET request
+        int httpResponseCode = http.POST(str);
+        Serial.println(httpResponseCode);
+        String payload = http.getString();
         http.end(); // Close connection
       }
       str = "";
     }
   } 
-  //   //Connect Backend
-  // HTTPClient http;
-  // // Your target URL
-  // String url = "http://10.20.3.123:8082/api/ard";
-
-  // // Start the HTTP request
-  // http.begin(client, url);
-  // http.addHeader("Content-Type", "application/json");
-  // // Send the GET request
-  // int httpResponseCode = http.POST("{\"a\": 1234}");
-  // Serial.println(httpResponseCode);
-  // String payload = http.getString();
-  // Serial.println(payload);
-  // http.end(); // Close connection
 
 }
