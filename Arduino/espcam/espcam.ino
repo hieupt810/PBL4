@@ -6,10 +6,10 @@
 #include <driver/gpio.h>
 #include <FS.h>
 
-const char* ssid = "DONG NAU COFFEE";
-const char* password = "xincamon";
+const char* ssid = "Giangvien";
+const char* password = "dhbk@2023";
 
-String serverName = "192.168.23.127"; 
+String serverName = "10.10.27.101"; 
 String serverPath = "/api/door/faceCheck";     
 const int serverPort = 8082;   
 WiFiClient client;
@@ -33,6 +33,8 @@ WiFiClient client;
 #define HREF_GPIO_NUM     23
 #define PCLK_GPIO_NUM     22
 
+#define LED_BUILTIN 4
+
 const int timerInterval = 5000;    // time between each HTTP POST image
 unsigned long previousMillis = 0;   // last time image was sent
 int preStatus = 0;
@@ -45,6 +47,7 @@ int status = 0;
 
 void setup() {
   pinMode(12, INPUT);
+  pinMode (LED_BUILTIN, OUTPUT);
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); 
   Serial.begin(115200);
 
@@ -106,14 +109,18 @@ void setup() {
 void loop() {
   status = digitalRead(12);
   if (status == 1 && preStatus == 0){
-    sendPhoto();
+    digitalWrite(LED_BUILTIN, HIGH);
+    for (int i = 1; i <= 10; i++){
+      sendPhoto();
+      delay(100);
+    }
+    digitalWrite(LED_BUILTIN, LOW);
     preStatus = 1;
   }
   else {
     preStatus = 0;
   }
   // Serial.println(status);
-  delay(100);
   // sendPhoto();
   // delay(5000);
 }
@@ -184,13 +191,6 @@ String sendPhoto() {
     }
     Serial.println("gui duoc roi");
     client.stop();
-    // Serial.println(getBody);
-    // if (SPIFFS.remove("/image.jpg")) {
-    //   Serial.println("Image file deleted successfully");
-    // } else {
-    //   Serial.println("Error deleting image file");
-    // }
-
   }
   else {
     getBody = "Connection to " + serverName +  " failed.";
