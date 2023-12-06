@@ -13,7 +13,6 @@ def handle_temperature():
     print(f"Temperature: {temperature}°C")
     if temperature != None or temperature.str.lower() != "nan":
         socketio.emit("temperature", {"temperature": temperature})
-
     return jsonify({"message": "Temperature received successfully", "status": 200}), 200
 
 

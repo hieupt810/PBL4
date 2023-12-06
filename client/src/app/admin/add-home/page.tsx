@@ -43,7 +43,10 @@ export default function AddHome() {
 
   useEffect(() => {
     if (debouncedSearchValue) {
-      dispatch(getUserList());
+      const promise = dispatch(getUserList());
+      return () => {
+        promise.abort()
+      }
     }
   }, [debouncedSearchValue, dispatch]);
 

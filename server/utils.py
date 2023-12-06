@@ -8,6 +8,7 @@ from flask import Flask, Request, jsonify, send_from_directory
 from flask_cors import CORS
 from neo4j import Driver, GraphDatabase, basic_auth
 from typing_extensions import LiteralString
+from flask import Flask, send_from_directory
 
 app = None
 
@@ -41,8 +42,7 @@ def query(q: LiteralString) -> LiteralString:
     return cast(LiteralString, dedent(q).strip())
 
 
-def validRequest(request: Request, requires: list[str]) -> bool:
-    req = request.get_json()
+def validRequest(req: dict, requires: list[str]) -> bool:
     for require in requires:
         if require not in req:
             return False

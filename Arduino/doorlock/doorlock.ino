@@ -7,14 +7,13 @@
 
 #define MODEM_RX 16
 #define MODEM_TX 17
-#define mySerial Serial2
-
-// SoftwareSerial espSerial(0, 1);
 
 #define buzz 8
+#define servor 8
+Servo servo_9;
 
 #define SS_PIN 10
-#define RST_PIN 9
+#define RST_PIN 9 
 
 typedef enum {
   MODE_ID_RFID_ADD,
@@ -43,9 +42,6 @@ byte colPins[COLS] = { 5, 6, 7 };
 int addr = 0;
 char password[6] = "11111";
 char pass_def[6] = "12222";
-char mode_changePass[6] = "*#01#";
-char mode_resetPass[6] = "*#02#";
-char mode_hardReset[6] = "*#03#";
 char mode_addRFID[6] = "*107#";
 char mode_delRFID[6] = "*108#";
 char mode_delAllRFID[6] = "*109#";
@@ -61,44 +57,24 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 Keypad keypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS);
 MFRC522 rfid(SS_PIN, RST_PIN);
 
-#define servor 8
-
-Servo servo_9;
-
-// void writeEpprom(char data[]) {
-//   unsigned char i = 0;
-//   for (i = 0; i < 5; i++) {
-//     EEPROM.write(i, data[i]);
-//   }
-//   //EEPROM.commit();
-// }
+String str = "";
 
 void getPass() {
-  // if (Serial.available() > 0) {
   Serial.println("password");
   delay(5000);
   String receivedData = "";
   receivedData = Serial.readString();
   receivedData.trim();
-  Serial.println("\n" + receivedData + "\n");
-  int firstIndex = receivedData.indexOf('\"');
 
-  // Tìm vị trí của ký tự cuối cùng "
+  int firstIndex = receivedData.indexOf('\"');
   int lastIndex = receivedData.lastIndexOf('\"');
 
-  // Kiểm tra xem cả hai vị trí đã được tìm thấy hay chưa
   if (firstIndex >= 0 && lastIndex >= 0) {
-    // Trích xuất chuỗi con nằm giữa cặp dấu ngoặc kép
-    String extractedString = receivedData.substring(firstIndex + 1, lastIndex);
-
-    // In ra kết quả
-    Serial.println(extractedString);
+    
+    String extractedString = receivedData.substring(firstIndex + 1, lastIndex);    
     strcpy(pass_def, extractedString.c_str());
+    Serial.println(pass_def);
   }
-  // }
-  // else {
-  //   Serial.println("khum on");
-  // }
 }
 
 
@@ -130,36 +106,6 @@ bool compareData(char data1[], char data2[])  // Kiem tra 2 cai buffer co giong 
     }
   }
   return true;
-}
-
-void notification(char select) {
-  unsigned char i = 0;
-  if (select == 1) {
-    for (i = 0; i < 2; i++) {
-      digitalWrite(buzz, HIGH);
-      delay(100);
-      digitalWrite(buzz, LOW);
-      delay(100);
-    }
-  }
-  if (select == 2) {
-    for (i = 0; i < 3; i++) {
-      digitalWrite(buzz, HIGH);
-      delay(100);
-      digitalWrite(buzz, LOW);
-      delay(100);
-    }
-  }
-  if (select == 3) {
-    for (i = 0; i < 4; i++) {
-      digitalWrite(buzz, HIGH);
-      delay(100);
-      digitalWrite(buzz, LOW);
-      delay(100);
-    }
-  }
-  if (select == 4) {
-  }
 }
 
 void insertData(char data1[], char data2[])  // Gan buffer 2 cho buffer 1
@@ -230,55 +176,19 @@ void getData()  // Nhan buffer tu ban phim
 void checkPass()  // kiem tra password
 {
   getData();
-  // Serial.println(password);
-  // Serial.println(mode_changePass);
   if (isBufferdata(data_input)) {
     if (compareData(data_input, pass_def))  // Dung pass
     {
-      notification(1);
-      lcd.clear();
-      clear_data_input();
-      index_t = 3;
-    } else if (compareData(data_input, mode_changePass)) {
-      // Serial.print("mode_changePass");
       lcd.clear();
       clear_data_input();
       index_t = 1;
-    } else if (compareData(data_input, mode_resetPass)) {
-      // Serial.print("mode_resetPass");
-      lcd.clear();
-      clear_data_input();
-      index_t = 2;
-    } else if (compareData(data_input, mode_hardReset)) {
-      lcd.setCursor(0, 0);
-      lcd.print("---HardReset---");
-      // writeEpprom(pass_def);
-      insertData(password, pass_def);
-      clear_data_input();
-      delay(2000);
-      lcd.clear();
-      index_t = 0;
-    } else if (compareData(data_input, mode_addRFID)) {
-      lcd.clear();
-      clear_data_input();
-      index_t = 8;
-    } else if (compareData(data_input, mode_delRFID)) {
-      lcd.clear();
-      clear_data_input();
-      index_t = 9;
-    } else if (compareData(data_input, mode_delAllRFID)) {
-      lcd.clear();
-      clear_data_input();
-      index_t = 10;
     } else {
       if (error_pass == 2) {
-        notification(3);
         clear_data_input();
         lcd.clear();
-        index_t = 4;
+        index_t = 2;
       }
       // Serial.print("Error");
-      notification(2);
       lcd.clear();
       lcd.setCursor(1, 1);
       lcd.print("WRONG PASSWORD");
@@ -306,7 +216,6 @@ void openDoor() {
     servo_9.write(angle);
     delay(15);
   }
-  // Serial.print("C");
   lcd.clear();
   index_t = 0;
 }
@@ -342,124 +251,6 @@ void error() {
   // Serial.print("I");
   lcd.clear();
   index_t = 0;
-}
-
-void changePass() {
-  lcd.setCursor(0, 0);
-  lcd.print("-- Change Pass --");
-  delay(3000);
-  lcd.setCursor(0, 0);
-  lcd.print("--- New Pass ---");
-  while (1) {
-    getData();
-    if (isBufferdata(data_input)) {
-      insertData(new_pass1, data_input);
-      // Serial.println(new_pass1);
-      clear_data_input();
-      break;
-    }
-  }
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("---- AGAIN ----");
-  while (1) {
-    getData();
-    if (isBufferdata(data_input)) {
-      insertData(new_pass2, data_input);
-      // Serial.println(new_pass2);
-      clear_data_input();
-      break;
-    }
-  }
-  delay(1000);
-  if (compareData(new_pass1, new_pass2)) {
-    lcd.clear();
-    // Serial.println("Success");
-    lcd.setCursor(0, 0);
-    lcd.print("--- Success ---");
-    notification(1);
-    delay(1000);
-    // writeEpprom(new_pass2);
-    insertData(pass_def, new_pass2);
-    lcd.clear();
-    index_t = 0;
-  } else {
-    lcd.clear();
-    // Serial.println("miss");
-    lcd.setCursor(0, 0);
-    lcd.print("-- Mismatched --");
-    notification(3);
-    delay(1000);
-    lcd.clear();
-    index_t = 0;
-  }
-}
-
-void resetPass() {
-  unsigned char choise = 0;
-  // Serial.println("Pass reset");
-  lcd.setCursor(0, 0);
-  lcd.print("---Reset Pass---");
-  getData();
-  if (isBufferdata(data_input)) {
-    if (compareData(data_input, pass_def)) {
-      lcd.clear();
-      clear_data_input();
-      while (1) {
-        lcd.setCursor(0, 0);
-        lcd.print("---Reset Pass---");
-        char key = keypad.getKey();
-        if (choise == 0) {
-          lcd.setCursor(0, 1);
-          lcd.print(">");
-          lcd.setCursor(2, 1);
-          lcd.print("YES");
-          lcd.setCursor(9, 1);
-          lcd.print(" ");
-          lcd.setCursor(11, 1);
-          lcd.print("NO");
-        }
-        if (choise == 1) {
-          lcd.setCursor(0, 1);
-          lcd.print(" ");
-          lcd.setCursor(2, 1);
-          lcd.print("YES");
-          lcd.setCursor(9, 1);
-          lcd.print(">");
-          lcd.setCursor(11, 1);
-          lcd.print("NO");
-        }
-        if (key == '*') {
-          if (choise == 1) {
-            choise = 0;
-          } else {
-            choise++;
-          }
-        }
-        if (key == '#' && choise == 0) {
-          lcd.clear();
-          delay(1000);
-          // writeEpprom(pass_def);
-          insertData(password, pass_def);
-          lcd.setCursor(0, 0);
-          lcd.print("---Reset ok---");
-          notification(1);
-          delay(1000);
-          lcd.clear();
-          break;
-        }
-        if (key == '#' && choise == 1) {
-          lcd.clear();
-          break;
-        }
-      }
-      index_t = 0;
-    } else {
-      notification(1);
-      index_t = 0;
-      lcd.clear();
-    }
-  }
 }
 
 unsigned char numberInput() {
@@ -532,17 +323,15 @@ void rfidCheck() {
     Serial.println();
 
     if (isAllowedRFIDTag(rfidTag)) {
-      notification(1);
       lcd.clear();
-      index_t = 3;
+      index_t = 1;
     } else {
       if (error_pass == 2) {
-        notification(3);
+
         lcd.clear();
-        index_t = 4;
+        index_t = 2;
       }
       Serial.print("Error\n");
-      notification(2);
       lcd.clear();
       lcd.setCursor(3, 1);
       lcd.print("WRONG RFID");
@@ -593,7 +382,7 @@ void rfidCheck() {
 //           Serial.println();
 
 //           if (isAllowedRFIDTag(rfidTag)) {
-//             notification(2);
+//         
 //             lcd.clear();
 //             lcd.setCursor(1, 1);
 //             lcd.print("RFID ADDED BF");
@@ -629,7 +418,7 @@ void rfidCheck() {
 //           Serial.print("OK");
 //           lcd.setCursor(0, 1);
 //           lcd.print("Add RFID Done");
-//           notification(1);
+//       
 //           delay(2000);
 //           index_t = 0;
 //           Serial.print("ADD_OUT");
@@ -666,7 +455,7 @@ void rfidCheck() {
 //     lcd.setCursor(0, 1);
 //     lcd.print(buffDisp);
 //     Serial.print("DEL_OUT");
-//     notification(1);
+// 
 //     delay(2000);
 //     lcd.clear();
 //     index_t = 0;
@@ -711,7 +500,6 @@ void rfidCheck() {
 
 void setup() {
   Serial.begin(9600);
-  // espSerial.begin(9600);
   SPI.begin();
   rfid.PCD_Init();
   delay(1000);
@@ -727,9 +515,6 @@ void setup() {
   digitalWrite(buzz, LOW);
   getPass();
   lcd.clear();
-
-  // Serial.print("PASSWORK: ");
-  // Serial.println(password);
 }
 
 void loop() {
@@ -737,27 +522,30 @@ void loop() {
   lcd.print("Enter Password");
   checkPass();
   rfidCheck();
-  // Serial.println(index_t);
+
+  if (Serial.available()>0){
+    str = Serial.readString();
+    
+    if (str.indexOf("openDoor") >= 0){
+      index_t = 1;
+      str = "";
+    }
+
+    if (str.indexOf("changePass") >= 0){
+      getPass();
+      str = "";
+    }
+
+  }
 
   while (index_t == 1) {
-    changePass();
-  }
-
-  while (index_t == 2) {
-    resetPass();
-  }
-
-  while (index_t == 3) {
     openDoor();
     error_pass = 0;
   }
 
-  while (index_t == 4) {
+  while (index_t == 2) {
     error();
     error_pass = 0;
-  }
-  while (index_t == 7) {
-    clear_database();
   }
   // while (index_t == 8)
   // {

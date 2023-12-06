@@ -17,3 +17,7 @@ class Config(object):
 
     ESP_SERVER_URL = str(os.environ.get("ESP_SERVER_URL"))
     HOME_ID = str(os.environ.get("HOME_ID"))
+
+    UPLOAD_FOLDER = str(os.environ.get("UPLOAD_FOLDER"))
+    HISTORY_FOLDER = str(os.environ.get("HISTORY_FOLDER"))
+    ALLOWED_EXTENSIONS = str(os.environ.get("ALLOWED_EXTENSIONS"))

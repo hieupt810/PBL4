@@ -15,7 +15,9 @@ import MobileLayout from "../mobile";
 import http from "../utils/http";
 
 export default function Member() {
-  const router = useRouter();
+  const rawMemberList: Members[] = useSelector(
+    (state: RootState) => state.search.memberList
+  );
   const dispatch = useAppDispatch();
   const [page, setPage] = useState<number>(1);
   const [members, setMembers] = useState<Member[]>([]);
@@ -28,9 +30,9 @@ export default function Member() {
   };
 
   useEffect(() => {
-    if (!hasCookie("token")) {
-      router.push("/login");
-      return;
+    if (hasCalledApi) {
+      dispatch(getMemberList());
+      setHasCalledApi(false);
     }
 
     const token = getCookie("token")?.toString();

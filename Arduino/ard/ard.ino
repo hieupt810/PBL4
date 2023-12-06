@@ -44,6 +44,10 @@ void Humid(){
   Serial.print("} \n");
 }
 
+void IR(){
+
+}
+
 void loop() {
   if(Serial.available()>0){
     char com =Serial.read();
@@ -76,15 +80,18 @@ void loop() {
       if (humid >= 0){
         Humid();
       }
-
+      
+      //IR request
+      int ir = str.indexOf("IR");
+      
       str = "";
     }
   }
-  currentTime = millis();
-  if (currentTime - time == 10000){
-    time = currentTime;
-    Temp();
-    Humid();
-  }
+  // currentTime = millis();
+  // if (currentTime - time == 10000){
+  //   time = currentTime;
+  //   Temp();
+  //   Humid();
+  // }
 }
 

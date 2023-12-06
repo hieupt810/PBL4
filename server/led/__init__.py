@@ -63,13 +63,14 @@ def getHomeLed(home_id):
 
         rec, _, _ = db.execute_query(
             query(
-                """MATCH (l:Led)
+                """MATCH (h:Home{id:$homeId})<-[:CONTAINS]-(l:Led)
                 RETURN  l.id AS id, l.name AS name, l.pin AS pin
                 SKIP $skip LIMIT $limit"""
             ),
             routing_="r",
             skip=(page - 1) * size,
             limit=size,
+            homeId=Config.HOME_ID,
         )
         
         return respond(msg="I014", data={"leds": [
@@ -103,12 +104,13 @@ def createLed():
 
         rec, _, _ = db.execute_query(
             query(
-                """CREATE (l:Led {id: $id, pin: $pin, name: $name, updated_at: $updated_at})
-                MERGE (l)-[:CONTAINS]->(:Home {id: $home_id})"""
+                """MATCH (h:Home {id: $home_id})
+                CREATE (l:Led {id: $id, pin: $pin, name: $name, updated_at: $updated_at})-[:CONTAINS]->(h)
+                """
             ),
             routing_="w",
             id=uniqueID(),
-            pin=req["pin"],
+            pin=req["pin"], 
             name=req["name"],
             updated_at=getDatetime(),
             home_id=req["home_id"],
