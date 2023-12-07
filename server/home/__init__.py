@@ -181,8 +181,8 @@ def add_member(id):
         return respondWithError(code=500, error=str(error))
 
 
-@home_bp.route("/delete-member", methods=["DELETE"])
-def delete_member():
+@home_bp.route("/<home_id>/delete-member", methods=["DELETE"])
+def delete_member(home_id):
     username = request.args.get('username')
     try:
         if not ("Authorization" in request.headers):
@@ -194,24 +194,24 @@ def delete_member():
             ),
             routing_="r",
             token=request.headers.get("Authorization"),
-            id=Config.HOME_ID,
+            id=home_id,
         )
         if len(rec) != 1 or rec[0]["role"] != 2:
             return respondWithError()
 
         _, _, _ = db.execute_query(
             query(
-                """MATCH (:User {id: $id})-[c:CONTROL {role: 1}]->(h:Home {id: $home_id})
+                """MATCH (:User {username: $username})-[c:CONTROL]->(h:Home {id: $home_id})
                 SET h.updated_at = $updated_at DELETE c"""
             ),
             routing_="w",
-            token=request.headers.get("token"),
-            username=request.args.get('username'),
+            username=username,
+            home_id = home_id,
             updated_at=getDatetime(),
         )
         return respond()
-    except:
-        return respondWithError(code=500)
+    except Exception as error:
+        return respondWithError(code = 500, error = error)
 
 
 @home_bp.route("/<id>/member", methods=["GET"])
