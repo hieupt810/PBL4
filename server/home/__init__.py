@@ -233,7 +233,7 @@ def get_members(id):
 
         rec, _, _ = db.execute_query(
             query(
-                """MATCH (u:User {token: $token})-[c:CONTROL]->(:Home {id: $id})
+                """MATCH (u:User )-[c:CONTROL]->(:Home {id: $id})
                 RETURN  u.first_name AS first_name,
                         u.last_name AS last_name,
                         u.gender AS gender,
@@ -244,7 +244,6 @@ def get_members(id):
                 SKIP $skip LIMIT $limit"""
             ),
             routing_="r",
-            token=request.headers.get("token"),
             id=id,
             limit=per_page,
             skip=(page - 1) * per_page,
