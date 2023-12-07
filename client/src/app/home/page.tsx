@@ -147,7 +147,7 @@ export default function HomeInformation() {
             </Button>
           </Link>
 
-          <Link href={"/history"}>
+          <Link href={`/history/?home_id=${home_id}`}>
             <Button isIconOnly color="primary">
               <VscHistory size={20} />
             </Button>
@@ -280,8 +280,8 @@ export default function HomeInformation() {
               // role === 0 && (
                 <>
                   <DoorComponent name="Door" />
-                  <LightComponent name="" id="" title="Light" />
-                  <TelevisionComponent name="" id="" title="Television" />
+                  <LightComponent name="" id="" title="Light" home_id = {home_id} />
+                  <TelevisionComponent name="" id="" title="Television" home_id = {home_id} />
                 </>
               // )
             )}

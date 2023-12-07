@@ -50,12 +50,12 @@ export default function Profile() {
     e.preventDefault();
     if (role === 1) {
       const data = {
-        oldPass: password_old,
-        newPass: password_new,
+        old_password: password_old,
+        new_password: password_new,
       };
 
       try {
-        const response = await http.post("/api/door/resetPass", data, {
+        const response = await http.put("/api/auth/change-password", data, {
           headers: {
             Authorization: `${getCookie("token")?.toString()}`,
           },
@@ -63,9 +63,9 @@ export default function Profile() {
 
         const result = await response.data;
         console.log(result);
-        if (result?.status !== 200) {
+        if (result?.code !== 200) {
           dispatch(failPopUp(result.message));
-        } else if (result.status == 200) {
+        } else if (result.code == 200) {
           dispatch(successPopUp(result.message));
           dispatch(resetLoading());
         }

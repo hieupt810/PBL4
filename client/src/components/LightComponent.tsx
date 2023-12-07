@@ -12,9 +12,10 @@ interface LightType {
   name: string;
   id: string;
   title: string;
+  home_id: string;
 }
 
-export default function LightComponent({ name, id, title }: LightType) {
+export default function LightComponent({ name, id, title, home_id }: LightType) {
   const dispatch = useAppDispatch();
 
   const router = useRouter();
@@ -75,7 +76,7 @@ export default function LightComponent({ name, id, title }: LightType) {
         <div className="mb-5">
           <div
             className="flex items-center justify-between p-4 border rounded-lg shadow-xl"
-            onClick={() => router.push(`/home/list-led`)}
+            onClick={() => router.push(`/home/list-led?home_id=${home_id}`)}
           >
             <MdOutlineLight className="mr-2.5" size={30} />
             <p className="mx-2.5 flex-grow font-sans">LED</p>
