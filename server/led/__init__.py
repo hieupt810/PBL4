@@ -1,7 +1,7 @@
 import requests
 from config import Config
 from flask import Blueprint, jsonify, request
-from utils import getDatetime, getNeo4J, query, uniqueID, validRequest
+from utils import *
 
 led_bp = Blueprint("led", __name__)
 db = getNeo4J()
@@ -12,12 +12,9 @@ def led_switch():
     requires = ["id", "mode"]
     req = request.get_json()
     try:
-        if (
-            (not "token" in request.headers)
-            or (not validRequest(req, requires))
-            or (req["mode"] != "on" and req["mode"] != "off")
+        if not ("Authorization" in request.headers and validRequest(request, requires) or (req["mode"] != "on" and req["mode"] != "off")
         ):
-            return jsonify({"message": "E002", "status": 400}), 200
+            return respondWithError()
 
         rec, _, _ = db.execute_query(
             query(
@@ -25,10 +22,10 @@ def led_switch():
                 RETURN c.role AS role LIMIT 1"""
             ),
             routing_="r",
-            token=request.headers.get("token"),
+            token=request.headers.get("Authorization"),
         )
         if len(rec) != 1:
-            return jsonify({"message": "E002", "status": 400}), 200
+            return respondWithError(code = 400, msg = "E002")
 
         rec, _, _ = db.execute_query(
             query("""MATCH (l:Led {id: $id}) RETURN l.pin AS pin"""),
@@ -38,28 +35,19 @@ def led_switch():
         _ = requests.post(
             f"http://{Config.ESP_SERVER_URL}/led/{rec[0]['pin']}/{req['mode']}"
         )
-        return jsonify({"message": "I014", "status": 200}), 200
+        return respond(msg = "I014")
     except Exception as error:
-        return (
-            jsonify(
-                {
-                    "message": "E001",
-                    "status": 500,
-                    "error": str(error),
-                    "": Config.ESP_SERVER_URL,
-                }
-            ),
-            200,
-        )
+        return respondWithError(code = 500, error = error)
+                
 
 
-@led_bp.route("", methods=["GET"])
-def getHomeLed():
+@led_bp.route("home/<home_id>", methods=["GET"])
+def getHomeLed(home_id):
     page = request.args.get("page", type=int, default=1)
     size = request.args.get("size", type=int, default=10)
     try:
-        if not "token" in request.headers:
-            return jsonify({"message": "E002", "status": 400}), 200
+        if not "Authorization" in request.headers:
+            return respondWithError(msg="E002",code=400)
 
         rec, _, _ = db.execute_query(
             query(
@@ -67,71 +55,66 @@ def getHomeLed():
                 RETURN c.role AS role LIMIT 1"""
             ),
             routing_="r",
-            token=request.headers.get("token"),
-            id="49480b29-b900-412b-8394-f1bcee055f8c",
+            token=request.headers.get("Authorization"),
+            id=home_id,
         )
         if len(rec) != 1:
-            return jsonify({"message": "E002", "status": 400}), 200
+            return respondWithError(msg="E002",code=400)
 
         rec, _, _ = db.execute_query(
             query(
-                """MATCH (l:Led)
+                """MATCH (h:Home{id:$homeId})<-[:CONTAINS]-(l:Led)
                 RETURN  l.id AS id, l.name AS name, l.pin AS pin
                 SKIP $skip LIMIT $limit"""
             ),
             routing_="r",
             skip=(page - 1) * size,
             limit=size,
+            homeId=Config.HOME_ID,
         )
-        return (
-            jsonify(
-                {
-                    "message": "I014",
-                    "status": 200,
-                    "leds": [
-                        {
-                            "id": record["id"],
-                            "name": record["name"],
-                            "pin": record["pin"],
-                        }
-                        for record in rec
-                    ],
-                }
-            ),
-            200,
-        )
+        
+        return respond(msg="I014", data={"leds": [
+                                                    {
+                                                        "id": record["id"],
+                                                        "name": record["name"],
+                                                        "pin": record["pin"]
+                                                    }
+                                                    for record in rec
+                                                ]})
+
     except Exception as error:
-        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+        return respondWithError(code = 500, error = error)
 
 
 @led_bp.route("/create", methods=["POST"])
 def createLed():
-    requires = ["name", "pin", "id"]
+    requires = ["name", "pin", "home_id"]
     req = request.get_json()
     try:
-        if (not "token" in request.headers) or (not validRequest(req, requires)):
-            return jsonify({"message": "E002", "status": 400}), 200
+        if (not "Authorization" in request.headers) or (not validRequest(request, requires)):
+            return respondWithError(msg="E002",code=400)
 
         rec, _, _ = db.execute_query(
             query("""MATCH (u:User {token: $token}) RETURN u.role AS role LIMIT 1"""),
             routing_="r",
-            token=request.headers.get("token"),
+            token=request.headers.get("Authorization"),
         )
         if len(rec) != 1 or rec[0]["role"] == 0:
-            return jsonify({"message": "E002", "status": 400}), 200
+            return respondWithError(msg="E002",code=400)
 
         rec, _, _ = db.execute_query(
             query(
-                """CREATE (l:Led {id: $id, pin: $pin, name: $name, updated_at: $updated_at})
-                MERGE (l)-[:CONTAINS]->(:Home {id: $home_id})"""
+                """MATCH (h:Home {id: $home_id})
+                CREATE (l:Led {id: $id, pin: $pin, name: $name, updated_at: $updated_at})-[:CONTAINS]->(h)
+                """
             ),
             routing_="w",
             id=uniqueID(),
-            pin=req["pin"],
+            pin=req["pin"], 
             name=req["name"],
             updated_at=getDatetime(),
-            home_id=req["id"],
+            home_id=req["home_id"],
         )
-        return jsonify({"message": "I015", "status": 200}), 200
+        return respond(msg="I015")
     except Exception as error:
-        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+        return respondWithError(code = 500, error = error)

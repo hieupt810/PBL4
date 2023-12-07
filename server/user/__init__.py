@@ -38,8 +38,7 @@ def profile():
                         u.last_name AS last_name,
                         u.gender AS gender,
                         c.role AS role,
-                        u.username AS username,
-                        h.id AS home_id
+                        u.username AS username
                 ORDER BY role DESC, first_name ASC, last_name ASC
                 """
             ),
@@ -55,7 +54,6 @@ def profile():
                 "gender": rec[0]["gender"],
                 "role": rec[0]["role"],
                 "updated_at": rec[0]["updated_at"],
-                "home_id": rec[0]["home_id"],
                 "home": [
                     {
                         "first_name": member["first_name"],
@@ -76,6 +74,7 @@ def profile():
 def user_list():
     page = request.args.get("page", type=int, default=1)
     per_page = request.args.get("per_page", type=int, default=10)
+    # Search params
     username = request.args.get("username", type=str, default="")
     role = request.args.get("role", type=int, default=-1)
     try:

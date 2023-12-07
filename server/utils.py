@@ -4,10 +4,11 @@ from textwrap import dedent
 from typing import cast
 
 from config import Config
-from flask import Flask, Request, jsonify
+from flask import Flask, Request, jsonify, send_from_directory
 from flask_cors import CORS
 from neo4j import Driver, GraphDatabase, basic_auth
 from typing_extensions import LiteralString
+from flask import Flask, send_from_directory
 
 app = None
 
@@ -41,8 +42,7 @@ def query(q: LiteralString) -> LiteralString:
     return cast(LiteralString, dedent(q).strip())
 
 
-def validRequest(request: Request, requires: list[str]) -> bool:
-    req = request.get_json()
+def validRequest(req: dict, requires: list[str]) -> bool:
     for require in requires:
         if require not in req:
             return False
@@ -60,3 +60,9 @@ def respond(data=[], msg: str = "I001", code: int = 200):
 
 def respondWithError(msg: str = "E001", code: int = 404, error: str = ""):
     return jsonify({"message": msg, "code": code, "error": error}), 400
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
+
+def history_file(filename):
+    return send_from_directory('static/history', filename)

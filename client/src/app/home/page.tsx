@@ -4,7 +4,7 @@ import DoorComponent from "@/components/DoorComponent";
 import LightComponent from "@/components/LightComponent";
 import { failPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
-import { Member } from "@/models/member";
+import { Members } from "@/models/member";
 import Man from "@/static/man.jpg";
 import Woman from "@/static/woman.png";
 import { Avatar, AvatarGroup, Button, Skeleton } from "@nextui-org/react";
@@ -36,8 +36,8 @@ export default function HomeInformation() {
   const [humidity, setHumidity] = useState(null);
 
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<Member>();
-  const [members, setMembers] = useState<Member[]>([]);
+  const [user, setUser] = useState<Members>();
+  const [members, setMembers] = useState<Members[]>([]);
   const [confirmPopup, setConfirmPopup] = useState<ConfirmPopupProps>({
     text: "",
     onConfirm: () => {},
@@ -45,7 +45,7 @@ export default function HomeInformation() {
 
   const [lights, setLights] = useState<Light[]>([]);
   const lightList = Array.isArray(lights) ? lights : [];
-  console.log(lights);
+  console.log(lightList);
 
   useEffect(() => {
     if (!hasCookie("token")) {
@@ -83,9 +83,7 @@ export default function HomeInformation() {
       socket.close();
     };
   }, [dispatch, router]);
-
-  useFetchLights(setLights, setLoading);
-
+  
   return (
     <div>
       <ConfirmPopup
