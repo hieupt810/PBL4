@@ -15,13 +15,15 @@ def profile():
 
         rec, _, _ = db.execute_query(
             query(
-                """MATCH (u:User {token: $token})
+                """MATCH (u:User {token: $token})-[:CONTROL]->(h:Home)
+                MATCH (h)<-[c:CONTROL]-(u:User)
                 RETURN  u.username AS username,
                         u.first_name AS first_name,
                         u.last_name AS last_name,
                         u.gender AS gender,
                         u.role AS role,
-                        u.updated_at AS updated_at
+                        u.updated_at AS updated_at,
+                        h.id AS home_id
                 LIMIT 1"""
             ),
             routing_="r",
@@ -39,14 +41,13 @@ def profile():
                         u.gender AS gender,
                         c.role AS role,
                         u.username AS username
-                        h.id AS home_id
                 ORDER BY role DESC, first_name ASC, last_name ASC
                 """
             ),
             routing_="r",
             token=request.headers.get("Authorization"),
         )
-
+        
         return respond(
             data={
                 "username": rec[0]["username"],
