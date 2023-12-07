@@ -267,29 +267,30 @@ def get_members(id):
             }
         )
     except Exception as error:
-        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+        return respondWithError(code = 500, error = error)
     
-@home_bp.route("/getAllDevice", methods=["GET"])
-def get_Devices():
+@home_bp.route("<home_id>/getAllDevice", methods=["GET"])
+def get_Devices(home_id):
     try:
-        if (not "token" in request.headers) :
-            return jsonify({"message": "E002", "status": 400}), 200
+        if (not "Authorization" in request.headers) :
+            return respondWithError(msg="E002",code=400)
 
         records, _, _ = db.execute_query(
             query("""MATCH (u:User {token: $token, role:$role}) RETURN u.role AS role LIMIT 1"""),
             routing_="r",
-            token=request.headers.get("token"),
+            token=request.headers.get("Authorization"),
             role = 2
         )
         if len(records) != 1 or records[0]["role"] == 0:
-            return jsonify({"message": "E002", "status": 400}), 200
+            return respondWithError(msg="E002",code=400)
+
         records, _, _ = db.execute_query(
             query(
                 """MATCH (h:Home{id:$homeId})<-[:CONTAINS]-(l:Led)
                 RETURN  l.id AS id, l.name AS name, l.pin AS pin"""
             ),
             routing_="r",
-            homeId=Config.HOME_ID,
+            homeId=home_id,
         )
         data = []
         for led in records:
@@ -305,7 +306,7 @@ def get_Devices():
                 RETURN ir.id AS id, ir.name AS name, ir.device AS device, ir.pin AS pin"""
             ),
             routing_="r",
-            homeId=Config.HOME_ID
+            homeId=home_id
         )
         for device in devices:
             data.append({
@@ -314,7 +315,7 @@ def get_Devices():
                 "device": device["device"],
                 "pin": device["pin"],
             })
-        return jsonify({"data": data, "status": 200}), 200
+        return respond (data=data)
     except Exception as error:
-        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+        return respondWithError(code = 500, error = error)
         
