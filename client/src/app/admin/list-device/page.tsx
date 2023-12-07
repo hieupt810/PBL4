@@ -47,12 +47,13 @@ export default function Admin() {
   const params = useSearchParams();
 
   const router = useRouter();
+
   useEffect(() => {
     async function fetchData() {
       if (!hasCookie("token")) return;
       const token = getCookie("token")?.toString();
       try {
-        const response = await http.get(`api/home/getAllDevice`, {
+        const response = await http.get(`api/home/${params.get("id")}/getAllDevice`, {
           headers: {
             token: `${token}`,
           },
@@ -72,7 +73,7 @@ export default function Admin() {
     }
 
     fetchData();
-  }, [dispatch, homesPage, refetch]);
+  }, [dispatch, homesPage, refetch, params]);
 
   return (
     <AdminLayout>
@@ -89,7 +90,7 @@ export default function Admin() {
                   <Button
                     isIconOnly
                     color="success"
-                    onClick={() => router.push("/admin/add-device")}
+                    onClick={() => router.push(`/admin/add-device?id=${params.get("id")}`)}
                   >
                     <BiPlus size={25} />
                   </Button>

@@ -35,8 +35,8 @@ export default function Member() {
           },
         });
 
-        if (response.status === 200) {
-          const historyData = response.data.history;
+        if (response.data.code === 200) {
+          const historyData = response.data.data;
           console.log(historyData)
           setListHistory(historyData);
         } else {
