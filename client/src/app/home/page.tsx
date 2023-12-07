@@ -69,7 +69,8 @@ export default function HomeInformation() {
       .then((d) => {
         if (d.code == 200) {
           setUser(d.data);
-          setMembers(d.data.home);       
+          setMembers(d.data.home); 
+          setHome_id(d.data.home_id);   
         } else dispatch(failPopUp(d.message));
       });
 
@@ -204,7 +205,7 @@ export default function HomeInformation() {
           <div>
             <div className="text-xl font-bold flex items-center justify-between">
               <h5>Thành viên</h5>
-              <a href="/member" className="text-blue-500 hover:text-blue-700">
+              <a href= {`/member?home_id=${home_id}`} className="text-blue-500 hover:text-blue-700">
                 <BsArrowRightShort size={25} />
               </a>
             </div>

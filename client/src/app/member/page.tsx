@@ -3,7 +3,7 @@ import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
 import { Member } from "@/models/member";
 import { getCookie, hasCookie } from "cookies-next";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import MobileLayout from "../mobile";
 import http from "../utils/http";
@@ -20,7 +20,10 @@ export default function Member() {
   const [page, setPage] = useState<number>(1);
   const [members, setMembers] = useState<Member[]>([]);
   const membersList = Array.isArray(members) ? members : [];
+  console.log(members)
   const [username, setUsername] = useState("");
+  const params = useSearchParams();
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -37,14 +40,15 @@ export default function Member() {
 
     const fetchListMembers = async () => {
       try {
-        const response = await http.get(`api/home/list-member`, {
+        const response = await http.get(`api/home/${params.get("home_id")}/member`, {
           headers: {
             token: `${token}`,
           },
         });
 
-        if (response.status === 200) {
-          const membersData = response.data.members;
+        if (response.data.code === 200) {
+          const membersData = response.data.data.members;
+          console.log(membersData)
           setMembers(membersData);
         } else {
           dispatch(failPopUp(response.data.message));
@@ -55,7 +59,7 @@ export default function Member() {
     };
 
     fetchListMembers();
-  }, [dispatch, page, router]);
+  }, [dispatch, page, router, params]);
 
   const handleAddMember = async () => {
     if (username != "") {
@@ -63,7 +67,7 @@ export default function Member() {
         username,
       };
       try {
-        const response = await http.post("api/home/add-member", data, {
+        const response = await http.post(`api/home/${params.get("home_id")}/member`, data, {
           headers: {
             token: `${getCookie("token")?.toString()}`,
           },
