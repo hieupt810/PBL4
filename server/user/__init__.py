@@ -38,7 +38,7 @@ def profile():
                         u.last_name AS last_name,
                         u.gender AS gender,
                         c.role AS role,
-                        u.username AS username
+                        u.username AS username,
                         h.id AS home_id
                 ORDER BY role DESC, first_name ASC, last_name ASC
                 """
