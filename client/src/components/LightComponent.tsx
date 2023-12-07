@@ -8,14 +8,11 @@ import { MdOutlineLight } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import { IoIosArrowForward } from "react-icons/io";
 
-
 interface LightType {
   name: string;
   id: string;
   title: string;
 }
-
-
 
 export default function LightComponent({ name, id, title }: LightType) {
   const dispatch = useAppDispatch();
@@ -49,35 +46,42 @@ export default function LightComponent({ name, id, title }: LightType) {
   return (
     <>
       {title === "Detail" ? (
-        <div className="flex items-center justify-between p-4 border rounded-lg shadow-xl">
-          <MdOutlineLight className="mr-2.5" size={30} />
-          <p className="mx-2.5 flex-grow font-sans">{name}</p>
-          <div className="flex gap-4 items-center">
-            <Button
-              isIconOnly
-              color="danger"
-              aria-label="On"
-              onClick={() => handleButton("on")}
-            >
-              <BsLightbulb size={24} className="text--500" />
-            </Button>
-            <Button
-              isIconOnly
-              color="warning"
-              variant="faded"
-              aria-label="Off"
-              onClick={() => handleButton("off")}
-            >
-              <BsLightbulbOff size={24} className="text-red-500" />
-            </Button>
+        <div className="mb-5">
+          <div className="flex items-center justify-between p-4 border rounded-lg shadow-xl">
+            <MdOutlineLight className="mr-2.5" size={30} />
+            <p className="mx-2.5 flex-grow font-sans">{name}</p>
+            <div className="flex gap-4 items-center">
+              <Button
+                isIconOnly
+                color="danger"
+                aria-label="On"
+                onClick={() => handleButton("on")}
+              >
+                <BsLightbulb size={24} className="text--500" />
+              </Button>
+              <Button
+                isIconOnly
+                color="warning"
+                variant="faded"
+                aria-label="Off"
+                onClick={() => handleButton("off")}
+              >
+                <BsLightbulbOff size={24} className="text-red-500" />
+              </Button>
+            </div>
           </div>
         </div>
       ) : (
-        <div className="flex items-center justify-between p-4 border rounded-lg shadow-xl"  onClick={() => router.push(`/home/list-led`)}>
-          <MdOutlineLight className="mr-2.5" size={30} />
-          <p className="mx-2.5 flex-grow font-sans">LED</p>
-          <div className="flex gap-4 items-center">
-            <IoIosArrowForward className="mr-2.5" size={30} />
+        <div className="mb-5">
+          <div
+            className="flex items-center justify-between p-4 border rounded-lg shadow-xl"
+            onClick={() => router.push(`/home/list-led`)}
+          >
+            <MdOutlineLight className="mr-2.5" size={30} />
+            <p className="mx-2.5 flex-grow font-sans">LED</p>
+            <div className="flex gap-4 items-center">
+              <IoIosArrowForward className="mr-2.5" size={30} />
+            </div>
           </div>
         </div>
       )}

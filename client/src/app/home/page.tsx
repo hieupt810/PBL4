@@ -39,6 +39,8 @@ export default function HomeInformation() {
   const [temperature, setTemperature] = useState(null);
   const [humidity, setHumidity] = useState(null);
 
+  const [role, setRole] = useState<number | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<Member>();
   const [members, setMembers] = useState<Member[]>([]);
@@ -70,6 +72,7 @@ export default function HomeInformation() {
         if (d.code == 200) {
           setUser(d.data);
           setMembers(d.data.home);
+          setRole(d.data.role);
         } else dispatch(failPopUp(d.message));
       });
 
@@ -276,13 +279,13 @@ export default function HomeInformation() {
                 </div>
               </Fragment>
             ) : (
-              <>
-                <DoorComponent name="Door" />
-
-                <LightComponent name="" id="" title="Light" />
-
-                <TelevisionComponent name="" id="" title="Television" />
-              </>
+              // role === 0 && (
+                <>
+                  <DoorComponent name="Door" />
+                  <LightComponent name="" id="" title="Light" />
+                  <TelevisionComponent name="" id="" title="Television" />
+                </>
+              // )
             )}
           </div>
         </div>

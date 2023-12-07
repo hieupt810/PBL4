@@ -78,7 +78,7 @@ export default function Admin() {
       if (!hasCookie("token")) return;
       const token = getCookie("token")?.toString();
       try {
-        const response = await http.get(`api/user/list-user`, {
+        const response = await http.get(`api/user`, {
           headers: {
             Authorization: `${token}`,
           },
@@ -262,7 +262,7 @@ export default function Admin() {
                     </TableHeader>
 
                     <TableBody>
-                      {users.map((value, index) => {
+                      {users?.map((value, index) => {
                         return (
                           <TableRow key={index}>
                             <TableCell>

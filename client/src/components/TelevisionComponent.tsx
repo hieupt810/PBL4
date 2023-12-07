@@ -82,7 +82,7 @@ export default function TelevisionComponent({
         <div className="mb-5">
           <div className="flex items-center justify-between p-4 border rounded-lg shadow-xl"  onClick={() => router.push(`/home/list-tv`)}>
             <PiTelevisionBold className="mr-2.5" size={30} />
-            <p className="mx-2.5 flex-grow font-sans">{name}</p>
+            <p className="mx-2.5 flex-grow font-sans">Television</p>
             <div className="flex gap-4 items-center">
               <IoIosArrowForward className="mr-2.5" size={30} />
             </div>

@@ -34,7 +34,7 @@ export default function Profile() {
         });
         const data = await response.data;
 
-        if (data.status === 200) {
+        if (data.code === 200) {
           setRole(data.profile["role"]);
         } else {
           router.push("/");
@@ -55,7 +55,7 @@ export default function Profile() {
       };
 
       try {
-        const response = await http.put("/api/door/resetPass", data, {
+        const response = await http.post("/api/door/resetPass", data, {
           headers: {
             Authorization: `${getCookie("token")?.toString()}`,
           },
