@@ -183,8 +183,7 @@ def add_member(id):
 
 @home_bp.route("/delete-member", methods=["DELETE"])
 def delete_member():
-    requires = ["username"]
-    req = request.get_json()
+    username = request.args.get('username')
     try:
         if not ("Authorization" in request.headers):
             return respondWithError()
@@ -207,7 +206,7 @@ def delete_member():
             ),
             routing_="w",
             token=request.headers.get("token"),
-            username=req["username"],
+            username=request.args.get('username'),
             updated_at=getDatetime(),
         )
         return respond()
