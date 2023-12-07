@@ -39,6 +39,7 @@ def profile():
                         u.gender AS gender,
                         c.role AS role,
                         u.username AS username
+                        h.id AS home_id
                 ORDER BY role DESC, first_name ASC, last_name ASC
                 """
             ),
@@ -54,6 +55,7 @@ def profile():
                 "gender": rec[0]["gender"],
                 "role": rec[0]["role"],
                 "updated_at": rec[0]["updated_at"],
+                "home_id": rec[0]["home_id"],
                 "home": [
                     {
                         "first_name": member["first_name"],
