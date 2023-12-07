@@ -170,7 +170,7 @@ def history(home_id):
             token=request.headers.get("Authorization"),
         )
         if len(rec) != 1:
-            return jsonify({"message": "E002", "status": 400}), 200
+            return respondWithError(msg="E002",code=400)
         rec, _, _ = db.execute_query(
             query(
                 """MATCH (o:Open)-[:TO]->(h:Home)

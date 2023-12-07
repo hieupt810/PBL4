@@ -3,14 +3,13 @@
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 #include "esp_camera.h"
+#include <driver/gpio.h>
+#include <FS.h>
 
-const int buttonPin = 2;  
-const int ledPin = 13;
+const char* ssid = "Giangvien";
+const char* password = "dhbk@2023";
 
-const char* ssid = "To CaPhe";
-const char* password = "bejoyful";
-
-String serverName = "192.168.1.55"; 
+String serverName = "10.10.27.101"; 
 String serverPath = "/api/door/faceCheck";     
 const int serverPort = 8082;   
 WiFiClient client;
@@ -34,13 +33,21 @@ WiFiClient client;
 #define HREF_GPIO_NUM     23
 #define PCLK_GPIO_NUM     22
 
+#define LED_BUILTIN 4
+
 const int timerInterval = 5000;    // time between each HTTP POST image
 unsigned long previousMillis = 0;   // last time image was sent
+int preStatus = 0;
+int status = 0;
+
+// void clickButton(){
+//   Serial.print("button clicked");
+//   sendPhoto();
+// }
 
 void setup() {
-  pinMode(ledPin, OUTPUT);
-  pinMode(buttonPin, INPUT);
-
+  pinMode(12, INPUT);
+  pinMode (LED_BUILTIN, OUTPUT);
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); 
   Serial.begin(115200);
 
@@ -100,21 +107,29 @@ void setup() {
 }
 
 void loop() {
-  int buttonState = digitalRead(buttonPin);
-  if (buttonState == HIGH) {
-    digitalWrite(ledPin, HIGH);
-    // sendPhoto();
-  } else {
-    digitalWrite(ledPin, LOW);
+  status = digitalRead(12);
+  if (status == 1 && preStatus == 0){
+    digitalWrite(LED_BUILTIN, HIGH);
+    for (int i = 1; i <= 10; i++){
+      sendPhoto();
+      delay(100);
+    }
+    digitalWrite(LED_BUILTIN, LOW);
+    preStatus = 1;
   }
+  else {
+    preStatus = 0;
+  }
+  // Serial.println(status);
+  // sendPhoto();
+  // delay(5000);
 }
 
 String sendPhoto() {
   String getAll;
   String getBody;
 
-  camera_fb_t * fb = NULL;
-  fb = esp_camera_fb_get();
+  camera_fb_t * fb = esp_camera_fb_get();
   if(!fb) {
     Serial.println("Camera capture failed");
     delay(1000);
@@ -174,9 +189,8 @@ String sendPhoto() {
       }
       if (getBody.length()>0) { break; }
     }
-    Serial.println();
+    Serial.println("gui duoc roi");
     client.stop();
-    Serial.println(getBody);
   }
   else {
     getBody = "Connection to " + serverName +  " failed.";
