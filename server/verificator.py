@@ -1,72 +1,89 @@
 import os
-import uuid
 
-# import cv2
 import numpy as np
-import tensorflow as tf
-from keras.layers import Layer
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torchvision
+from PIL import Image
 
 basedir = os.path.join(os.getcwd(), "application")
+class SiameseNetwork(nn.Module):
+    def __init__(self):
+        super(SiameseNetwork, self).__init__()
+
+        self.cnn1 = nn.Sequential(
+            nn.Conv2d(1, 96, kernel_size=11, stride=4),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(3, stride=2),
+            nn.Conv2d(96, 256, kernel_size=5, stride=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(2, stride=2),
+            nn.Conv2d(256, 384, kernel_size=3, stride=1),
+            nn.ReLU(inplace=True),
+        )
+
+        self.fc1 = nn.Sequential(
+            nn.Linear(384, 1024),
+            nn.ReLU(inplace=True),
+            nn.Linear(1024, 256),
+            nn.ReLU(inplace=True),
+            nn.Linear(256, 2),
+        )
+
+    def forward_once(self, x):
+        # This function will be called for both images
+        # It's output is used to determine the similiarity
+        output = self.cnn1(x)
+        output = output.view(output.size()[0], -1)
+        output = self.fc1(torch.transpose(output, 0, 1))
+        return output
+
+    def forward(self, input1, input2):
+        # In this function we pass in both images and obtain both vectors
+        # which are returned
+        output1 = self.forward_once(input1)
+        output2 = self.forward_once(input2)
+
+        return output1, output2
 
 
 def preprocess(path):
-    byte_img = tf.io.read_file(path)
-    img = tf.io.decode_png(byte_img, channels=3)
+    transformation = torchvision.transforms.Compose(
+        [torchvision.transforms.Resize((100, 100)), torchvision.transforms.ToTensor()]
+    )
+    return transformation(Image.open(path).convert("L"))
 
-    return tf.image.resize(img, (105, 105)) / 255.0  # type: ignore
-
-
-def verify(model, threshold, accept_threshold=0.8, accept_numbers=5):
-    results = []
-    accept = 0
-    for image in os.listdir(os.path.join(basedir, "data")):
-        input_img = preprocess(os.path.join(basedir, "input_image.png"))
-        validation_img = preprocess(os.path.join(basedir, "data", image))
-
-        # Make Predictions
-        result = model.predict(
-            list(np.expand_dims([input_img, validation_img], axis=1))
-        )
-        results.append(result)
-
-        if result >= accept_threshold:
-            accept += 1
-        if accept == accept_numbers:
-            return results, True
-
-    verified = np.average(results) >= threshold
-
-    return results, verified
-
-
-class L1Dist(Layer):
-    def __init__(self, **kwargs):
-        super().__init__()
-
-    def call(self, input_embedding, validation_embedding):
-        return tf.math.abs(input_embedding - validation_embedding)
+def load_model():
+    device = torch.device("cpu")
+    model = SiameseNetwork().to(device)
+    model.load_state_dict(torch.load("SNN_50.pt", map_location=device))
+    return model
 
 def face_verificate(model, user_dir: str, image_dir: str) -> float:
     results = []
     for image in os.listdir(user_dir):
+        print(image)
+        
         input_image = preprocess(image_dir)
         validation_image = preprocess(os.path.join(user_dir, image))
 
-        result = model.predict(
-            list(np.expand_dims([input_image, validation_image], axis=1))
-        )
-        results.append(result)
+        output1, output2 = model.forward(input_image, validation_image)
+        euclidean_distance = F.pairwise_distance(output1, output2)
+        results.append(euclidean_distance.item())
+        
+    print("abc", results)
     return np.average(results)
 
 
-def identify(model, image_dir: str, accept_threshold: float = 0.7):
+def identify(model, image_dir: str, accept_threshold: float = 1.0):
     users_dir = os.path.join(os.getcwd(),"application/users") 
     for user in os.listdir(users_dir):
         user_dir = os.path.join(users_dir, user)
         if not os.path.isdir(user_dir):
             continue
 
-        if face_verificate(model, user_dir, image_dir) >= accept_threshold:
+        if face_verificate(model, user_dir, image_dir) <= accept_threshold:
             return True, user
 
     return False, "unknown"
@@ -77,14 +94,6 @@ def check(image_dir: str, accept_threshold: float = 0.7):
 
     if not os.path.isdir(os.path.join(basedir, "data")):
         os.mkdir(os.path.join(basedir, "data"))
-
-    siamese_model = tf.keras.models.load_model(
-        "model.h5",
-        custom_objects={
-            "L1Dist": L1Dist,
-            "BinaryCrossentropy": tf.losses.BinaryCrossentropy,
-        },
-        compile=False,
-    )
-    return identify(siamese_model,image_dir,accept_threshold)
+    model = load_model()
+    return identify(model,image_dir,accept_threshold)
     

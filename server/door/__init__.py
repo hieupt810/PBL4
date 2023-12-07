@@ -2,9 +2,7 @@ import os
 import requests
 from config import Config
 from flask import Blueprint, jsonify, request
-from utils import getNeo4J, query, validRequest
-from utils import getNeo4J, query, validRequest, allowed_file, getDatetime, uniqueID
-from werkzeug.utils import secure_filename
+from utils import *
 from verificator import check
 
 door_bp = Blueprint("door", __name__)
@@ -12,21 +10,21 @@ db = getNeo4J()
 
 basedir = os.path.join(os.getcwd(), "application")
 
-@door_bp.route("/door/open", methods=["POST"])
+@door_bp.route("/open", methods=["POST"])
 def open_door():
     try:
-        if not "token" in request.headers:
-            return jsonify({"message": "E002", "status": 400}), 200
+        if not "Authorization" in request.headers:
+            return respondWithError(msg="E002",code=400)
         rec, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {token: $token})- [c:CONTROL]-> (home:Home)
                 RETURN c.role AS control_role LIMIT 1"""
             ),
             routing_="r",
-            token=request.headers.get("token"),
+            token=request.headers.get("Authorization"),
         )
         if len(rec) != 1:
-            return jsonify({"message": "E002", "status": 400}), 200
+            return respondWithError(msg="E002",code=400)
 
         response = requests.post(f"{Config.ESP_SERVER_URL}/door/unlock")
         if response.status_code == 200:
@@ -36,23 +34,25 @@ def open_door():
             # Xử lý lỗi
             print("Request failed with status code:", response.status_code)
             print("Response:", response.text)
-        return jsonify({}), 200
+        return respond()
     except Exception as error:
-        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+        return respondWithError(code = 500, error = error)
 
 
-@door_bp.route("/door/lock", methods=["POST"])
+@door_bp.route("/lock", methods=["POST"])
 def lock_door():
     try:
+        if not "Authorization" in request.headers:
+            return respondWithError(msg="E002",code=400)
         rec, _, _ = db.execute_query(
             query(
                 """MATCH (u:User {token: $token})
                 RETURN u.role AS role LIMIT 1"""
             ),
             routing_="r",
-            token=request.headers.get("token"),
+            token=request.headers.get("Authorization"),
         )
-        if len(rec) != 1 or rec[0]["role"] == 0:
+        if len(rec) != 1:
             return jsonify({"message": "E002", "status": 400}), 200
 
         response = requests.post(f"{Config.ESP_SERVER_URL}/door/lock")
@@ -63,9 +63,9 @@ def lock_door():
             # Xử lý lỗi
             print("Request failed with status code:", response.status_code)
             print("Response:", response.text)
-        return jsonify({}), 200
+        return respond()
     except Exception as error:
-        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+        return respondWithError(code = 500, error = error)
 
 
 @door_bp.route("/pass", methods=["GET"])
@@ -85,24 +85,36 @@ def get_pass():
             # Check if the rec list is empty
             if len(rec) > 0:
                 password = rec[0]["password"]
-                return jsonify(password), 200
+                return respond(data = password)
             else:
-                return jsonify({"message": "No rec found"}), 404
+                return respondWithError()
 
         else:
-            return jsonify({"message": "No rec found"}), 404
+            return respondWithError()
 
     except Exception as error:
-        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+        return respondWithError(code = 500, error = error)
 
 
 @door_bp.route("/resetPass", methods=["PUT"])
 def reset_pass():
-    requires = ["oldPass", "newPass"]
+    requires = ["oldPass", "newPass", "home_id"]
     req = request.get_json()
     try:
-        if not validRequest(req, requires):
+        if not "Authorization" in request.headers:
+            return respondWithError(msg="E002",code=400)
+        rec, _, _ = db.execute_query(
+            query(
+                """MATCH (u:User {token: $token})
+                RETURN u.role AS role LIMIT 1"""
+            ),
+            routing_="r",
+            token=request.headers.get("Authorization"),
+        )
+        if len(rec) != 1:
             return jsonify({"message": "E002", "status": 400}), 200
+        if not validRequest(request, requires):
+            return respondWithError(msg="E002",code=400)
         rec, _, _ = db.execute_query(
             query(
                 """MATCH (h:Home {id: $id, password: $password})
@@ -110,7 +122,7 @@ def reset_pass():
                     LIMIT 1"""
             ),
             routing_="r",
-            id=Config.HOME_ID,
+            id=req["home_id"],
             password=req["oldPass"],
         )
         if rec:
@@ -122,23 +134,43 @@ def reset_pass():
                     SET h.password = $newPass"""
                     ),
                     routing_="w",
-                    id=Config.HOME_ID,
+                    id=req["home_id"],
                     password=req["oldPass"],
                     newPass=req["newPass"],
                 )
-                return jsonify({"message": "I003", "status": 200}), 200
+                response = requests.post(f"{Config.ESP_SERVER_URL}/door/changePass")
+                if response.status_code == 200:
+                    # Xử lý phản hồi thành công
+                    print("Request successful.")
+                else:
+                    # Xử lý lỗi
+                    print("Request failed with status code:", response.status_code)
+                    print("Response:", response.text)
+                return respond()
             else:
-                return jsonify({"message": "No rec found"}), 404
+                return respondWithError()
 
         else:
-            return jsonify({"message": "HomeID or Password is incorrect"}), 404
+            return respondWithError()
     except Exception as error:
-        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+        return respondWithError(code = 500, error = error)
 
 
-@door_bp.route("/history", methods=["GET"])
-def history():  
+@door_bp.route("/history/home/<home_id>", methods=["GET"])
+def history(home_id):  
     try:
+        if not "Authorization" in request.headers:
+            return respondWithError(msg="E002",code=400)
+        rec, _, _ = db.execute_query(
+            query(
+                """MATCH (u:User {token: $token})
+                RETURN u.role AS role LIMIT 1"""
+            ),
+            routing_="r",
+            token=request.headers.get("Authorization"),
+        )
+        if len(rec) != 1:
+            return jsonify({"message": "E002", "status": 400}), 200
         rec, _, _ = db.execute_query(
             query(
                 """MATCH (o:Open)-[:TO]->(h:Home)
@@ -147,32 +179,34 @@ def history():
                 RETURN o.id AS id, o.imgUrl AS imgUrl, u.username AS username, o.atTime AS atTime, o.success AS success"""
             ),
             routing_="r",
-            home_id = Config.HOME_ID,
+            home_id = home_id,
         )
+        
         if rec:
             # Check if the rec list is empty
             if len(rec) > 0:
                 history = [{"id": r["id"],"imgUrl": r["imgUrl"], "username": r["username"], "atTime": r["atTime"], "success": r["success"]} for r in rec]
-                return jsonify({"history": history}), 200
+                return respond(data= history)
             else:
-                return jsonify({"message": "No r found"}), 404
+                return respondWithError()
+
         else:
-            return jsonify({"message": "No r found"}), 404
+            return respondWithError()
 
     except Exception as error:
-        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+        return respondWithError(code = 500, error = error)
     
 
-@door_bp.route("/faceCheck", methods=["POST"])
-def face_recognition():
+@door_bp.route("/face-check/home/<home_id>", methods=["POST"])
+def face_recognition(home_id):
     try:
         if 'image' not in request.files:
-            return jsonify({'error': 'No image part in the request'}), 400
+            return respondWithError(code = 404, error = None)
         
         file = request.files['image']
 
         if file and allowed_file(file.filename):
-            file_name = uniqueID()+".jpe"
+            file_name = uniqueID()+".png"
             file_path = os.path.join(basedir, "upload", file_name)
             file.save(file_path)
             c , user = check(file_path)
@@ -188,19 +222,19 @@ def face_recognition():
                     routing_="w",
                     imgUrl=file_name,
                     username=user,
-                    home_id=Config.HOME_ID,
+                    home_id=home_id,
                     atTime=getDatetime(),
                     success=True,
                 )
-                response = requests.post(f"http://{Config.ESP_SERVER_URL}/door/unlock")
-                # if response.status_code == 200:
-                #     # Xử lý phản hồi thành công
-                #     print("Request successful.")
-                # else:
-                #     # Xử lý lỗi
-                #     print("Request failed with status code:", response.status_code)
-                #     print("Response:", response.text)
-                return jsonify({'message': 'Face recognized successfully'}), 200
+                response = requests.post(f"{Config.ESP_SERVER_URL}/door/unlock")
+                if response.status_code == 200:
+                    # Xử lý phản hồi thành công
+                    print("Request successful.")
+                else:
+                    # Xử lý lỗi
+                    print("Request failed with status code:", response.status_code)
+                    print("Response:", response.text)
+                return respond()
             else:
                 _, _, _ = db.execute_query(
                     query(
@@ -213,13 +247,13 @@ def face_recognition():
                     routing_="w",
                     imgUrl=file_name,
                     username='unknown',
-                    home_id=Config.HOME_ID,
+                    home_id=home_id,
                     atTime=getDatetime(),
                     success=False,
                 )
-                return jsonify({'error': 'Face recognition failed'}), 400
+                return respondWithError()
             
         else:
-            return jsonify({'error': 'Invalid file type'}), 400
+            return respondWithError(code=400)
     except Exception as error:
-        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+        return respondWithError(code = 500, error = error)

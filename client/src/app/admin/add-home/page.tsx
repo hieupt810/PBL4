@@ -69,16 +69,16 @@ export default function AddHome() {
         password,
       };
       try {
-        const response = await http.post("api/home/add-home", data, {
+        const response = await http.post("api/home", data, {
           headers: {
             token: `${getCookie("token")?.toString()}`,
           },
         });
         const result = await response.data;
         console.log(result);
-        if (result.status == 200) {
+        if (result.code == 200) {
           dispatch(successPopUp(result.message));
-        } else if (result.status != 200) {
+        } else if (result.code != 200) {
           dispatch(failPopUp(result.message));
         }
       } catch (error) {

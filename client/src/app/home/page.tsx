@@ -38,9 +38,6 @@ export default function HomeInformation() {
 
   const [temperature, setTemperature] = useState(null);
   const [humidity, setHumidity] = useState(null);
-
-  const [role, setRole] = useState<number | null>(null);
-
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<Member>();
   const [members, setMembers] = useState<Member[]>([]);
@@ -49,6 +46,7 @@ export default function HomeInformation() {
     onConfirm: () => {},
   });
 
+  const [home_id, setHome_id] = useState("");
   const [lights, setLights] = useState<Light[]>([]);
   const lightList = Array.isArray(lights) ? lights : [];
   const [televisions, setTelevisions] = useState<Television[]>([]);
@@ -71,8 +69,7 @@ export default function HomeInformation() {
       .then((d) => {
         if (d.code == 200) {
           setUser(d.data);
-          setMembers(d.data.home);
-          setRole(d.data.role);
+          setMembers(d.data.home);       
         } else dispatch(failPopUp(d.message));
       });
 
