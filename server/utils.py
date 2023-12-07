@@ -65,4 +65,4 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
 
 def history_file(filename):
-    return send_from_directory('static/history', filename)
+    return send_from_directory('application/upload', filename)
