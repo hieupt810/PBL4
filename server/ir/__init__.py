@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from utils import *
 from config import Config
+import requests
 
 ir_bp = Blueprint("ir", __name__)
 db = getNeo4J()
@@ -146,8 +147,8 @@ def controlIR():
             ir_id=req["id_device"],
             id_mode= req ["id_mode"],
         )
-        _ = request.post(
-            f"http://{Config.ESP_SERVER_URL}/{rec[0]['device']}/{rec[0]['pin']}",
+        _ = requests.post(
+            f"http://{Config.ESP_SERVER_URL}/ir/{rec[0]['pin']}",
             json={"ir_code": rec[0]["ir_code"]}  # Thêm body cho POST request ở đây
         )
         return respond()
