@@ -55,7 +55,7 @@ export default function Admin() {
       try {
         const response = await http.get(`api/home/${params.get("id")}/getAllDevice`, {
           headers: {
-            token: `${token}`,
+            Authorization: `${token}`,
           },
         });
 
@@ -180,7 +180,7 @@ export default function Admin() {
                                 )
                                   .then((r) => r.json())
                                   .then((d) => {
-                                    if (d.status === 200) {
+                                    if (d.code === 200) {
                                       dispatch(successPopUp(d.message));
                                       setRefetch(!refetch);
                                     } else dispatch(failPopUp(d.message));

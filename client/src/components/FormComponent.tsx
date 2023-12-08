@@ -1,12 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { Button, select } from "@nextui-org/react";
+import { Button, SelectItem, select } from "@nextui-org/react";
 import { RootState, useAppDispatch } from "@/hook/store";
 import AdminLayout from "@/app/admin/layout";
 import { Select, Input } from "@nextui-org/react";
-import { getCookie } from "cookies-next";
+import { getCookie, hasCookie } from "cookies-next";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import http from "@/app/utils/http";
 
@@ -15,20 +15,24 @@ interface OptionType {
   label: string;
 }
 
-type SelectChangeValueType = OptionType | null;
 
 export default function FormComponent({ title }: { title: string }) {
-  const [selectedOption, setSelectedOption] =
-    useState<SelectChangeValueType | null>(null);
+  const [selectedValue, setSelectedValue] = useState<string>("");
   const router = useRouter();
   const dispatch = useAppDispatch();
 
   const [name, setName] = useState("");
   const [pin, setPin] = useState("");
+  const params = useSearchParams();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     return value;
+  };
+
+  const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedOption = event.target.value;
+    setSelectedValue(selectedOption);
   };
 
   const handleButtonLED = async () => {
@@ -36,9 +40,10 @@ export default function FormComponent({ title }: { title: string }) {
       const data = {
         name,
         pin,
+        home_id: params.get("id"),
       };
       try {
-        const response = await http.post("", data, {
+        const response = await http.post("api/led/create", data, {
           headers: {
             Authorization: `${getCookie("token")?.toString()}`,
           },
@@ -47,42 +52,44 @@ export default function FormComponent({ title }: { title: string }) {
         console.log(result);
         if (result.code == 200) {
           dispatch(successPopUp(result.data.message));
-        } else if (result.status != 200) {
+        } else if (result.code != 200) {
           dispatch(failPopUp(result.data.message));
         }
       } catch (error) {
         console.error("Error:", error);
       }
     } else {
-      dispatch(failPopUp("E005"))
+      dispatch(failPopUp("E001"));
     }
   };
 
   const handleButtonDevice = async () => {
-    if (selectedOption && name != "" && pin != "") {
+    if (selectedValue && name != "" && pin != "") {
       const data = {
-        device: selectedOption.value,
+        device: selectedValue,
         name,
         pin,
+        home_id: params.get("id"),
       };
       try {
-        const response = await http.post("", data, {
+        const response = await http.post("api/ir/create", data, {
           headers: {
-            token: `${getCookie("token")?.toString()}`,
+            Authorization: `${getCookie("token")?.toString()}`,
           },
         });
         const result = await response.data;
         console.log(result);
         if (result.code == 200) {
+          console.log(result.data.data.message);
           dispatch(successPopUp(result.data.message));
-        } else if (result.status != 200) {
+        } else if (result.code != 200) {
           dispatch(failPopUp(result.data.message));
         }
       } catch (error) {
         console.error("Error:", error);
       }
     } else {
-      dispatch(failPopUp("E005"))
+      dispatch(failPopUp("E001"));
     }
   };
 
@@ -117,11 +124,13 @@ export default function FormComponent({ title }: { title: string }) {
             <Button
               color="danger"
               variant="flat"
-              onClick={() => router.push("/admin/list-device")}
+              onClick={() =>
+                router.push(`/admin/list-device?id=${params.get("id")}`)
+              }
             >
               Cancel
             </Button>
-            <Button color="primary" onClick={() => handleButtonLED}>
+            <Button color="primary" onClick={() => handleButtonLED()}>
               Add
             </Button>
           </div>
@@ -133,31 +142,35 @@ export default function FormComponent({ title }: { title: string }) {
             label="Device IR"
             placeholder="Select an device IR"
             className="mb-7 h-12 mr-52"
+            onChange={handleSelectChange}
+            value={selectedValue}
           >
-            {/* {animals.map((animal) => (
-            <SelectItem key={animal.value} value={animal.value}>
-            {animal.label}
+            <SelectItem key="tv" value="tv">
+              TV
             </SelectItem>
-          ))} */}
+            <SelectItem key="AirCondision" value="AirCondision">
+              AirCondision
+            </SelectItem>
           </Select>
 
           <Input
             isRequired
             type="text"
             label="Name"
-            value={pin}
-            className="mb-7 h-12 mr-32"
+            value={name}
+            className="mb-5 h-12 mr-32"
             onChange={(e) => {
               const value = handleInputChange(e);
-              setName(value);             
+              setName(value);
             }}
           />
+
           <Input
             isRequired
             type="text"
             label="Pin"
             value={pin}
-            className="mb-7 h-12 mr-32"
+            className="mb-5 h-12 mr-32"
             onChange={(e) => {
               const value = handleInputChange(e);
               setPin(value);
@@ -167,11 +180,13 @@ export default function FormComponent({ title }: { title: string }) {
             <Button
               color="danger"
               variant="flat"
-              onClick={() => router.push("/admin/list-device")}
+              onClick={() =>
+                router.push(`/admin/list-device?id=${params.get("id")}`)
+              }
             >
               Cancel
             </Button>
-            <Button color="primary" onClick={() => {}}>
+            <Button color="primary" onClick={() => handleButtonDevice()}>
               Add
             </Button>
           </div>

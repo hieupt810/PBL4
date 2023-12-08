@@ -1,7 +1,7 @@
 "use client";
 import Select from "react-select";
 import AdminLayout from "../layout";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { Button } from "@nextui-org/react";
 import { TbHomePlus } from "react-icons/tb";
@@ -41,6 +41,7 @@ export default function AddHome() {
 
   const [isVisible, setIsVisible] = React.useState(false);
   const toggleVisibility = () => setIsVisible(!isVisible);
+ 
 
   useEffect(() => {
     if (debouncedSearchValue) {
@@ -56,7 +57,6 @@ export default function AddHome() {
     label: user.username || "",
   }));
 
-  const NoDropdownIndicator = () => null;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
