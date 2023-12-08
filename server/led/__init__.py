@@ -126,13 +126,14 @@ def deleteLed(id):
             return respondWithError(msg="E002",code=400)
         rec, _, _ = db.execute_query(
             query(
-                """MATCH (u:User {token: $token})-[c:CONTROL]->(:Home)
-                RETURN c.role AS role LIMIT 1"""
+                """MATCH (u:User {token: $token})
+                RETURN u"""
             ),
             routing_="r",
             token=request.headers.get("Authorization"),
         )
-        if len(rec) == 0:
+        if len(rec) != 1:
+            print(rec)
             return respondWithError(code = 400, msg = "E002")
 
         rec, _, _ = db.execute_query(
