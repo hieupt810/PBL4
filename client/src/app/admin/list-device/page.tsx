@@ -39,10 +39,9 @@ export default function Admin() {
 
   const [devices, setDevices] = useState<Device[]>([]);
   const deviceList = Array.isArray(devices) ? devices : [];
-  console.log(devices)
+  console.log(devices);
   const [homesPage, setHomesPage] = useState(1);
   const [homesAmount, setHomesAmount] = useState(1);
-
 
   const params = useSearchParams();
 
@@ -53,14 +52,16 @@ export default function Admin() {
       if (!hasCookie("token")) return;
       const token = getCookie("token")?.toString();
       try {
-        const response = await http.get(`api/home/${params.get("id")}/getAllDevice`, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        });
+        const response = await http.get(
+          `api/home/${params.get("id")}/getAllDevice`,
+          {
+            headers: {
+              Authorization: `${token}`,
+            },
+          }
+        );
 
         if (response.data.code === 200) {
-          
           setDevices(response.data.data);
           console.log(response.data.data);
           setHomesAmount(Math.floor(response.data.amount / 10) + 1);
@@ -90,7 +91,9 @@ export default function Admin() {
                   <Button
                     isIconOnly
                     color="success"
-                    onClick={() => router.push(`/admin/add-device?id=${params.get("id")}`)}
+                    onClick={() =>
+                      router.push(`/admin/add-device?id=${params.get("id")}`)
+                    }
                   >
                     <BiPlus size={25} />
                   </Button>
@@ -134,7 +137,9 @@ export default function Admin() {
                         <TableCell>{value.id}</TableCell>
                         <TableCell>
                           <div className="flex flex-col items-start justify-start">
-                            <span className="font-semibold">{value.device}</span>
+                            <span className="font-semibold">
+                              {value.device}
+                            </span>
                           </div>
                         </TableCell>
 
@@ -152,7 +157,6 @@ export default function Admin() {
 
                         <TableCell>
                           <div className="flex flex-row items-center justify-start space-x-4">
-                            
                             <Button
                               isIconOnly
                               color="danger"
@@ -165,25 +169,32 @@ export default function Admin() {
                                   "application/json"
                                 );
                                 headers.append(
-                                  "token",
+                                  "Authorization",
                                   getCookie("token") as string
                                 );
-                                fetch(
-                                  `${process.env.BACKEND_URL}api/home/delete-home`,
-                                  {
-                                    method: "DELETE",
-                                    headers: headers,
-                                    body: JSON.stringify({
-                                      id: value.id,
-                                    }),
-                                  }
-                                )
+
+                                let deleteApiUrl = "";
+
+                                // Kiểm tra loại thiết bị và xây dựng URL tương ứng
+                                if (value.device === "led") {
+                                  deleteApiUrl = `${process.env.BACKEND_URL}api/led/${value.id}/delete`;
+                                } else {
+                                  deleteApiUrl = `${process.env.BACKEND_URL}api/ir/delete/${value.id}`;
+                                }
+
+                                fetch(deleteApiUrl, {
+                                  method: "DELETE",
+                                  headers: headers,
+                                  
+                                })
                                   .then((r) => r.json())
                                   .then((d) => {
                                     if (d.code === 200) {
                                       dispatch(successPopUp(d.message));
                                       setRefetch(!refetch);
-                                    } else dispatch(failPopUp(d.message));
+                                    } else {
+                                      dispatch(failPopUp(d.message));
+                                    }
                                     dispatch(resetLoading());
                                   });
                               }}
