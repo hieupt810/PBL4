@@ -26,7 +26,7 @@ def createIR():
         records, _, _ = db.execute_query(
             query(
                 """MATCH (h:Home {id: $home_id})
-                CREATE (ir:IR {ir: $ir, name: $name, mode: $mode, id : $id, device : $device, updated_at : $updated_at, pin: $pin})-[:CONTAINS]->(h)"""
+                CREATE (ir:IR {name: $name, id : $id, device : $device, updated_at : $updated_at, pin: $pin})-[:CONTAINS]->(h)"""
             ),
             routing_="w",
             home_id=req["home_id"],
