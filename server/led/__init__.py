@@ -132,12 +132,12 @@ def deleteLed(id):
             routing_="r",
             token=request.headers.get("Authorization"),
         )
-        if len(rec) != 1:
+        if len(rec) == 0:
             return respondWithError(code = 400, msg = "E002")
 
         rec, _, _ = db.execute_query(
             query("""MATCH (l:Led {id: $id}) DETACH DELETE l"""),
-            routing_="r",
+            routing_="w",
             id=id,
         )
         return respond()
