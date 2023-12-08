@@ -118,3 +118,28 @@ def createLed():
         return respond(msg="I015")
     except Exception as error:
         return respondWithError(code = 500, error = error)
+
+@led_bp.route("/<id>/delete", methods=["DELETE"])
+def deleteLed(id):
+    try:
+        if (not "Authorization" in request.headers) :
+            return respondWithError(msg="E002",code=400)
+        rec, _, _ = db.execute_query(
+            query(
+                """MATCH (u:User {token: $token})-[c:CONTROL]->(:Home)
+                RETURN c.role AS role LIMIT 1"""
+            ),
+            routing_="r",
+            token=request.headers.get("Authorization"),
+        )
+        if len(rec) != 1:
+            return respondWithError(code = 400, msg = "E002")
+
+        rec, _, _ = db.execute_query(
+            query("""MATCH (l:Led {id: $id}) DETACH DELETE l"""),
+            routing_="r",
+            id=id,
+        )
+        return respond()
+    except Exception as error:
+        return respondWithError(code = 500, error = error)
