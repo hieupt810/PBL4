@@ -194,7 +194,7 @@ def get_users_without_home():
             query("""MATCH (u:User {token: $token, role: $role}) RETURN u.role AS role LIMIT 1"""),
             routing_="r",
             token=request.headers.get("Authorization"),
-            role = 1,
+            role = 2,
         )
         if len(records) != 1 :
             return respondWithError(msg="E002",code=400)
