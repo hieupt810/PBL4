@@ -26,6 +26,7 @@ import DoorComponent from "@/components/DoorComponent";
 import { Television } from "../types/television.type";
 import TelevisionComponent from "@/components/TelevisionComponent";
 import { useFetchTvs } from "./fetchData/useFetchTv";
+import { MdOutlineLockReset } from "react-icons/md";
 
 interface ConfirmPopupProps {
   text: string;
@@ -156,6 +157,12 @@ export default function HomeInformation() {
           <Link href={"/reset_password"}>
             <Button isIconOnly color="primary">
               <FiRefreshCcw size={20} />
+            </Button>
+          </Link>
+
+          <Link href={`/reset_password_home?home_id=${home_id}`}>
+            <Button isIconOnly color="primary">
+              <MdOutlineLockReset size={23} />
             </Button>
           </Link>
 
