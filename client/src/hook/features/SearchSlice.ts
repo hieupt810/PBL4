@@ -31,7 +31,7 @@ const initialState: SearchType = {
 };
 
 interface UserResponse {
-  users: Users[];
+  data: Users[];
 }
 interface MemberResponse {
   data: {members: Member[]};
@@ -47,7 +47,7 @@ export const getUserList = createAsyncThunk(
       },
       signal: thunkAPI.signal,
     });
-    return response.data.users;
+    return response.data.data;
   }
 );
 

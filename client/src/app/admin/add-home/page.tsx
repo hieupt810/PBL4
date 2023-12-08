@@ -45,8 +45,8 @@ export default function AddHome() {
     if (debouncedSearchValue) {
       const promise = dispatch(getUserList());
       return () => {
-        promise.abort()
-      }
+        promise.abort();
+      };
     }
   }, [debouncedSearchValue, dispatch]);
 
@@ -85,7 +85,7 @@ export default function AddHome() {
         console.error("Error:", error);
       }
     } else {
-      dispatch(failPopUp("E005"))
+      dispatch(failPopUp("E005"));
     }
   };
 
@@ -164,7 +164,13 @@ export default function AddHome() {
             >
               Cancel
             </Button>
-            <Button color="primary" onClick={() => handleButton()}>
+            <Button
+              color="primary"
+              onClick={() => {
+                handleButton();
+                router.push("/admin");
+              }}
+            >
               Add
             </Button>
           </div>

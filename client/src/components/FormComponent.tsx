@@ -15,7 +15,6 @@ interface OptionType {
   label: string;
 }
 
-
 export default function FormComponent({ title }: { title: string }) {
   const [selectedValue, setSelectedValue] = useState<string>("");
   const router = useRouter();
@@ -130,7 +129,13 @@ export default function FormComponent({ title }: { title: string }) {
             >
               Cancel
             </Button>
-            <Button color="primary" onClick={() => handleButtonLED()}>
+            <Button
+              color="primary"
+              onClick={() => {
+                handleButtonLED();
+                router.push(`/admin/list-device?id=${params.get("id")}`);
+              }}
+            >
               Add
             </Button>
           </div>
@@ -186,7 +191,13 @@ export default function FormComponent({ title }: { title: string }) {
             >
               Cancel
             </Button>
-            <Button color="primary" onClick={() => handleButtonDevice()}>
+            <Button
+              color="primary"
+              onClick={() => {
+                handleButtonDevice();
+                router.push(`/admin/list-device?id=${params.get("id")}`);
+              }}
+            >
               Add
             </Button>
           </div>
