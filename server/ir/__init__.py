@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from utils import *
 from config import Config
+import requests
 
 ir_bp = Blueprint("ir", __name__)
 db = getNeo4J()
@@ -25,7 +26,7 @@ def createIR():
         records, _, _ = db.execute_query(
             query(
                 """MATCH (h:Home {id: $home_id})
-                CREATE (ir:IR {ir: $ir, name: $name, mode: $mode, id : $id, device : $device, updated_at : $updated_at, pin: $pin})-[:CONTAINS]->(h)"""
+                CREATE (ir:IR {name: $name, id : $id, device : $device, updated_at : $updated_at, pin: $pin})-[:CONTAINS]->(h)"""
             ),
             routing_="w",
             home_id=req["home_id"],
@@ -146,9 +147,9 @@ def controlIR():
             ir_id=req["id_device"],
             id_mode= req ["id_mode"],
         )
-        _ = request.post(
-            f"http://{Config.ESP_SERVER_URL}/{rec[0]['device']}/{rec[0]['pin']}",
-            json={"ir_code": rec[0]["ir_code"]}  # Thêm body cho POST request ở đây
+        _ = requests.post(
+            f"http://{Config.ESP_SERVER_URL}/ir/{rec[0]['pin']}",
+            headers={"ir_code": rec[0]["ir_code"]}  # Thêm body cho POST request ở đây
         )
         return respond()
     except Exception as error:
@@ -250,9 +251,6 @@ def deleteByID(id):
             id=id,
         )
 
-        if result:
-            return respond
-        else:
-            return respondWithError()
+        return respond()
     except Exception as error:
         return respondWithError(code = 500, error = error)

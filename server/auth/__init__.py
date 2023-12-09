@@ -64,7 +64,7 @@ def login():
     try:
         if not validRequest(request, requires):
             return respondWithError()
-
+        print("check1")
         req = request.get_json()
         rec, _, _ = db.execute_query(
             query(
@@ -87,8 +87,8 @@ def login():
             token=token,
         )
         return respond({"token": token, "role": rec[0]["role"]}, "I003")
-    except:
-        return respondWithError(code=500)
+    except Exception as error:
+        return respondWithError(code = 500, error = error)
 
 
 @auth_bp.route("/change-password", methods=["PUT"])

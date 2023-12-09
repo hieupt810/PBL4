@@ -181,10 +181,9 @@ def add_member(id):
         return respondWithError(code=500, error=str(error))
 
 
-@home_bp.route("/delete-member", methods=["DELETE"])
-def delete_member():
-    requires = ["username"]
-    req = request.get_json()
+@home_bp.route("/<home_id>/delete-member", methods=["DELETE"])
+def delete_member(home_id):
+    username = request.args.get('username')
     try:
         if not ("Authorization" in request.headers):
             return respondWithError()
@@ -202,17 +201,17 @@ def delete_member():
 
         _, _, _ = db.execute_query(
             query(
-                """MATCH (:User {id: $id})-[c:CONTROL {role: 1}]->(h:Home {id: $home_id})
+                """MATCH (:User {username: $username})-[c:CONTROL]->(h:Home {id: $home_id})
                 SET h.updated_at = $updated_at DELETE c"""
             ),
             routing_="w",
-            token=request.headers.get("token"),
-            username=req["username"],
+            username=username,
+            home_id = home_id,
             updated_at=getDatetime(),
         )
         return respond()
-    except:
-        return respondWithError(code=500)
+    except Exception as error:
+        return respondWithError(code = 500, error = error)
 
 
 @home_bp.route("/<id>/member", methods=["GET"])
@@ -233,7 +232,7 @@ def get_members(id):
 
         rec, _, _ = db.execute_query(
             query(
-                """MATCH (u:User {token: $token})-[c:CONTROL]->(:Home {id: $id})
+                """MATCH (u:User )-[c:CONTROL]->(:Home {id: $id})
                 RETURN  u.first_name AS first_name,
                         u.last_name AS last_name,
                         u.gender AS gender,
@@ -244,7 +243,6 @@ def get_members(id):
                 SKIP $skip LIMIT $limit"""
             ),
             routing_="r",
-            token=request.headers.get("token"),
             id=id,
             limit=per_page,
             skip=(page - 1) * per_page,
@@ -267,29 +265,30 @@ def get_members(id):
             }
         )
     except Exception as error:
-        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+        return respondWithError(code = 500, error = error)
     
-@home_bp.route("/getAllDevice", methods=["GET"])
-def get_Devices():
+@home_bp.route("<home_id>/getAllDevice", methods=["GET"])
+def get_Devices(home_id):
     try:
-        if (not "token" in request.headers) :
-            return jsonify({"message": "E002", "status": 400}), 200
+        if (not "Authorization" in request.headers) :
+            return respondWithError(msg="E002",code=400)
 
         records, _, _ = db.execute_query(
             query("""MATCH (u:User {token: $token, role:$role}) RETURN u.role AS role LIMIT 1"""),
             routing_="r",
-            token=request.headers.get("token"),
+            token=request.headers.get("Authorization"),
             role = 2
         )
         if len(records) != 1 or records[0]["role"] == 0:
-            return jsonify({"message": "E002", "status": 400}), 200
+            return respondWithError(msg="E002",code=400)
+
         records, _, _ = db.execute_query(
             query(
                 """MATCH (h:Home{id:$homeId})<-[:CONTAINS]-(l:Led)
                 RETURN  l.id AS id, l.name AS name, l.pin AS pin"""
             ),
             routing_="r",
-            homeId=Config.HOME_ID,
+            homeId=home_id,
         )
         data = []
         for led in records:
@@ -305,7 +304,7 @@ def get_Devices():
                 RETURN ir.id AS id, ir.name AS name, ir.device AS device, ir.pin AS pin"""
             ),
             routing_="r",
-            homeId=Config.HOME_ID
+            homeId=home_id
         )
         for device in devices:
             data.append({
@@ -314,7 +313,7 @@ def get_Devices():
                 "device": device["device"],
                 "pin": device["pin"],
             })
-        return jsonify({"data": data, "status": 200}), 200
+        return respond (data=data)
     except Exception as error:
-        return jsonify({"message": "E001", "status": 500, "error": str(error)}), 200
+        return respondWithError(code = 500, error = error)
         

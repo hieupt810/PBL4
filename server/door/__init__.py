@@ -85,7 +85,7 @@ def get_pass():
             # Check if the rec list is empty
             if len(rec) > 0:
                 password = rec[0]["password"]
-                return jsonify(password), 200
+                return respond(data = password)
             else:
                 return respondWithError()
 
@@ -170,7 +170,7 @@ def history(home_id):
             token=request.headers.get("Authorization"),
         )
         if len(rec) != 1:
-            return jsonify({"message": "E002", "status": 400}), 200
+            return respondWithError(msg="E002",code=400)
         rec, _, _ = db.execute_query(
             query(
                 """MATCH (o:Open)-[:TO]->(h:Home)
@@ -226,7 +226,7 @@ def face_recognition(home_id):
                     atTime=getDatetime(),
                     success=True,
                 )
-                response = requests.post(f"{Config.ESP_SERVER_URL}/door/unlock")
+                response = requests.post(f"http://{Config.ESP_SERVER_URL}/door/unlock")
                 if response.status_code == 200:
                     # Xử lý phản hồi thành công
                     print("Request successful.")
