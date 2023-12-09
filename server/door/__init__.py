@@ -85,7 +85,7 @@ def get_pass():
             # Check if the rec list is empty
             if len(rec) > 0:
                 password = rec[0]["password"]
-                return respond(data = password)
+                return jsonify(password), 200
             else:
                 return respondWithError()
 
