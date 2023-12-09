@@ -149,7 +149,7 @@ def controlIR():
         )
         _ = requests.post(
             f"http://{Config.ESP_SERVER_URL}/ir/{rec[0]['pin']}",
-            json={"ir_code": rec[0]["ir_code"]}  # Thêm body cho POST request ở đây
+            headers={"ir_code": rec[0]["ir_code"]}  # Thêm body cho POST request ở đây
         )
         return respond()
     except Exception as error:
@@ -251,9 +251,6 @@ def deleteByID(id):
             id=id,
         )
 
-        if result:
-            return respond
-        else:
-            return respondWithError()
+        return respond()
     except Exception as error:
         return respondWithError(code = 500, error = error)
