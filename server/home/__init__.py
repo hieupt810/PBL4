@@ -181,10 +181,9 @@ def add_member(id):
         return respondWithError(code=500, error=str(error))
 
 
-@home_bp.route("/delete-member", methods=["DELETE"])
-def delete_member():
-    requires = ["username"]
-    req = request.get_json()
+@home_bp.route("/<home_id>/delete-member", methods=["DELETE"])
+def delete_member(home_id):
+    username = request.args.get('username')
     try:
         if not ("Authorization" in request.headers):
             return respondWithError()
@@ -202,17 +201,17 @@ def delete_member():
 
         _, _, _ = db.execute_query(
             query(
-                """MATCH (:User {id: $id})-[c:CONTROL {role: 1}]->(h:Home {id: $home_id})
+                """MATCH (:User {username: $username})-[c:CONTROL]->(h:Home {id: $home_id})
                 SET h.updated_at = $updated_at DELETE c"""
             ),
             routing_="w",
-            token=request.headers.get("token"),
-            username=req["username"],
+            username=username,
+            home_id = home_id,
             updated_at=getDatetime(),
         )
         return respond()
-    except:
-        return respondWithError(code=500)
+    except Exception as error:
+        return respondWithError(code = 500, error = error)
 
 
 @home_bp.route("/<id>/member", methods=["GET"])
@@ -233,7 +232,7 @@ def get_members(id):
 
         rec, _, _ = db.execute_query(
             query(
-                """MATCH (u:User {token: $token})-[c:CONTROL]->(:Home {id: $id})
+                """MATCH (u:User )-[c:CONTROL]->(:Home {id: $id})
                 RETURN  u.first_name AS first_name,
                         u.last_name AS last_name,
                         u.gender AS gender,
@@ -244,7 +243,6 @@ def get_members(id):
                 SKIP $skip LIMIT $limit"""
             ),
             routing_="r",
-            token=request.headers.get("token"),
             id=id,
             limit=per_page,
             skip=(page - 1) * per_page,

@@ -42,11 +42,11 @@ def query(q: LiteralString) -> LiteralString:
     return cast(LiteralString, dedent(q).strip())
 
 
-def validRequest(req: dict, requires: list[str]) -> bool:
+def validRequest(request:Request, requires: list[str]) -> bool:
+    req = request.get_json()
     for require in requires:
         if require not in req:
             return False
-
     return True
 
 
@@ -65,4 +65,4 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
 
 def history_file(filename):
-    return send_from_directory('static/history', filename)
+    return send_from_directory('application/upload', filename)

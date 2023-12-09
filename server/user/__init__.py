@@ -15,13 +15,15 @@ def profile():
 
         rec, _, _ = db.execute_query(
             query(
-                """MATCH (u:User {token: $token})
+                """MATCH (u:User {token: $token})-[:CONTROL]->(h:Home)
+                MATCH (h)<-[c:CONTROL]-(u:User)
                 RETURN  u.username AS username,
                         u.first_name AS first_name,
                         u.last_name AS last_name,
                         u.gender AS gender,
                         u.role AS role,
-                        u.updated_at AS updated_at
+                        u.updated_at AS updated_at,
+                        h.id AS home_id
                 LIMIT 1"""
             ),
             routing_="r",
@@ -45,7 +47,7 @@ def profile():
             routing_="r",
             token=request.headers.get("Authorization"),
         )
-
+        
         return respond(
             data={
                 "username": rec[0]["username"],
@@ -182,6 +184,47 @@ def user_list():
     except:
         return respondWithError(code=500)
 
+@user_bp.route("/without_home", methods=["GET"])
+def get_users_without_home():
+    try :
+        if not "Authorization" in request.headers:
+            return respondWithError()
+        records, _, _ = db.execute_query(
+            query("""MATCH (u:User {token: $token, role: $role}) RETURN u.role AS role LIMIT 1"""),
+            routing_="r",
+            token=request.headers.get("Authorization"),
+            role = 2,
+        )
+        if len(records) != 1 :
+            return respondWithError(msg="E002",code=400)
+        rec, _, _ = db.execute_query(
+                query(
+                    """ MATCH (u:User)
+                        WHERE NOT (u)-[:CONTROL]->(:Home)
+                        AND NOT u.username = 'root'
+                        RETURN  u.username AS username, u.first_name AS first_name,
+                            u.last_name AS last_name, u.gender AS gender,
+                            u.role AS role, u.updated_at AS updated_at
+                        """
+                ),
+                routing_="r",
+            )
+        return respond (
+            data = [
+            {
+                "username": record["username"],
+                "first_name": record["first_name"],
+                "last_name": record["last_name"],
+                "gender": record["gender"],
+                "role": record["role"],
+                "updated_at": record["updated_at"],
+            } 
+            for record in rec
+            ]
+        )
+        
+    except:
+        return respondWithError(code=500)
 
 @user_bp.route("/<id>", methods=["PUT"])
 def update_user(id):
