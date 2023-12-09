@@ -1,10 +1,12 @@
 import http from "@/app/utils/http";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
+import { getMemberList } from "@/hook/features/SearchSlice";
 import { useAppDispatch } from "@/hook/store";
 import { Member } from "@/models/member";
 import { Link, User } from "@nextui-org/react";
 import { getCookie } from "cookies-next";
 import { StaticImageData } from "next/image";
+import { useSearchParams } from "next/navigation";
 import { BsCaretLeft, BsTrash } from "react-icons/bs";
 import {
   SwipeAction,
@@ -19,14 +21,17 @@ interface ListMember {
 }
 
 export function MemberComponent({ value, Man, Woman }: ListMember) {
+  const params = useSearchParams();
+
   const dispatch = useAppDispatch();
+
   const handleDelete = async () => {
     const data = {
       username: value.username,
     };
     try {
       const response = await http.delete(
-        `api/home/delete-member?username=${data}`,
+        `api/home/${params.get("home_id")}/delete-member?username=${data.username}`,
         {
           headers: {
             Authorization: `${getCookie("token")?.toString()}`,
@@ -35,11 +40,12 @@ export function MemberComponent({ value, Man, Woman }: ListMember) {
       );
       const result = await response.data;
       console.log(result);
-      if (result.status == 200) {
+      if (result.code == 200) {
         dispatch(successPopUp(result.message));
-      } else if (result.status != 200) {
+      } else if (result.code != 200) {
         dispatch(failPopUp(result.message));
       }
+      dispatch(getMemberList());
     } catch (error) {
       console.error("Error:", error);
     }

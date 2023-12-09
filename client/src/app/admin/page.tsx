@@ -2,7 +2,7 @@
 import { resetLoading, setLoading } from "@/hook/features/LoadingSlice";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
-import { Members } from "@/models/member";
+import { Member } from "@/models/member";
 import {
   Button,
   Card,
@@ -38,10 +38,11 @@ export default function Admin() {
   const [refetch, setRefetch] = useState(false);
 
   const [homes, setHomes] = useState<Home[]>([]);
+  console.log(homes);
   const [homesPage, setHomesPage] = useState(1);
   const [homesAmount, setHomesAmount] = useState(1);
 
-  const [users, setUsers] = useState<Members[]>([]);
+  const [users, setUsers] = useState<Member[]>([]);
   const [usersPage, setUsersPage] = useState(1);
   const [usersAmount, setUsersAmount] = useState(1);
 
@@ -51,11 +52,16 @@ export default function Admin() {
       if (!hasCookie("token")) return;
       const token = getCookie("token")?.toString();
       try {
-        const response = await http.get(`api/home/list-home`);
-
-        if (response.status === 200) {
-          setHomes(response.data.homes);
-          setHomesAmount(Math.floor(response.data.amount / 10) + 1);
+        const response = await http.get(`api/home`, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        });
+  
+        if (response.data.code === 200) {
+          setHomes(response.data.data.homes);
+          console.log(response.data.data.homes);
+          setHomesAmount(response.data.data.total);
         } else {
           dispatch(failPopUp(response.data.message));
         }
@@ -72,13 +78,13 @@ export default function Admin() {
       if (!hasCookie("token")) return;
       const token = getCookie("token")?.toString();
       try {
-        const response = await http.get(`api/user/list-user`, {
+        const response = await http.get(`api/user`, {
           headers: {
             Authorization: `${token}`,
           },
         });
-
-        if (response.status === 200) {
+  
+        if (response.data.code === 200) {
           setUsers(response.data.users);
           setUsersAmount(Math.floor(response.data.amount / 10) + 1);
         } else {
@@ -142,7 +148,7 @@ export default function Admin() {
                     </TableHeader>
 
                     <TableBody>
-                      {homes.map((value, index) => {
+                      {homes?.map((value, index) => {
                         return (
                           <TableRow key={index}>
                             <TableCell>
@@ -163,7 +169,7 @@ export default function Admin() {
                             <TableCell>
                               <div className="flex flex-row items-center justify-start space-x-4">
                                 <Button isIconOnly color="primary">
-                                  <RiEditBoxLine size={20} />
+                                  <RiEditBoxLine size={20} onClick={() => router.push(`/admin/list-device?id=${value.id}`)} />
                                 </Button>
 
                                 <Button
@@ -196,7 +202,7 @@ export default function Admin() {
                                     )
                                       .then((r) => r.json())
                                       .then((d) => {
-                                        if (d.status === 200) {
+                                        if (d.data.code === 200) {
                                           dispatch(successPopUp(d.message));
                                           setRefetch(!refetch);
                                         } else dispatch(failPopUp(d.message));
@@ -256,7 +262,7 @@ export default function Admin() {
                     </TableHeader>
 
                     <TableBody>
-                      {users.map((value, index) => {
+                      {users?.map((value, index) => {
                         return (
                           <TableRow key={index}>
                             <TableCell>
@@ -310,7 +316,7 @@ export default function Admin() {
                                     )
                                       .then((r) => r.json())
                                       .then((d) => {
-                                        if (d.status === 200) {
+                                        if (d.data.code === 200) {
                                           dispatch(successPopUp(d.message));
                                           setRefetch(!refetch);
                                         } else dispatch(failPopUp(d.message));

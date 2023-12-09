@@ -4,7 +4,7 @@ import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch, useAppSelector } from "@/hook/hook";
 import { Button, Input } from "@nextui-org/react";
 import { getCookie, hasCookie } from "cookies-next";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import MobileLayout from "../mobile";
 import http from "../utils/http";
@@ -17,45 +17,20 @@ export default function Profile() {
   const [password_old, setPassword_old] = useState("");
   const [password_new, setPassword_new] = useState("");
   const [role, setRole] = useState(1);
+  const params = useSearchParams();
 
-  useEffect(() => {
-    async function fetchUser() {
-      if (!hasCookie("token")) {
-        router.push("/login");
-        return;
-      }
-
-      const token = getCookie("token")?.toString();
-      try {
-        const response = await http.get(`api/user`, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        });
-        const data = await response.data;
-
-        if (data.code === 200) {
-          setRole(data.profile["role"]);
-        } else {
-          router.push("/");
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    }
-    fetchUser();
-  }, [router]);
 
   const handlePassword = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (role === 1) {
       const data = {
-        old_password: password_old,
-        new_password: password_new,
+        oldPass: password_old,
+        newPass: password_new,
+        home_id: params.get("home_id")
       };
 
       try {
-        const response = await http.put("/api/auth/change-password", data, {
+        const response = await http.put("/api/door/resetPass", data, {
           headers: {
             Authorization: `${getCookie("token")?.toString()}`,
           },
@@ -80,7 +55,7 @@ export default function Profile() {
   return (
     <MobileLayout>
       <h5 className="text-primary font-semibold text-xl text-center">
-        Thay đổi mật khẩu
+        Thay đổi mật khẩu nhà
       </h5>
 
       <form onSubmit={handlePassword}>

@@ -43,8 +43,9 @@ export default function Login() {
       .then((d) => {
         if (d.code == 200) {
           dispatch(successPopUp(d.message));
-          setCookie("token", d.data.token, { maxAge: 60 * 60 * 24 });
-          router.push("/home");
+          setCookie("token", d.data.token, { maxAge: 60 * 60 * 24 * 7 });
+          if (d.role == 2) router.push("/admin");
+          else router.push("/home");
         } else {
           dispatch(failPopUp(d.message));
           dispatch(resetLoading());

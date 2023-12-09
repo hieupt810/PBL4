@@ -3,6 +3,7 @@ import http from "@/app/utils/http";
 import { failPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/store";
 import { getCookie, hasCookie } from "cookies-next";
+import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 export function useFetchLights(
@@ -10,19 +11,21 @@ export function useFetchLights(
   setLoading: React.Dispatch<React.SetStateAction<boolean>>
 ) {
   const dispatch = useAppDispatch();
+  const params = useSearchParams();
+
 
   useEffect(() => {
     async function fetchLights() {
       if (!hasCookie("token")) return;
       const token = getCookie("token")?.toString();
       try {
-        const response = await http.get(`api/led`, {
+        const response = await http.get(`api/led/home/${params.get("home_id")}`, {
           headers: {
             Authorization: `${token}`,
           },
         });
-        if (response.status === 200) {
-          const lightsData = response.data.leds;
+        if (response.data.code === 200) {
+          const lightsData = response.data.data.leds;
           setLights(lightsData);
           setLoading(false);
         } else {
@@ -34,5 +37,5 @@ export function useFetchLights(
       }
     }
     fetchLights();
-  }, [dispatch, setLights, setLoading]);
+  }, [dispatch, setLights, setLoading, params]);
 }
