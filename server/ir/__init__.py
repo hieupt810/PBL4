@@ -148,7 +148,7 @@ def controlIR():
             id_mode= req ["id_mode"],
         )
         _ = requests.post(
-            f"http://{Config.ESP_SERVER_URL}/ir/{rec[0]['pin']}",
+            f"{Config.ESP_SERVER_URL}/ir/{rec[0]['pin']}",
             headers={"ir_code": rec[0]["ir_code"]}  # Thêm body cho POST request ở đây
         )
         return respond()
