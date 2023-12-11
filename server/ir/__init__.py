@@ -250,7 +250,6 @@ def deleteByID(id):
             routing_="w",
             id=id,
         )
-
         return respond()
     except Exception as error:
         return respondWithError(code = 500, error = error)

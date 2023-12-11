@@ -5,49 +5,28 @@ import { getCookie, hasCookie } from "cookies-next";
 import http from "@/app/utils/http";
 import { failPopUp } from "@/hook/features/PopupSlice";
 import { Television } from "@/app/types/television.type";
-
-interface Ctr{
-  id: string;
-  mode: string;
-}
-interface TelevisionType {
-  name: string;
-  listCtr : Ctr[];
-}
+import { useSearchParams } from "next/navigation";
 
 export function useFetchTvs(
   setTelevisions: React.Dispatch<React.SetStateAction<Television[]>>,
   setLoading: React.Dispatch<React.SetStateAction<boolean>>
 ) {
   const dispatch = useAppDispatch();
+  const params = useSearchParams();
 
   useEffect(() => {
-    async function fetchtvs() {
+    async function fetchTelevision() {
       if (!hasCookie("token")) return;
       const token = getCookie("token")?.toString();
       try {
-        const response = await http.get(`api/ir/getDevice/tv`, {
+        const response = await http.get(`api/ir/getDevice/tv/home/${params.get("home_id")}`, {
           headers: {
             token: `${token}`,
           },
         });
         if (response.status === 200) {
-          const tvsData = response.data.devices;
-          let tvs: TelevisionType[] = [];
-
-          for (let i = 0; i < tvsData.length; i++) {
-            const found = tvs.find((tv) => tv.name === tvsData[i].name);
-
-            if (!found) {
-              const newTelevision: TelevisionType = {
-                name: tvsData[i].name,
-                listCtr = tvsData[i].ctr,
-              };
-              tvs.push(newTelevision);
-            }
-          }
-
-          setTelevisions(tvs);
+          const televisionData = response.data.devices;
+          setTelevisions(televisionData);
           setLoading(false);
         } else {
           dispatch(failPopUp(response.data.message));
@@ -57,6 +36,6 @@ export function useFetchTvs(
         setLoading(false);
       }
     }
-    fetchtvs();
-  }, [dispatch, setTelevisions, setLoading]);
+    fetchTelevision();
+  }, [dispatch, setTelevisions, setLoading, params]);
 }

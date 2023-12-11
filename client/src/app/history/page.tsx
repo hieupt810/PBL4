@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import MobileLayout from "../mobile";
 import http from "../utils/http";
 import { Skeleton } from "@nextui-org/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { HistoryComponent } from "@/components/HistoryComponent";
 import { History } from "../types/history.type";
 
@@ -16,6 +16,8 @@ export default function Member() {
   const [history, setListHistory] = useState<History[]>([]);
   const historyList = Array.isArray(history) ? history : [];
   const router = useRouter();
+  const params = useSearchParams();
+
 
   useEffect(() => {
     if (!hasCookie("token")) {
@@ -27,14 +29,14 @@ export default function Member() {
 
     const fetchListHistory = async () => {
       try {
-        const response = await http.get(`api/door/history`, {
+        const response = await http.get(`api/door/history/home/${params.get("home_id")}`, {
           headers: {
             token: `${token}`,
           },
         });
 
-        if (response.status === 200) {
-          const historyData = response.data.history;
+        if (response.data.code === 200) {
+          const historyData = response.data.data;
           console.log(historyData)
           setListHistory(historyData);
         } else {
@@ -46,7 +48,7 @@ export default function Member() {
     };
 
     fetchListHistory();
-  }, [dispatch, router]);
+  }, [dispatch, router, params]);
 
   return (
     <MobileLayout>
