@@ -194,7 +194,7 @@ def delete_member(home_id):
             ),
             routing_="r",
             token=request.headers.get("Authorization"),
-            id=Config.HOME_ID,
+            id=home_id,
         )
         if len(rec) != 1 or rec[0]["role"] != 2:
             return respondWithError()

@@ -1,10 +1,8 @@
 "use client";
 import ConfirmPopup from "@/components/ConfirmPopup";
-import DoorComponent from "@/components/DoorComponent";
-import LightComponent from "@/components/LightComponent";
 import { failPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
-import { Members } from "@/models/member";
+import { Member } from "@/models/member";
 import Man from "@/static/man.jpg";
 import Woman from "@/static/woman.png";
 import { Avatar, AvatarGroup, Button, Skeleton } from "@nextui-org/react";
@@ -17,11 +15,18 @@ import { FaTemperatureFull } from "react-icons/fa6";
 import { FiEdit, FiLogOut, FiRefreshCcw } from "react-icons/fi";
 import { VscHistory } from "react-icons/vsc";
 import { WiHumidity } from "react-icons/wi";
+import "./styles.css";
+import LightComponent from "@/components/LightComponent";
+
 import io from "socket.io-client";
 import MobileLayout from "../mobile";
 import { Light } from "../types/light.type";
 import { useFetchLights } from "./fetchData/useFetchLights";
-import "./styles.css";
+import DoorComponent from "@/components/DoorComponent";
+import { Television } from "../types/television.type";
+import TelevisionComponent from "@/components/TelevisionComponent";
+import { useFetchTvs } from "./fetchData/useFetchTv";
+import { MdOutlineLockReset } from "react-icons/md";
 
 interface ConfirmPopupProps {
   text: string;
@@ -34,17 +39,19 @@ export default function HomeInformation() {
 
   const [temperature, setTemperature] = useState(null);
   const [humidity, setHumidity] = useState(null);
-
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<Members>();
-  const [members, setMembers] = useState<Members[]>([]);
+  const [user, setUser] = useState<Member>();
+  const [members, setMembers] = useState<Member[]>([]);
   const [confirmPopup, setConfirmPopup] = useState<ConfirmPopupProps>({
     text: "",
     onConfirm: () => {},
   });
 
+  const [home_id, setHome_id] = useState("");
   const [lights, setLights] = useState<Light[]>([]);
   const lightList = Array.isArray(lights) ? lights : [];
+  const [televisions, setTelevisions] = useState<Television[]>([]);
+  const televisionList = Array.isArray(televisions) ? televisions : [];
   console.log(lightList);
 
   useEffect(() => {
@@ -63,7 +70,8 @@ export default function HomeInformation() {
       .then((d) => {
         if (d.code == 200) {
           setUser(d.data);
-          setMembers(d.data.home);
+          setMembers(d.data.home); 
+          setHome_id(d.data.home_id);   
         } else dispatch(failPopUp(d.message));
       });
 
@@ -83,7 +91,10 @@ export default function HomeInformation() {
       socket.close();
     };
   }, [dispatch, router]);
-  
+
+  useFetchLights(setLights, setLoading);
+  useFetchTvs(setTelevisions, setLoading);
+
   return (
     <div>
       <ConfirmPopup
@@ -137,7 +148,7 @@ export default function HomeInformation() {
             </Button>
           </Link>
 
-          <Link href={"/history"}>
+          <Link href={`/history/?home_id=${home_id}`}>
             <Button isIconOnly color="primary">
               <VscHistory size={20} />
             </Button>
@@ -146,6 +157,12 @@ export default function HomeInformation() {
           <Link href={"/reset_password"}>
             <Button isIconOnly color="primary">
               <FiRefreshCcw size={20} />
+            </Button>
+          </Link>
+
+          <Link href={`/reset_password_home?home_id=${home_id}`}>
+            <Button isIconOnly color="primary">
+              <MdOutlineLockReset size={23} />
             </Button>
           </Link>
 
@@ -195,7 +212,7 @@ export default function HomeInformation() {
           <div>
             <div className="text-xl font-bold flex items-center justify-between">
               <h5>Thành viên</h5>
-              <a href="/member" className="text-blue-500 hover:text-blue-700">
+              <a href= {`/member?home_id=${home_id}`} className="text-blue-500 hover:text-blue-700">
                 <BsArrowRightShort size={25} />
               </a>
             </div>
@@ -267,16 +284,13 @@ export default function HomeInformation() {
                 </div>
               </Fragment>
             ) : (
-              <>
-                <DoorComponent name="Door" />
-                {lightList.map((light) => (
-                  <LightComponent
-                    key={light.id}
-                    name={light.name}
-                    id={light.id}
-                  />
-                ))}
-              </>
+              // role === 0 && (
+                <>
+                  <DoorComponent name="Door" />
+                  <LightComponent name="" id="" title="Light" home_id = {home_id} />
+                  <TelevisionComponent name="" id="" title="Television" home_id = {home_id} />
+                </>
+              // )
             )}
           </div>
         </div>

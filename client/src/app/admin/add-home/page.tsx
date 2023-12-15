@@ -45,8 +45,8 @@ export default function AddHome() {
     if (debouncedSearchValue) {
       const promise = dispatch(getUserList());
       return () => {
-        promise.abort()
-      }
+        promise.abort();
+      };
     }
   }, [debouncedSearchValue, dispatch]);
 
@@ -69,23 +69,23 @@ export default function AddHome() {
         password,
       };
       try {
-        const response = await http.post("api/home/add-home", data, {
+        const response = await http.post("api/home", data, {
           headers: {
             token: `${getCookie("token")?.toString()}`,
           },
         });
         const result = await response.data;
         console.log(result);
-        if (result.status == 200) {
+        if (result.code == 200) {
           dispatch(successPopUp(result.message));
-        } else if (result.status != 200) {
+        } else if (result.code != 200) {
           dispatch(failPopUp(result.message));
         }
       } catch (error) {
         console.error("Error:", error);
       }
     } else {
-      dispatch(failPopUp("E005"))
+      dispatch(failPopUp("E005"));
     }
   };
 
@@ -164,7 +164,13 @@ export default function AddHome() {
             >
               Cancel
             </Button>
-            <Button color="primary" onClick={() => handleButton()}>
+            <Button
+              color="primary"
+              onClick={() => {
+                handleButton();
+                router.push("/admin");
+              }}
+            >
               Add
             </Button>
           </div>

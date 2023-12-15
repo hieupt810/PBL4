@@ -85,7 +85,7 @@ def get_pass():
             # Check if the rec list is empty
             if len(rec) > 0:
                 password = rec[0]["password"]
-                return respond(data = password)
+                return jsonify(password), 200
             else:
                 return respondWithError()
 
@@ -226,7 +226,7 @@ def face_recognition(home_id):
                     atTime=getDatetime(),
                     success=True,
                 )
-                response = requests.post(f"http://{Config.ESP_SERVER_URL}/door/unlock")
+                response = requests.post(f"{Config.ESP_SERVER_URL}/door/unlock")
                 if response.status_code == 200:
                     # Xử lý phản hồi thành công
                     print("Request successful.")

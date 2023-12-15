@@ -15,7 +15,7 @@ export default function DoorComponent({ name }: DoorType) {
 
   const handleButton = async (mode: string) => {
     try {
-      const response = await http.post(`/door/${mode}`, {
+      const response = await http.post(`/api/door/${mode}`, {
         headers: {
           Authorization: `${getCookie("token")?.toString()}`,
         },
@@ -44,7 +44,7 @@ export default function DoorComponent({ name }: DoorType) {
             isIconOnly
             color="danger"
             aria-label="On"
-            onClick={() => handleButton("lock")}
+            onClick={() => handleButton("close")}
           >
             <BsLock size={24} className="text--500" />
           </Button>
@@ -53,7 +53,7 @@ export default function DoorComponent({ name }: DoorType) {
             color="warning"
             variant="faded"
             aria-label="Off"
-            onClick={() => handleButton("unlock")}
+            onClick={() => handleButton("open")}
           >
             <BsUnlock size={24} className="text-red-500" />
           </Button>

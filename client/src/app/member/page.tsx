@@ -1,59 +1,81 @@
 "use client";
-import { MemberComponent } from "@/components/MemberComponent";
-import ModalComponent from "@/components/ModalComponent";
+
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
-import { Member } from "@/models/member";
-import Man from "@/static/man.jpg";
-import Woman from "@/static/woman.png";
-import { Skeleton } from "@nextui-org/react";
+import { Member} from "@/models/member";
 import { getCookie, hasCookie } from "cookies-next";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { AiOutlineUsergroupAdd } from "react-icons/ai";
 import MobileLayout from "../mobile";
 import http from "../utils/http";
+import { Skeleton } from "@nextui-org/react";
+import Man from "@/static/man.jpg";
+import Woman from "@/static/woman.png";
+import { MemberComponent } from "@/components/MemberComponent";
+import ModalComponent from "@/components/ModalComponent";
+import { AiOutlineUsergroupAdd } from "react-icons/ai";
+import { getMemberList, setHomeId } from "@/hook/features/SearchSlice";
+import { useSelector } from "react-redux";
+import { RootState } from "@/hook/store";
 
 export default function Member() {
-  const rawMemberList: Members[] = useSelector(
+  const rawMemberList: Member[] = useSelector(
     (state: RootState) => state.search.memberList
   );
   const dispatch = useAppDispatch();
   const [page, setPage] = useState<number>(1);
-  const [members, setMembers] = useState<Member[]>([]);
-  const membersList = Array.isArray(members) ? members : [];
+  const membersList = Array.isArray(rawMemberList) ? rawMemberList : [];
   const [username, setUsername] = useState("");
+  const [hasCalledApi, setHasCalledApi] = useState(false);
+  const params = useSearchParams();
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setUsername(value);
   };
 
+  // useEffect(() => {
+  //   if (!hasCookie("token")) {
+  //     router.push("/login");
+  //     return;
+  //   }
+
+  //   const token = getCookie("token")?.toString();
+
+  //   const fetchListMembers = async () => {
+  //     try {
+  //       const response = await http.get(`api/home/list-member`, {
+  //         headers: {
+  //           token: `${token}`,
+  //         },
+  //       });
+
+  //       if (response.status === 200) {
+  //         const membersData = response.data.members;
+  //         setMembers(membersData);
+  //       } else {
+  //         dispatch(failPopUp(response.data.message));
+  //       }
+  //     } catch (error) {
+  //       console.error("Error:", error);
+  //     }
+  //   };
+
+  //   fetchListMembers();
+  // }, [dispatch, router]);
+  // FetchMembers(setMembers, router);
+  const homeId = params.get("home_id");
+
   useEffect(() => {
-    if (hasCalledApi) {
-      dispatch(getMemberList());
-      setHasCalledApi(false);
+    if (homeId !== null) {
+      dispatch(setHomeId(homeId));
     }
-
-    const token = getCookie("token")?.toString();
-
-    const fetchListMembers = async () => {
-      try {
-        const response = await http.get(`api/home/list-member`);
-
-        if (response.status === 200) {
-          const membersData = response.data.members;
-          setMembers(membersData);
-        } else {
-          dispatch(failPopUp(response.data.message));
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    };
-
-    fetchListMembers();
-  }, [dispatch, page, router]);
+    const promise = dispatch(getMemberList());
+    return () => {
+      promise.abort()
+    }
+  }, [dispatch, homeId]);
 
   const handleAddMember = async () => {
     if (username != "") {
@@ -61,19 +83,20 @@ export default function Member() {
         username,
       };
       try {
-        const response = await http.post("api/home/add-member", data, {
+        const response = await http.post(`api/home/${params.get("home_id")}/member`, data, {
           headers: {
-            Authorization: `${getCookie("token")?.toString()}`,
+            token: `${getCookie("token")?.toString()}`,
           },
         });
         const result = await response.data;
         console.log(result);
-        if (result.status == 200) {
+        if (result.code == 200) {
           dispatch(successPopUp(result.message));
-        } else if (result.status != 200) {
+        } else if (result.code != 200) {
           dispatch(failPopUp(result.message));
         }
         setUsername("");
+        setHasCalledApi(true);
       } catch (error) {
         console.error("Error:", error);
       }
@@ -81,6 +104,13 @@ export default function Member() {
       dispatch(failPopUp("E005"));
     }
   };
+
+  useEffect(() => {
+    if (hasCalledApi) {
+      dispatch(getMemberList());
+      setHasCalledApi(false);
+    }
+  }, [dispatch, hasCalledApi]);
 
   return (
     <MobileLayout>
@@ -189,3 +219,4 @@ export default function Member() {
         </div>
       </div> */
 }
+
