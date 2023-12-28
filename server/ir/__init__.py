@@ -234,19 +234,35 @@ def getByDevice(device, home_id):
             routing_="r",
             home_id=home_id,
             device=device,
-        )
-
+        ) 
         devices_list = []
         for device in devices:
+            d_id = device["id"]
+            mode,_,_ =db.execute_query(
+                query(
+                    """MATCH (ir:IR {id:$id})-[r:HAS_FUNC]->(func:Func)
+                    RETURN func.mode AS mode, func.id AS id"""
+                ),
+                routing_="r",
+                id = d_id
+            )
+            mod = []
+            for m in mode : 
+                mod.append(
+                    {
+                        "mode": m["mode"],
+                        "id": m["id"],
+                    }
+                )
             devices_list.append(
                 {
                     "id": device["id"],
                     "name": device["name"],
                     "device": device["device"],
                     "pin": device["pin"],
+                    "list_mode": mod
                 }
             )
-
         return respond(data=devices_list)
     except Exception as error:
         return respondWithError(code=500, error=error)
