@@ -3,9 +3,9 @@ import { resetLoading } from "@/hook/features/LoadingSlice";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch, useAppSelector } from "@/hook/hook";
 import { Button, Input } from "@nextui-org/react";
-import { getCookie, hasCookie } from "cookies-next";
+import { getCookie } from "cookies-next";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import MobileLayout from "../mobile";
 import http from "../utils/http";
 
@@ -19,14 +19,13 @@ export default function Profile() {
   const [role, setRole] = useState(1);
   const params = useSearchParams();
 
-
   const handlePassword = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (role === 1) {
       const data = {
         oldPass: password_old,
         newPass: password_new,
-        home_id: params.get("home_id")
+        home_id: params.get("home_id"),
       };
 
       try {
@@ -37,7 +36,6 @@ export default function Profile() {
         });
 
         const result = await response.data;
-        console.log(result);
         if (result?.code !== 200) {
           dispatch(failPopUp(result.message));
         } else if (result.code == 200) {

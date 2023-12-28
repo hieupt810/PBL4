@@ -1,15 +1,14 @@
 "use client";
+import { HistoryComponent } from "@/components/HistoryComponent";
 import { failPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
+import { Skeleton } from "@nextui-org/react";
 import { getCookie, hasCookie } from "cookies-next";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import MobileLayout from "../mobile";
-import http from "../utils/http";
-import { Skeleton } from "@nextui-org/react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { HistoryComponent } from "@/components/HistoryComponent";
 import { History } from "../types/history.type";
-
+import http from "../utils/http";
 
 export default function Member() {
   const dispatch = useAppDispatch();
@@ -17,7 +16,6 @@ export default function Member() {
   const historyList = Array.isArray(history) ? history : [];
   const router = useRouter();
   const params = useSearchParams();
-
 
   useEffect(() => {
     if (!hasCookie("token")) {
@@ -29,15 +27,17 @@ export default function Member() {
 
     const fetchListHistory = async () => {
       try {
-        const response = await http.get(`api/door/history/home/${params.get("home_id")}`, {
-          headers: {
-            token: `${token}`,
-          },
-        });
+        const response = await http.get(
+          `api/door/history/home/${params.get("home_id")}`,
+          {
+            headers: {
+              token: `${token}`,
+            },
+          }
+        );
 
         if (response.data.code === 200) {
           const historyData = response.data.data;
-          console.log(historyData)
           setListHistory(historyData);
         } else {
           dispatch(failPopUp(response.data.message));
@@ -59,10 +59,7 @@ export default function Member() {
         <div>
           {historyList.map((value, index) => {
             return (
-              <HistoryComponent
-                key={index}
-                value = {value}
-              />
+              <HistoryComponent key={index} value={value} />
 
               // <tbody key={index}>
               //   <tr>

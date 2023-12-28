@@ -6,10 +6,8 @@ import {
   createAsyncThunk,
   createSlice,
   PayloadAction,
-  Reducer,
 } from "@reduxjs/toolkit";
 import { getCookie } from "cookies-next";
-import { useSearchParams } from "next/navigation";
 import { RootState } from "../store";
 
 type GenericAsyncThunk = AsyncThunk<unknown, unknown, any>;
@@ -34,7 +32,7 @@ interface UserResponse {
   data: Users[];
 }
 interface MemberResponse {
-  data: {members: Member[]};
+  data: { members: Member[] };
 }
 
 export const getUserList = createAsyncThunk(
@@ -65,7 +63,6 @@ export const getMemberList = createAsyncThunk(
         signal: thunkAPI.signal,
       }
     );
-    console.log(response.data.data.members);
     return response.data.data.members;
   }
 );
@@ -89,7 +86,6 @@ const searchSlice = createSlice({
       });
   },
 });
-
 
 const searchReducer = searchSlice.reducer;
 export const { setHomeId } = searchSlice.actions;
