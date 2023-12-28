@@ -14,9 +14,9 @@ export default function Popup({ type, text, close }: PopupProps) {
 
   return (
     <div>
-      <div className="w-screen h-screen bg-gray-500 opacity-80 fixed top-0 z-30"></div>
+      <div className="w-dvw h-dvh bg-gray-500 opacity-80 fixed top-0 left-0 z-30"></div>
 
-      <div className="absolute w-screen h-screen flex items-center justify-center z-40">
+      <div className="absolute w-dvw h-dvh flex items-center justify-center z-40">
         <Card className="w-2/3">
           <CardHeader className="flex items-center gap-3">
             {type === "fail" ? (

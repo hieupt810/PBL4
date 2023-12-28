@@ -1,24 +1,24 @@
 "use client";
 import MobileLayout from "@/app/mobile";
-import { Light } from "@/app/types/light.type";
+import { Television } from "@/app/types/television.type";
 import TelevisionComponent from "@/components/TelevisionComponent";
 import { Skeleton } from "@nextui-org/react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { useFetchLights } from "../fetchData/useFetchLights";
+import { useFetchTvs } from "../fetchData/useFetchTv";
 
 export default function ListLed() {
   const params = useSearchParams();
-  const [tv, setTv] = useState<Light[]>([]);
+  const [tv, setTv] = useState<Television[]>([]);
   const tvList = Array.isArray(tv) ? tv : [];
   const [loading, setLoading] = useState(true);
 
-  useFetchLights(setTv, setLoading);
+  useFetchTvs(setTv, setLoading);
 
   return (
     <MobileLayout>
       <h5 className="text-primary font-semibold text-xl text-center">
-        Ti vi hiện tại
+        TV hiện tại
       </h5>
       {tvList.length > 0 ? (
         <div>
@@ -27,8 +27,9 @@ export default function ListLed() {
               key={tv.id}
               name={tv.name}
               id={tv.id}
-              home_id={params.get("home_id")}
+              home_id={params.get("home_id") || ""}
               title="Detail"
+              mode={tv.mode}
             />
           ))}
         </div>

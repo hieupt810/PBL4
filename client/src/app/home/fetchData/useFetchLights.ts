@@ -13,17 +13,19 @@ export function useFetchLights(
   const dispatch = useAppDispatch();
   const params = useSearchParams();
 
-
   useEffect(() => {
     async function fetchLights() {
       if (!hasCookie("token")) return;
       const token = getCookie("token")?.toString();
       try {
-        const response = await http.get(`api/led/home/${params.get("home_id")}`, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        });
+        const response = await http.get(
+          `api/led/home/${params.get("home_id")}`,
+          {
+            headers: {
+              Authorization: `${token}`,
+            },
+          }
+        );
         if (response.data.code === 200) {
           const lightsData = response.data.data.leds;
           setLights(lightsData);

@@ -1,33 +1,38 @@
-import React from "react";
-import { Button } from "@nextui-org/react";
-import {
-  PiTelevisionBold,
-  PiTelevision,
-  PiTelevisionLight,
-} from "react-icons/pi";
-import { getCookie } from "cookies-next";
+import http from "@/app/utils/http";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
-import http from "@/app/utils/http";
-import { IoIosArrowForward } from "react-icons/io";
+import { Button } from "@nextui-org/react";
+import { getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
+import { IoIosArrowForward } from "react-icons/io";
+import {
+  PiTelevision,
+  PiTelevisionBold,
+  PiTelevisionLight,
+} from "react-icons/pi";
+
+type mode = {
+  id: string;
+  mode: string;
+};
 
 interface TelevisionType {
   name: string;
   id: string;
   title: string;
   home_id: string;
+  mode: mode;
 }
 
 export default function TelevisionComponent({
   name,
   id,
   title,
-  home_id
+  home_id,
+  mode,
 }: TelevisionType) {
   const dispatch = useAppDispatch();
   const router = useRouter();
-
 
   const handleButton = async () => {
     const data = {
@@ -82,7 +87,10 @@ export default function TelevisionComponent({
         </div>
       ) : (
         <div className="mb-5">
-          <div className="flex items-center justify-between p-4 border rounded-lg shadow-xl"  onClick={() => router.push(`/home/list-tv?home_id=${home_id}`)}>
+          <div
+            className="flex items-center justify-between p-4 border rounded-lg shadow-xl"
+            onClick={() => router.push(`/home/list-tv?home_id=${home_id}`)}
+          >
             <PiTelevisionBold className="mr-2.5" size={30} />
             <p className="mx-2.5 flex-grow font-sans">Television</p>
             <div className="flex gap-4 items-center">
