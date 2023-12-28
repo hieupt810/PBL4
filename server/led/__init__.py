@@ -70,7 +70,7 @@ def getHomeLed(home_id):
             routing_="r",
             skip=(page - 1) * size,
             limit=size,
-            homeId=Config.HOME_ID,
+            homeId=home_id,
         )
 
         return respond(

@@ -166,7 +166,7 @@ def controlIR():
         )
         _ = requests.post(
             f"{Config.ESP_SERVER_URL}/ir/{rec[0]['pin']}",
-            headers={"ir_code": rec[0]["ir_code"]},  # Thêm body cho POST request ở đây
+            headers={"ir_code": rec[0]["ir_code"]+"irend"}  # Thêm body cho POST request ở đây
         )
         return respond()
     except Exception as error:
