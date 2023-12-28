@@ -48,7 +48,6 @@ export default function FormComponent({ title }: { title: string }) {
           },
         });
         const result = await response.data;
-        console.log(result);
         if (result.code == 200) {
           dispatch(successPopUp(result.data.message));
         } else if (result.code != 200) {
@@ -77,9 +76,7 @@ export default function FormComponent({ title }: { title: string }) {
           },
         });
         const result = await response.data;
-        console.log(result);
         if (result.code == 200) {
-          console.log(result.data.data.message);
           dispatch(successPopUp(result.data.message));
         } else if (result.code != 200) {
           dispatch(failPopUp(result.data.message));

@@ -1,5 +1,6 @@
 "use client";
 import ConfirmPopup from "@/components/ConfirmPopup";
+import LightComponent from "@/components/LightComponent";
 import { failPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
 import { Member } from "@/models/member";
@@ -16,17 +17,16 @@ import { FiEdit, FiLogOut, FiRefreshCcw } from "react-icons/fi";
 import { VscHistory } from "react-icons/vsc";
 import { WiHumidity } from "react-icons/wi";
 import "./styles.css";
-import LightComponent from "@/components/LightComponent";
 
+import DoorComponent from "@/components/DoorComponent";
+import TelevisionComponent from "@/components/TelevisionComponent";
+import { MdOutlineLockReset } from "react-icons/md";
 import io from "socket.io-client";
 import MobileLayout from "../mobile";
 import { Light } from "../types/light.type";
-import { useFetchLights } from "./fetchData/useFetchLights";
-import DoorComponent from "@/components/DoorComponent";
 import { Television } from "../types/television.type";
-import TelevisionComponent from "@/components/TelevisionComponent";
+import { useFetchLights } from "./fetchData/useFetchLights";
 import { useFetchTvs } from "./fetchData/useFetchTv";
-import { MdOutlineLockReset } from "react-icons/md";
 
 interface ConfirmPopupProps {
   text: string;
@@ -52,7 +52,6 @@ export default function HomeInformation() {
   const lightList = Array.isArray(lights) ? lights : [];
   const [televisions, setTelevisions] = useState<Television[]>([]);
   const televisionList = Array.isArray(televisions) ? televisions : [];
-  console.log(lightList);
 
   useEffect(() => {
     if (!hasCookie("token")) {
@@ -70,8 +69,8 @@ export default function HomeInformation() {
       .then((d) => {
         if (d.code == 200) {
           setUser(d.data);
-          setMembers(d.data.home); 
-          setHome_id(d.data.home_id);   
+          setMembers(d.data.home);
+          setHome_id(d.data.home_id);
         } else dispatch(failPopUp(d.message));
       });
 
@@ -212,7 +211,10 @@ export default function HomeInformation() {
           <div>
             <div className="text-xl font-bold flex items-center justify-between">
               <h5>Thành viên</h5>
-              <a href= {`/member?home_id=${home_id}`} className="text-blue-500 hover:text-blue-700">
+              <a
+                href={`/member?home_id=${home_id}`}
+                className="text-blue-500 hover:text-blue-700"
+              >
                 <BsArrowRightShort size={25} />
               </a>
             </div>
@@ -285,11 +287,16 @@ export default function HomeInformation() {
               </Fragment>
             ) : (
               // role === 0 && (
-                <>
-                  <DoorComponent name="Door" />
-                  <LightComponent name="" id="" title="Light" home_id = {home_id} />
-                  <TelevisionComponent name="" id="" title="Television" home_id = {home_id} />
-                </>
+              <>
+                <DoorComponent name="Door" />
+                <LightComponent name="" id="" title="Light" home_id={home_id} />
+                <TelevisionComponent
+                  name=""
+                  id=""
+                  title="Television"
+                  home_id={home_id}
+                />
+              </>
               // )
             )}
           </div>

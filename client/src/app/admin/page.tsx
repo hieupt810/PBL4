@@ -38,7 +38,6 @@ export default function Admin() {
   const [refetch, setRefetch] = useState(false);
 
   const [homes, setHomes] = useState<Home[]>([]);
-  console.log(homes);
   const [homesPage, setHomesPage] = useState(1);
   const [homesAmount, setHomesAmount] = useState(1);
 
@@ -57,10 +56,9 @@ export default function Admin() {
             Authorization: `${token}`,
           },
         });
-  
+
         if (response.data.code === 200) {
           setHomes(response.data.data.homes);
-          console.log(response.data.data.homes);
           setHomesAmount(response.data.data.total);
         } else {
           dispatch(failPopUp(response.data.message));
@@ -83,7 +81,7 @@ export default function Admin() {
             Authorization: `${token}`,
           },
         });
-  
+
         if (response.data.code === 200) {
           setUsers(response.data.users);
           setUsersAmount(Math.floor(response.data.amount / 10) + 1);
@@ -100,7 +98,7 @@ export default function Admin() {
 
   return (
     <AdminLayout>
-      <div className="text-black/90 text-base font-normal font-sans w-[1440px] mx-auto">
+      <div className="text-black/90 text-base font-normal font-sans">
         <div className="flex w-full flex-col">
           <Tabs aria-label="Options">
             <Tab key="homes" title="Nhà">
@@ -169,7 +167,14 @@ export default function Admin() {
                             <TableCell>
                               <div className="flex flex-row items-center justify-start space-x-4">
                                 <Button isIconOnly color="primary">
-                                  <RiEditBoxLine size={20} onClick={() => router.push(`/admin/list-device?id=${value.id}`)} />
+                                  <RiEditBoxLine
+                                    size={20}
+                                    onClick={() =>
+                                      router.push(
+                                        `/admin/list-device?id=${value.id}`
+                                      )
+                                    }
+                                  />
                                 </Button>
 
                                 <Button

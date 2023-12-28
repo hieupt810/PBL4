@@ -1,29 +1,26 @@
 "use client";
+import http from "@/app/utils/http";
 import { resetLoading, setLoading } from "@/hook/features/LoadingSlice";
 import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { useAppDispatch } from "@/hook/hook";
-import { Member } from "@/models/member";
 import {
   Button,
   Card,
   CardBody,
   Pagination,
-  Tab,
   Table,
   TableBody,
   TableCell,
   TableColumn,
   TableHeader,
   TableRow,
-  Tabs,
 } from "@nextui-org/react";
 import { getCookie, hasCookie } from "cookies-next";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BiPlus } from "react-icons/bi";
-import { RiDeleteBin5Line, RiEditBoxLine } from "react-icons/ri";
+import { RiDeleteBin5Line } from "react-icons/ri";
 import AdminLayout from "../layout";
-import { useRouter, useSearchParams } from "next/navigation";
-import http from "@/app/utils/http";
 
 interface Device {
   id: string;
@@ -39,7 +36,6 @@ export default function Admin() {
 
   const [devices, setDevices] = useState<Device[]>([]);
   const deviceList = Array.isArray(devices) ? devices : [];
-  console.log(devices);
   const [homesPage, setHomesPage] = useState(1);
   const [homesAmount, setHomesAmount] = useState(1);
 
@@ -63,7 +59,7 @@ export default function Admin() {
 
         if (response.data.code === 200) {
           setDevices(response.data.data);
-          console.log(response.data.data);
+          response.data.data;
           setHomesAmount(Math.floor(response.data.amount / 10) + 1);
         } else {
           dispatch(failPopUp(response.data.message));
@@ -78,13 +74,13 @@ export default function Admin() {
 
   return (
     <AdminLayout>
-      <div className="text-black/90 text-base font-normal font-sans w-[1440px] mx-auto">
+      <div className="text-black/90 text-base font-normal font-sans">
         <div className="flex w-full flex-col">
           <Card className="mt-10">
             <CardBody>
               <div className="flex flex-row items-center justify-between mb-4">
                 <h5 className="font-bold text-xl">
-                  Danh sách thiết bị trong nhà của {params.get("id")}
+                  Danh sách thiết bị trong nhà
                 </h5>
 
                 <div className="flex flex-row items-center justify-end space-x-4 px-4">
@@ -120,7 +116,6 @@ export default function Admin() {
               >
                 <TableHeader>
                   <TableColumn>STT</TableColumn>
-                  <TableColumn>ID</TableColumn>
                   <TableColumn>Device</TableColumn>
                   <TableColumn>Name</TableColumn>
                   <TableColumn>Pin</TableColumn>
@@ -134,7 +129,6 @@ export default function Admin() {
                         <TableCell>
                           {(homesPage - 1) * 10 + index + 1}
                         </TableCell>
-                        <TableCell>{value.id}</TableCell>
                         <TableCell>
                           <div className="flex flex-col items-start justify-start">
                             <span className="font-semibold">
@@ -185,7 +179,6 @@ export default function Admin() {
                                 fetch(deleteApiUrl, {
                                   method: "DELETE",
                                   headers: headers,
-                                  
                                 })
                                   .then((r) => r.json())
                                   .then((d) => {

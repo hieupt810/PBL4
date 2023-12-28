@@ -1,21 +1,20 @@
 "use client";
-import Select from "react-select";
-import AdminLayout from "../layout";
-import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import { Button } from "@nextui-org/react";
-import { TbHomePlus } from "react-icons/tb";
+import { Users } from "@/app/types/users.type";
+import http from "@/app/utils/http";
+import useDebounce from "@/hook/custoom/useDebounce";
+import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { getUserList } from "@/hook/features/SearchSlice";
 import { RootState, useAppDispatch } from "@/hook/store";
-import { useSelector } from "react-redux";
-import { Users } from "@/app/types/users.type";
-import useDebounce from "@/hook/custoom/useDebounce";
-import { Input } from "@nextui-org/react";
-import EyeSlashFilledIcon from "./icon_eye/EyeSlashFilledIcon";
-import EyeFilledIcon from "./icon_eye/EyeFilledIcon";
-import http from "@/app/utils/http";
+import { Button, Input } from "@nextui-org/react";
 import { getCookie } from "cookies-next";
-import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { TbHomePlus } from "react-icons/tb";
+import { useSelector } from "react-redux";
+import Select from "react-select";
+import AdminLayout from "../layout";
+import EyeFilledIcon from "./icon_eye/EyeFilledIcon";
+import EyeSlashFilledIcon from "./icon_eye/EyeSlashFilledIcon";
 
 interface OptionType {
   value: string;
@@ -75,7 +74,6 @@ export default function AddHome() {
           },
         });
         const result = await response.data;
-        console.log(result);
         if (result.code == 200) {
           dispatch(successPopUp(result.message));
         } else if (result.code != 200) {

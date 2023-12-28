@@ -1,22 +1,22 @@
 "use client";
 
-import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
-import { useAppDispatch } from "@/hook/hook";
-import { Member} from "@/models/member";
-import { getCookie, hasCookie } from "cookies-next";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import MobileLayout from "../mobile";
-import http from "../utils/http";
-import { Skeleton } from "@nextui-org/react";
-import Man from "@/static/man.jpg";
-import Woman from "@/static/woman.png";
 import { MemberComponent } from "@/components/MemberComponent";
 import ModalComponent from "@/components/ModalComponent";
-import { AiOutlineUsergroupAdd } from "react-icons/ai";
+import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
 import { getMemberList, setHomeId } from "@/hook/features/SearchSlice";
-import { useSelector } from "react-redux";
+import { useAppDispatch } from "@/hook/hook";
 import { RootState } from "@/hook/store";
+import { Member } from "@/models/member";
+import Man from "@/static/man.jpg";
+import Woman from "@/static/woman.png";
+import { Skeleton } from "@nextui-org/react";
+import { getCookie } from "cookies-next";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { AiOutlineUsergroupAdd } from "react-icons/ai";
+import { useSelector } from "react-redux";
+import MobileLayout from "../mobile";
+import http from "../utils/http";
 
 export default function Member() {
   const rawMemberList: Member[] = useSelector(
@@ -28,7 +28,6 @@ export default function Member() {
   const [username, setUsername] = useState("");
   const [hasCalledApi, setHasCalledApi] = useState(false);
   const params = useSearchParams();
-
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -73,8 +72,8 @@ export default function Member() {
     }
     const promise = dispatch(getMemberList());
     return () => {
-      promise.abort()
-    }
+      promise.abort();
+    };
   }, [dispatch, homeId]);
 
   const handleAddMember = async () => {
@@ -83,13 +82,16 @@ export default function Member() {
         username,
       };
       try {
-        const response = await http.post(`api/home/${params.get("home_id")}/member`, data, {
-          headers: {
-            token: `${getCookie("token")?.toString()}`,
-          },
-        });
+        const response = await http.post(
+          `api/home/${params.get("home_id")}/member`,
+          data,
+          {
+            headers: {
+              token: `${getCookie("token")?.toString()}`,
+            },
+          }
+        );
         const result = await response.data;
-        console.log(result);
         if (result.code == 200) {
           dispatch(successPopUp(result.message));
         } else if (result.code != 200) {
@@ -219,4 +221,3 @@ export default function Member() {
         </div>
       </div> */
 }
-
