@@ -31,7 +31,9 @@ export function MemberComponent({ value, Man, Woman }: ListMember) {
     };
     try {
       const response = await http.delete(
-        `api/home/${params.get("home_id")}/delete-member?username=${data.username}`,
+        `api/home/${params.get("home_id")}/delete-member?username=${
+          data.username
+        }`,
         {
           headers: {
             Authorization: `${getCookie("token")?.toString()}`,
@@ -39,7 +41,6 @@ export function MemberComponent({ value, Man, Woman }: ListMember) {
         }
       );
       const result = await response.data;
-      console.log(result);
       if (result.code == 200) {
         dispatch(successPopUp(result.message));
       } else if (result.code != 200) {

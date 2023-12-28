@@ -1,22 +1,19 @@
 "use client";
-import Select from "react-select";
-import AdminLayout from "../layout";
-import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import { Button } from "@nextui-org/react";
-import { TbHomePlus } from "react-icons/tb";
-import { getUserList } from "@/hook/features/SearchSlice";
-import { RootState, useAppDispatch } from "@/hook/store";
-import { useSelector } from "react-redux";
 import { Users } from "@/app/types/users.type";
 import useDebounce from "@/hook/custoom/useDebounce";
+import { getUserList } from "@/hook/features/SearchSlice";
+import { RootState, useAppDispatch } from "@/hook/store";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import AdminLayout from "../layout";
 
 import http from "@/app/utils/http";
-import { getCookie } from "cookies-next";
-import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
-import { MdOutlineDevicesOther } from "react-icons/md";
 import FormComponent from "@/components/FormComponent";
-import { Tabs, Tab, Card, CardBody, CardHeader } from "@nextui-org/react";
+import { failPopUp, successPopUp } from "@/hook/features/PopupSlice";
+import { Tab, Tabs } from "@nextui-org/react";
+import { getCookie } from "cookies-next";
+import { MdOutlineDevicesOther } from "react-icons/md";
 
 interface OptionType {
   value: string;
@@ -41,7 +38,6 @@ export default function AddHome() {
 
   const [isVisible, setIsVisible] = React.useState(false);
   const toggleVisibility = () => setIsVisible(!isVisible);
- 
 
   useEffect(() => {
     if (debouncedSearchValue) {
@@ -56,7 +52,6 @@ export default function AddHome() {
     value: user.username || "",
     label: user.username || "",
   }));
-
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -76,7 +71,7 @@ export default function AddHome() {
           },
         });
         const result = await response.data;
-        console.log(result);
+        result;
         if (result.status == 200) {
           dispatch(successPopUp(result.message));
         } else if (result.status != 200) {
@@ -113,7 +108,6 @@ export default function AddHome() {
               </Tabs>
             </div>
           </div>
-          
         </div>
       </div>
     </AdminLayout>

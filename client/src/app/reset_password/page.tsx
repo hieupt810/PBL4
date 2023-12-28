@@ -62,7 +62,6 @@ export default function Profile() {
         });
 
         const result = await response.data;
-        console.log(result);
         if (result?.code !== 200) {
           dispatch(failPopUp(result.message));
         } else if (result.code == 200) {
