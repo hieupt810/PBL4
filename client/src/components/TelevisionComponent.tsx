@@ -21,7 +21,7 @@ interface TelevisionType {
   id: string;
   title: string;
   home_id: string;
-  mode: mode;
+  mode?: mode[];
 }
 
 export default function TelevisionComponent({
@@ -65,23 +65,37 @@ export default function TelevisionComponent({
             <PiTelevisionBold className="mr-2.5" size={30} />
             <p className="mx-2.5 flex-grow font-sans">{name}</p>
             <div className="flex gap-4 items-center">
-              <Button
-                isIconOnly
-                color="danger"
-                aria-label="On"
-                onClick={() => handleButton()}
-              >
-                <PiTelevision size={24} className="text--500" />
-              </Button>
-              <Button
-                isIconOnly
-                color="warning"
-                variant="faded"
-                aria-label="Off"
-                onClick={() => handleButton()}
-              >
-                <PiTelevisionLight size={24} className="text-red-500" />
-              </Button>
+              {mode?.some((element) => {
+                if (element.mode === "on") {
+                  return true;
+                }
+                return false;
+              }) ? (
+                <Button
+                  isIconOnly
+                  color="danger"
+                  aria-label="On"
+                  onClick={() => handleButton()}
+                >
+                  <PiTelevision size={24} className="text--500" />
+                </Button>
+              ) : null}
+              {mode?.some((element) => {
+                if (element.mode === "off") {
+                  return true;
+                }
+                return false;
+              }) ? (
+                <Button
+                  isIconOnly
+                  color="warning"
+                  variant="faded"
+                  aria-label="Off"
+                  onClick={() => handleButton()}
+                >
+                  <PiTelevisionLight size={24} className="text-red-500" />
+                </Button>
+              ) : null}
             </div>
           </div>
         </div>

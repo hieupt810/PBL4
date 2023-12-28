@@ -6,5 +6,5 @@ type mode = {
 export interface Television {
   id: string;
   name: string;
-  mode?: mode;
+  mode: mode[];
 }
