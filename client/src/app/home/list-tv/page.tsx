@@ -1,17 +1,14 @@
 "use client";
-
-import { useAppDispatch } from "@/hook/hook";
-import {  useState } from "react";
-
-import { Skeleton } from "@nextui-org/react";
 import MobileLayout from "@/app/mobile";
-import LightComponent from "@/components/LightComponent";
 import { Light } from "@/app/types/light.type";
-import { useFetchLights } from "../fetchData/useFetchLights";
 import TelevisionComponent from "@/components/TelevisionComponent";
-
+import { Skeleton } from "@nextui-org/react";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useFetchLights } from "../fetchData/useFetchLights";
 
 export default function ListLed() {
+  const params = useSearchParams();
   const [tv, setTv] = useState<Light[]>([]);
   const tvList = Array.isArray(tv) ? tv : [];
   const [loading, setLoading] = useState(true);
@@ -30,6 +27,7 @@ export default function ListLed() {
               key={tv.id}
               name={tv.name}
               id={tv.id}
+              home_id={params.get("home_id")}
               title="Detail"
             />
           ))}
