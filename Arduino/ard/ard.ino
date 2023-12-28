@@ -1,7 +1,12 @@
-#include<SoftwareSerial.h>
-#include "DHT.h"
+#include <IRremote.hpp>
+int khz=38;
+int strs[300];
 
-#define DHTPin 4
+#include "DHT.h"
+#define LightSenorPin 0
+#define LightPin 4
+#define LightValue 800
+#define DHTPin 3
 #define DHTType DHT11
 DHT HT(DHTPin, DHTType);
 
@@ -11,7 +16,10 @@ unsigned long currentTime = millis(), time = millis();
 void setup() {
   Serial.begin(115200);  
   HT.begin();
-  delay(500);
+  // IrSender.begin(5);
+  pinMode(3, INPUT);
+  pinMode(5, OUTPUT);
+  pinMode(LightPin, OUTPUT);
 }
 
 void Temp(){
@@ -45,20 +53,57 @@ void Humid(){
 }
 
 void IR(){
+  int pin_index = str.indexOf("ir_id ");
+  int code_index = str.indexOf("ir_code ");
+  int pin = str.substring(pin_index+ 6, code_index).toInt();
+  IrSender.setSendPin(pin);
+  String xuli = str.substring(code_index + 8);
+  int Stringcount = 0;
+  while (xuli.length() > 0){
+    int index = xuli.indexOf(' ');
+    if (index == -1){
+      strs[Stringcount++] = xuli.toInt();
+      break;
+    }
+    else{
+      strs[Stringcount++] = xuli.substring(0, index).toInt();
+      xuli = xuli.substring(index + 1);
+    }
+  }
+  unsigned int final[Stringcount];
+  for (int i = 0; i < Stringcount; i++)
+  {
+    final[i] = strs[i];
+  }
+  for (int i = 1; i<= 10; i++){
+    IrSender.sendRaw(final, Stringcount, khz);
+  }
+}
 
+void checkLightSensor(){
+  int val = analogRead(LightSenorPin);
+  // Serial.println(val);
+  if (val > LightValue){
+    digitalWrite(LightPin, HIGH);
+  }
+  else {
+   digitalWrite(LightPin, LOW);
+  }
+  delay(500);
 }
 
 void loop() {
   if(Serial.available()>0){
     char com =Serial.read();
+    // Serial.println(str);
     str += com;
     if (com == '\n'){
+      Serial.println(str);
       //led request
       int idIndex = str.indexOf("led ") + 4; 
       int stateIndexOn = str.indexOf("ON");
       int stateIndexOff = str.indexOf("OFF");
       if (idIndex >= 4){
-        Serial.print(str);
         if (stateIndexOn >= 0){
         int id = str.substring(idIndex, stateIndexOn).toInt();
         digitalWrite(id, HIGH);
@@ -82,8 +127,10 @@ void loop() {
       }
       
       //IR request
-      int ir = str.indexOf("IR");
-      
+      int ir = str.indexOf("ir");
+      if (ir >= 0){
+        IR();
+      } 
       str = "";
     }
   }
@@ -93,5 +140,6 @@ void loop() {
   //   Temp();
   //   Humid();
   // }
+  // checkLightSensor();
 }
 

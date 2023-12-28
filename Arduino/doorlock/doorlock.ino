@@ -68,9 +68,8 @@ void getPass() {
 
   int firstIndex = receivedData.indexOf('\"');
   int lastIndex = receivedData.lastIndexOf('\"');
-
+  
   if (firstIndex >= 0 && lastIndex >= 0) {
-    
     String extractedString = receivedData.substring(firstIndex + 1, lastIndex);    
     strcpy(pass_def, extractedString.c_str());
     Serial.println(pass_def);
@@ -193,7 +192,7 @@ void checkPass()  // kiem tra password
       lcd.setCursor(1, 1);
       lcd.print("WRONG PASSWORD");
       clear_data_input();
-      error_pass++;
+      // error_pass++;
       delay(1000);
       lcd.clear();
     }

@@ -9,7 +9,7 @@ WiFiClient client;
 
 WiFiServer server(80);
 String str = "";
-String urlBe = "http://10.10.27.101:8082";
+String urlBe = "http://192.168.106.164:8082";
 String header;
 String homeId = "a3086737-9ecb-4998-923d-1bfe24c24310";
 char cstr[2];
@@ -92,6 +92,10 @@ void sendGETRequest()
         {
             String payload = http.getString();
             // print password
+            // Serial.println(payload);
+            // int dataIndex = payload.indexOf("data");
+            // Serial.println(dataIndex);
+            // String password = payload.substring(dataIndex + 3, dataIndex + 14);
             SUART.println(payload);
         }
         else
