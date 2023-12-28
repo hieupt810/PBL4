@@ -19,6 +19,7 @@ import { getCookie, hasCookie } from "cookies-next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BiPlus } from "react-icons/bi";
+import { CiEdit } from "react-icons/ci";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import AdminLayout from "../layout";
 
@@ -59,7 +60,6 @@ export default function Admin() {
 
         if (response.data.code === 200) {
           setDevices(response.data.data);
-          response.data.data;
           setHomesAmount(Math.floor(response.data.amount / 10) + 1);
         } else {
           dispatch(failPopUp(response.data.message));
@@ -71,6 +71,11 @@ export default function Admin() {
 
     fetchData();
   }, [dispatch, homesPage, refetch, params]);
+
+  const editDevice = (home_id: string | null, device_id: string) => {
+    if (!home_id) return;
+    router.push(`/admin/device?home=${home_id}&device=${device_id}`);
+  };
 
   return (
     <AdminLayout>
@@ -130,27 +135,35 @@ export default function Admin() {
                           {(homesPage - 1) * 10 + index + 1}
                         </TableCell>
                         <TableCell>
-                          <div className="flex flex-col items-start justify-start">
-                            <span className="font-semibold">
-                              {value.device}
-                            </span>
+                          <div className="flex flex-col items-start justify-start capitalize">
+                            {value.device}
+                          </div>
+                        </TableCell>
+
+                        <TableCell>
+                          <div className="flex flex-col items-start justify-start capitalize">
+                            {value.name}
                           </div>
                         </TableCell>
 
                         <TableCell>
                           <div className="flex flex-col items-start justify-start">
-                            <span className="font-semibold">{value.name}</span>
-                          </div>
-                        </TableCell>
-
-                        <TableCell>
-                          <div className="flex flex-col items-start justify-start">
-                            <span className="font-semibold">{value.pin}</span>
+                            {value.pin}
                           </div>
                         </TableCell>
 
                         <TableCell>
                           <div className="flex flex-row items-center justify-start space-x-4">
+                            <Button
+                              isIconOnly
+                              color="primary"
+                              onClick={() => {
+                                editDevice(params.get("id"), value.id);
+                              }}
+                            >
+                              <CiEdit size={20} />
+                            </Button>
+
                             <Button
                               isIconOnly
                               color="danger"

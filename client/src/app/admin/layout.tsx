@@ -24,6 +24,7 @@ export default function AdminLayout({
         type={popup.type}
         close={() => dispatch(resetPopUp())}
       />
+
       <div className="max-w-screen-xl mx-auto">{children}</div>
     </div>
   );
