@@ -35,7 +35,7 @@ def led_switch():
             routing_="r",
             id=req["id"],
         )
-        _ = requests.post(f"{Config.ESP_SERVER_URL}/led/{rec[0]['pin']}/{req['mode']}")
+        # _ = requests.post(f"{Config.ESP_SERVER_URL}/led/{rec[0]['pin']}/{req['mode']}")
         return respond(msg="I014")
     except Exception as error:
         return respondWithError(code=500, error=error)

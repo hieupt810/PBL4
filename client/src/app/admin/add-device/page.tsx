@@ -72,9 +72,9 @@ export default function AddHome() {
         });
         const result = await response.data;
         result;
-        if (result.status == 200) {
+        if (result.code == 200) {
           dispatch(successPopUp(result.message));
-        } else if (result.status != 200) {
+        } else if (result.code != 200) {
           dispatch(failPopUp(result.message));
         }
       } catch (error) {

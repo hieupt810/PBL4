@@ -26,7 +26,7 @@ def open_door():
         if len(rec) != 1:
             return respondWithError(msg="E002",code=400)
 
-        response = requests.post(f"{Config.ESP_SERVER_URL}/door/unlock")
+        response = requests.post(f"{Config.ESP_SERVER_URL_DOOR}/door/unlock")
         if response.status_code == 200:
             # Xử lý phản hồi thành công
             print("Request successful.")
@@ -55,7 +55,7 @@ def lock_door():
         if len(rec) != 1:
             return jsonify({"message": "E002", "status": 400}), 200
 
-        response = requests.post(f"{Config.ESP_SERVER_URL}/door/lock")
+        response = requests.post(f"{Config.ESP_SERVER_URL_DOOR}/door/lock")
         if response.status_code == 200:
             # Xử lý phản hồi thành công
             print("Request successful.")
@@ -138,7 +138,7 @@ def reset_pass():
                     password=req["oldPass"],
                     newPass=req["newPass"],
                 )
-                response = requests.post(f"{Config.ESP_SERVER_URL}/door/changePass")
+                response = requests.post(f"{Config.ESP_SERVER_URL_DOOR}/door/changePass")
                 if response.status_code == 200:
                     # Xử lý phản hồi thành công
                     print("Request successful.")
@@ -226,7 +226,7 @@ def face_recognition(home_id):
                     atTime=getDatetime(),
                     success=True,
                 )
-                response = requests.post(f"{Config.ESP_SERVER_URL}/door/unlock")
+                response = requests.post(f"{Config.ESP_SERVER_URL_DOOR}/door/unlock")
                 if response.status_code == 200:
                     # Xử lý phản hồi thành công
                     print("Request successful.")

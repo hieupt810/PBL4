@@ -15,7 +15,9 @@ class Config(object):
     ROOT_USERNAME = str(os.environ.get("ROOT_USERNAME"))
     ROOT_PASSWORD = str(os.environ.get("ROOT_PASSWORD"))
 
-    ESP_SERVER_URL = str(os.environ.get("ESP_SERVER_URL"))
+    ESP_SERVER_URL_HOUSE = str(os.environ.get("ESP_SERVER_URL_HOUSE"))
+    ESP_SERVER_URL_DOOR = str(os.environ.get("ESP_SERVER_URL_DOOR"))
+    
     HOME_ID = str(os.environ.get("HOME_ID"))
 
     UPLOAD_FOLDER = str(os.environ.get("UPLOAD_FOLDER"))

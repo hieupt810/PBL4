@@ -17,13 +17,14 @@ import {
   TableRow,
   Tabs,
 } from "@nextui-org/react";
-import { getCookie, hasCookie } from "cookies-next";
+import { deleteCookie, getCookie, hasCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BiPlus } from "react-icons/bi";
 import { RiDeleteBin5Line, RiEditBoxLine } from "react-icons/ri";
 import http from "../utils/http";
 import AdminLayout from "./layout";
+import { LuLogOut } from "react-icons/lu";
 
 interface Home {
   first_name: string;
@@ -76,14 +77,14 @@ export default function Admin() {
       if (!hasCookie("token")) return;
       const token = getCookie("token")?.toString();
       try {
-        const response = await http.get(`api/user`, {
+        const response = await http.get(`api/user/all`, {
           headers: {
             Authorization: `${token}`,
           },
         });
 
         if (response.data.code === 200) {
-          setUsers(response.data.users);
+          setUsers(response.data.data.users);
           setUsersAmount(Math.floor(response.data.amount / 10) + 1);
         } else {
           dispatch(failPopUp(response.data.message));
@@ -99,6 +100,14 @@ export default function Admin() {
   return (
     <AdminLayout>
       <div className="text-black/90 text-base font-normal font-sans">
+          <div className ="flex justify-end mt-5">
+            <Button className ="ml-auto" isIconOnly color="primary" >
+              <LuLogOut size={20} onClick={() => {
+              deleteCookie("token");
+              router.push("/login");
+            }} />
+            </Button>
+          </div>
         <div className="flex w-full flex-col">
           <Tabs aria-label="Options">
             <Tab key="homes" title="Nhà">
@@ -287,10 +296,9 @@ export default function Admin() {
                             <TableCell>{value.updated_at}</TableCell>
                             <TableCell>
                               <div className="flex flex-row items-center justify-start space-x-4">
-                                <Button isIconOnly color="primary">
+                                {/* <Button isIconOnly color="primary">
                                   <RiEditBoxLine size={20} />
-                                </Button>
-
+                                </Button> */}
                                 <Button
                                   isIconOnly
                                   color="danger"

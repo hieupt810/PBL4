@@ -11,40 +11,45 @@ import { useAppDispatch } from "@/hook/hook";
 import http from "@/app/utils/http";
 import { IoIosArrowForward } from "react-icons/io";
 import { useRouter } from "next/navigation";
-
+type mode = {
+  id: string;
+  mode: string;
+};
 interface TelevisionType {
   name: string;
   id: string;
   title: string;
-  home_id: string;
+  home_id?: string;
+  mode?:mode[];
 }
 
 export default function TelevisionComponent({
   name,
   id,
   title,
-  home_id
+  mode,
 }: TelevisionType) {
   const dispatch = useAppDispatch();
   const router = useRouter();
 
 
-  const handleButton = async () => {
+  const handleButton = async (mode_id:String) => {
     const data = {
-      id: id,
+      "id_device":id,
+      "id_mode":mode_id
     };
 
     try {
-      const response = await http.post("api/control", data, {
+      const response = await http.post("api/ir/control", data, {
         headers: {
           token: `${getCookie("token")?.toString()}`,
         },
       });
 
       const result = await response.data;
-      if (result?.status !== 200 || result == null) {
+      if (result?.code !== 200 || result == null) {
         dispatch(failPopUp(result.message));
-      } else if (result.status == 200) {
+      } else if (result.code == 200) {
         dispatch(successPopUp(result.message));
       }
     } catch (error) {
@@ -60,23 +65,36 @@ export default function TelevisionComponent({
             <PiTelevisionBold className="mr-2.5" size={30} />
             <p className="mx-2.5 flex-grow font-sans">{name}</p>
             <div className="flex gap-4 items-center">
-              <Button
-                isIconOnly
-                color="danger"
-                aria-label="On"
-                onClick={() => handleButton()}
-              >
-                <PiTelevision size={24} className="text--500" />
-              </Button>
-              <Button
-                isIconOnly
-                color="warning"
-                variant="faded"
-                aria-label="Off"
-                onClick={() => handleButton()}
-              >
-                <PiTelevisionLight size={24} className="text-red-500" />
-              </Button>
+              {mode?.map((element) => {
+                if (element.mode === "on") {
+                    return (
+                        <Button
+                            key={element.id}
+                            isIconOnly
+                            color="danger"
+                            aria-label="On"
+                            onClick={() => handleButton(element.id)} // Truyền element.id vào hàm
+                        >
+                            <PiTelevision size={24} className="text--500" />
+                        </Button>
+                    );
+                } else if (element.mode === "off") {
+                    return (
+                        <Button
+                            key={element.id}
+                            isIconOnly
+                            color="warning"
+                            variant="faded"
+                            aria-label="Off"
+                            onClick={() => handleButton(element.id)} // Truyền element.id vào hàm
+                        >
+                            <PiTelevisionLight size={24} className="text-red-500" />
+                        </Button>
+                    );
+                }
+                return null;
+            })}
+
             </div>
           </div>
         </div>

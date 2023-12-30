@@ -150,8 +150,8 @@ export default function FormComponent({ title }: { title: string }) {
             <SelectItem key="tv" value="tv">
               TV
             </SelectItem>
-            <SelectItem key="AirCondision" value="AirCondision">
-              AirCondision
+            <SelectItem key="AirCondition" value="AirCondition">
+              AirCondition
             </SelectItem>
           </Select>
 

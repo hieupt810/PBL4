@@ -8,23 +8,24 @@ import { useState } from "react";
 import { useFetchLights } from "../fetchData/useFetchLights";
 import { Television } from "@/app/types/television.type";
 import { useFetchTvs } from "../fetchData/useFetchTv";
+import { useFetchAirConditions } from "../fetchData/useFetchAirconditon";
 
 export default function ListLed() {
   const params = useSearchParams();
-  const [tv, setTv] = useState<Television[]>([]);
-  const tvList = Array.isArray(tv) ? tv : [];
+  const [dh, setDh] = useState<Television[]>([]);
+  const tvDh = Array.isArray(dh) ? dh : [];
   const [loading, setLoading] = useState(true);
 
-  useFetchTvs(setTv, setLoading);
+  useFetchAirConditions(setDh, setLoading);
 
   return (
     <MobileLayout>
       <h5 className="text-primary font-semibold text-xl text-center">
-        Ti vi hiện tại
+        Điều hòa hiện tại
       </h5>
-      {tvList.length > 0 ? (
+      {tvDh.length > 0 ? (
         <div>
-          {tvList.map((tv) => (
+          {tvDh.map((tv) => (
             <TelevisionComponent
               key={tv.id}
               name={tv.name}

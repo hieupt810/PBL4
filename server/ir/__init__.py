@@ -165,7 +165,7 @@ def controlIR():
             id_mode=req["id_mode"],
         )
         _ = requests.post(
-            f"{Config.ESP_SERVER_URL}/ir/{rec[0]['pin']}",
+            f"{Config.ESP_SERVER_URL_HOUSE}/ir/{rec[0]['pin']}/on",
             headers={"ir_code": rec[0]["ir_code"]},  # Thêm body cho POST request ở đây
         )
         return respond()
@@ -238,12 +238,30 @@ def getByDevice(device, home_id):
 
         devices_list = []
         for device in devices:
+            d_id = device["id"]
+            mode,_,_ =db.execute_query(
+                query(
+                    """MATCH (ir:IR {id:$id})-[r:HAS_FUNC]->(func:Func)
+                    RETURN func.mode AS mode, func.id AS id"""
+                ),
+                routing_="r",
+                id = d_id
+            )
+            mod = []
+            for m in mode : 
+                mod.append(
+                    {
+                        "mode": m["mode"],
+                        "id": m["id"],
+                    }
+                )
             devices_list.append(
                 {
                     "id": device["id"],
                     "name": device["name"],
                     "device": device["device"],
                     "pin": device["pin"],
+                    "mode" : mod,
                 }
             )
 

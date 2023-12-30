@@ -73,7 +73,7 @@ def profile():
         return respondWithError(code=500, error=str(error))
 
 
-@user_bp.route("", methods=["GET"])
+@user_bp.route("/all", methods=["GET"])
 def user_list():
     page = request.args.get("page", type=int, default=1)
     per_page = request.args.get("per_page", type=int, default=10)
@@ -93,7 +93,7 @@ def user_list():
             return respondWithError()
 
         if username != "" and role == -1:
-            rec, _, _ = db.execute_query(
+            rec_, _, _ = db.execute_query(
                 query(
                     """MATCH (u:User)
                     WHERE toLower(u.username) CONTAINS toLower($username)
@@ -113,7 +113,7 @@ def user_list():
                 username=username,
             )
         elif username != "" and role != -1:
-            rec, _, _ = db.execute_query(
+            rec_, _, _ = db.execute_query(
                 query(
                     """MATCH (u:User)
                     WHERE u.role = $role AND toLower(u.username) CONTAINS toLower($username)
@@ -134,7 +134,7 @@ def user_list():
                 role=role,
             )
         elif username == "" and role != -1:
-            rec, _, _ = db.execute_query(
+            rec_, _, _ = db.execute_query(
                 query(
                     """MATCH (u:User {role: $role})
                     RETURN  u.username AS username, u.first_name AS first_name,
@@ -150,7 +150,7 @@ def user_list():
                 role=role,
             )
         else:
-            rec, _, _ = db.execute_query(
+            rec_, _, _ = db.execute_query(
                 query(
                     """MATCH (u:User)
                     RETURN  u.username AS username, u.first_name AS first_name,
@@ -164,6 +164,7 @@ def user_list():
                 skip=(page - 1) * per_page,
                 limit=per_page,
             )
+            rec = [record for record in rec_ if record.get("username") != "unknown"]
         return respond(
             data={
                 "total": (

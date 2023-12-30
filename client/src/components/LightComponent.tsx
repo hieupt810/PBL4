@@ -15,7 +15,7 @@ interface LightType {
   home_id: string;
 }
 
-export default function LightComponent({ name, id, title, home_id }: LightType) {
+export default function LightComponent({ name, id, title }: LightType) {
   const dispatch = useAppDispatch();
 
   const router = useRouter();
@@ -34,9 +34,9 @@ export default function LightComponent({ name, id, title, home_id }: LightType) 
       });
 
       const result = await response.data;
-      if (result?.status !== 200 || result == null) {
+      if (result?.code !== 200 || result == null) {
         dispatch(failPopUp(result.message));
-      } else if (result.status == 200) {
+      } else if (result.code == 200) {
         dispatch(successPopUp(result.message));
       }
     } catch (error) {

@@ -9,7 +9,7 @@ type mode = {
   mode: string;
 };
 
-export interface Television {
+export interface AirCondition {
   id: string;
   name: string;
   mode?: mode[];

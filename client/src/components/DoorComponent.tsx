@@ -40,14 +40,14 @@ export default function DoorComponent({ name }: DoorType) {
         <p className="mx-2.5 flex-grow font-sans">{name}</p>
 
         <div className="flex gap-4 items-center">
-          <Button
+          {/* <Button
             isIconOnly
             color="danger"
             aria-label="On"
             onClick={() => handleButton("close")}
           >
             <BsLock size={24} className="text--500" />
-          </Button>
+          </Button> */}
           <Button
             isIconOnly
             color="warning"

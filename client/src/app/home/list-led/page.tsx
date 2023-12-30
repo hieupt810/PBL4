@@ -8,9 +8,11 @@ import MobileLayout from "@/app/mobile";
 import LightComponent from "@/components/LightComponent";
 import { Light } from "@/app/types/light.type";
 import { useFetchLights } from "../fetchData/useFetchLights";
+import { useSearchParams } from "next/navigation";
 
 
 export default function ListLed() {
+  const params = useSearchParams();
   const [lights, setLights] = useState<Light[]>([]);
   const lightList = Array.isArray(lights) ? lights : [];
   const [loading, setLoading] = useState(true);
@@ -30,6 +32,7 @@ export default function ListLed() {
               name={light.name}
               id={light.id}
               title="Detail"
+              home_id = {params.get('home_id') || ""}
             />
           ))}
         </div>
