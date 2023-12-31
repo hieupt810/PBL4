@@ -51,7 +51,6 @@ export default function ModalComponent({
   const [error, setError] = useState<string | null>(null);
   const dispatch = useAppDispatch();
 
-
   const uploadToClient = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       const newImages = Array.from(event.target.files);

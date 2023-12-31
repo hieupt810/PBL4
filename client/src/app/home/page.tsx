@@ -215,6 +215,7 @@ export default function HomeInformation() {
             color="primary"
             onClick={() => {
               deleteCookie("token");
+              deleteCookie("home_id");             
               router.push("/");
             }}
           >
