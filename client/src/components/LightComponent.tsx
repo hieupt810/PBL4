@@ -11,11 +11,11 @@ import { IoIosArrowForward } from "react-icons/io";
 interface LightType {
   name: string;
   id: string;
-  title: string;
+  title: string; 
   home_id: string;
 }
 
-export default function LightComponent({ name, id, title }: LightType) {
+export default function LightComponent({ name, id, title, home_id}: LightType) {
   const dispatch = useAppDispatch();
 
   const router = useRouter();

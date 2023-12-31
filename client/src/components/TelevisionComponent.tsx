@@ -28,6 +28,7 @@ export default function TelevisionComponent({
   id,
   title,
   mode,
+  home_id
 }: TelevisionType) {
   const dispatch = useAppDispatch();
   const router = useRouter();

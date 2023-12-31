@@ -9,10 +9,12 @@ import { useFetchLights } from "../fetchData/useFetchLights";
 import { Television } from "@/app/types/television.type";
 import { useFetchTvs } from "../fetchData/useFetchTv";
 import { useFetchAirConditions } from "../fetchData/useFetchAirconditon";
+import { AirCondition } from "@/app/types/aircondision.type";
+import AirConditionComponent from "@/components/AirCondisionComponent";
 
 export default function ListLed() {
   const params = useSearchParams();
-  const [dh, setDh] = useState<Television[]>([]);
+  const [dh, setDh] = useState<AirCondition[]>([]);
   const tvDh = Array.isArray(dh) ? dh : [];
   const [loading, setLoading] = useState(true);
 
@@ -26,7 +28,7 @@ export default function ListLed() {
       {tvDh.length > 0 ? (
         <div>
           {tvDh.map((tv) => (
-            <TelevisionComponent
+            <AirConditionComponent
               key={tv.id}
               name={tv.name}
               id={tv.id}

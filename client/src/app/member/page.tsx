@@ -34,36 +34,6 @@ export default function Member() {
     setUsername(value);
   };
 
-  // useEffect(() => {
-  //   if (!hasCookie("token")) {
-  //     router.push("/login");
-  //     return;
-  //   }
-
-  //   const token = getCookie("token")?.toString();
-
-  //   const fetchListMembers = async () => {
-  //     try {
-  //       const response = await http.get(`api/home/list-member`, {
-  //         headers: {
-  //           token: `${token}`,
-  //         },
-  //       });
-
-  //       if (response.status === 200) {
-  //         const membersData = response.data.members;
-  //         setMembers(membersData);
-  //       } else {
-  //         dispatch(failPopUp(response.data.message));
-  //       }
-  //     } catch (error) {
-  //       console.error("Error:", error);
-  //     }
-  //   };
-
-  //   fetchListMembers();
-  // }, [dispatch, router]);
-  // FetchMembers(setMembers, router);
   const homeId = params.get("home_id");
 
   useEffect(() => {

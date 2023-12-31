@@ -257,3 +257,35 @@ def face_recognition(home_id):
             return respondWithError(code=400)
     except Exception as error:
         return respondWithError(code = 500, error = error)
+
+@door_bp.route("/upload", methods=["POST"])
+def upload_pic():
+    try:
+        if not "Authorization" in request.headers:
+            return respondWithError(msg="E002",code=400)
+        rec, _, _ = db.execute_query(
+            query(
+                """MATCH (u:User {token: $token})
+                RETURN u.role AS role, u.username AS username LIMIT 1"""
+            ),
+            routing_="r",
+            token=request.headers.get("Authorization"),
+        )
+        if len(rec) != 1:
+            return respondWithError(msg="E002",code=400)
+        username = rec[0]["username"]
+        uploads = request.files.getlist('pics')
+        
+        for file in uploads:
+            if file.filename == "" or not allowed_file(file.filename):
+                return respondWithError()
+            file_name = "{}.jpg".format(uniqueID())
+            folder_path = os.path.join(os.getcwd(), "application/users", username)
+            if not os.path.isdir(folder_path):
+                os.mkdir(folder_path)
+            file.save(os.path.join(folder_path, file_name))
+            
+        return respond()
+    
+    except Exception as error:
+        return respondWithError(code = 500, error = error)  
