@@ -9,7 +9,7 @@ WiFiClient client;
 
 WiFiServer server(80);
 String str = "";
-String urlBe = "http://10.10.27.101:8082";
+String urlBe = "http://192.168.93.15:8082";
 String header;
 String homeId = "a3086737-9ecb-4998-923d-1bfe24c24310";
 char cstr[2];
@@ -129,4 +129,3 @@ void handleRESTControl(String s) {
   //resetPass
   checkChangePass(s);
 }
-

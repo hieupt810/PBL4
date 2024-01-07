@@ -4,13 +4,14 @@
 #include "soc/rtc_cntl_reg.h"
 #include "esp_camera.h"
 #include <driver/gpio.h>
+#include <WiFiManager.h>
 #include <FS.h>
 
-const char* ssid = "Giangvien";
-const char* password = "dhbk@2023";
-
-String serverName = "10.10.27.101"; 
-String serverPath = "/api/door/faceCheck";     
+// const char* ssid = "Chouchou";
+// const char* password = "123456789";
+String homeId = "a3086737-9ecb-4998-923d-1bfe24c24310";
+String serverName = "192.168.93.15"; 
+String serverPath = "/api/door/face-check/home/" + homeId;     
 const int serverPort = 8082;   
 WiFiClient client;
 
@@ -51,15 +52,18 @@ void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); 
   Serial.begin(115200);
 
-  WiFi.mode(WIFI_STA);
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-  WiFi.begin(ssid, password);  
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print(".");
-    delay(500);
-  }
+  WiFiManager wifiManager;
+  wifiManager.autoConnect("SmartHome Wifi connect", "00000000");     //set name, password of espwifi
+  Serial.println("Connected!");
+  // WiFi.mode(WIFI_STA);
+  // Serial.println();
+  // Serial.print("Connecting to ");
+  // Serial.println(ssid);
+  // WiFi.begin(ssid, password);  
+  // while (WiFi.status() != WL_CONNECTED) {
+  //   Serial.print(".");
+  //   delay(500);
+  // }
   Serial.println();
   Serial.print("ESP32-CAM IP Address: ");
   Serial.println(WiFi.localIP());
@@ -110,7 +114,7 @@ void loop() {
   status = digitalRead(12);
   if (status == 1 && preStatus == 0){
     digitalWrite(LED_BUILTIN, HIGH);
-    for (int i = 1; i <= 10; i++){
+    for (int i = 1; i <= 5; i++){
       sendPhoto();
       delay(100);
     }
